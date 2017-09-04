@@ -1,0 +1,30 @@
+# Default display config. Comments can be written with
+# the hashtag character at the beginning of a new line.
+# Please note that comments are also counted as valid lines
+# in the error message line counter.
+
+# The title of the window. Can be changed during runtime
+title=Platformer
+
+# The preferred size of the canvas. The frame will be slightly
+# bigger if it has decoration enabled. - The width and height
+# will not matter, if the displayMode is set to fullscreen or
+# fullscreen_windowed.
+preferredWidth=720
+preferredHeight=540
+
+# Wether or not the frame should be resizable. - if false, 
+# the size of the frame will always be preferred size, if not 
+# otherwise specified (displayMode)
+resizable=true
+
+# Wether or not the frame should be positioned in the center of
+# the monitor at startup.
+centered=true
+
+# The displayMode describes what state the window should be in
+# at startup. The displayMode can be one of the following:
+# normal, fullscreen, fullscreen_windowed. If the displayMode
+# is fullscreen_windowed, the frame will still be decorated and
+# be the size of the primary monitor.
+displayMode=normal
