@@ -35,11 +35,11 @@ public class Timer {
 		long now = System.currentTimeMillis();
 		long deltaMs = now - last;
 		last = now;
-		dMs += deltaMs;
 		dt += (float)deltaMs * MS_TO_SEC * tps;
 		missingTicks = (int)dt;
 
 		if (debug) {
+			dMs += deltaMs;
 			if (dMs >= MS_PER_SEC) {
 				if (dMs >= MS_PER_SEC * 2) {
 					dMs = 0;
@@ -74,7 +74,10 @@ public class Timer {
 	public void sleep(float minFps) {
 		long msPassed = System.currentTimeMillis() - last;
 
-		minFps = minFps - (minFps % tps);
+		if (tps < minFps) {
+			minFps -= (minFps % tps);
+		} else minFps = tps;
+		
 		long msToSleep = (long)((float)MS_PER_SEC / minFps) - msPassed;
 		if (msToSleep > 0) {
 			try {
