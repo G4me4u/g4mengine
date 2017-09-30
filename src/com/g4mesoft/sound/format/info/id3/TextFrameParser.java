@@ -22,7 +22,7 @@ class TextFrameParser extends FrameParser {
 		byte charsetIndex = ID3Helper.readByteSafe(is);
 		Charset charset = getCharset(charsetIndex);
 		int numOfTerm = getNumOfTermination(charsetIndex);
-		
+
 		Vector<String> text = new Vector<String>();
 		
 		byte[] buffer = new byte[--size];

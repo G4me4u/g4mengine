@@ -22,7 +22,7 @@ public final class ID3Helper {
 			}
 		}
 
-		String s = AudioHelper.toString(buffer, len, offset);
+		String s = AudioHelper.toString(buffer, len, offset, charset);
 		if (!allowNewline && s.indexOf('\n') >= 0)
 			corrupted();
 		return s;

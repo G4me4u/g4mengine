@@ -91,8 +91,17 @@ public class ID3v2Tag extends AudioTag {
 		}
 		
 		Vector<AudioInfo> information = new Vector<AudioInfo>();
-		while (br < size)
-			br += FrameParserManager.readFrame(is, buffer, information, true);
+		while (br < size) {
+			try {
+				br += FrameParserManager.readFrame(is, buffer, information, true);
+			} catch (TagParsingException tpe) {
+				// We found an invalid frame.. try to
+				// continue either way. Make sure we
+				// don't read extra bytes from the stream.
+				flags = 0;
+				break;
+			}
+		}
 		
 		if (!isValidInformation(information))
 			ID3Helper.corrupted();
