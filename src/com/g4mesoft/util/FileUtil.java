@@ -34,7 +34,7 @@ public final class FileUtil {
 		if (file == null)
 			throw new NullPointerException("file is null!");
 		if (!file.isFile())
-			throw new IOException("file either doesn't exist or is not a file!");
+			throw new IOException("file either doesn't exist or is a directory!");
 		return readConfigFile(new FileReader(file), splitter);
 	}
 
@@ -53,17 +53,13 @@ public final class FileUtil {
 		while ((line = br.readLine()) != null) {
 			lineCount++;
 			if (line.startsWith(COMMENT_START)) continue;
-			int commentIndex = line.indexOf(COMMENT_START);
-			if (commentIndex >= 0)
-				line = line.substring(0, commentIndex);
-			if (line.contains(splitter)) {
-				String[] entry = line.split(splitter);
-				if (entry.length > 2)
-					throw new RuntimeException(String.format("Invalid entry %s, should be 'x%sy'", line, splitter));
-				if (entry[0].isEmpty())
-					throw new RuntimeException(String.format("Key for value %s is undefined at line %d", entry[1], lineCount));
-				result.put(entry[0], entry[1]);
-			}
+			String[] entry = line.split(splitter);
+			if (entry.length != 2)
+				throw new RuntimeException(String.format("Invalid entry %s, should be 'x%sy' at line %d", line, splitter, lineCount));
+			if (entry[0].isEmpty())
+				throw new RuntimeException(String.format("Key for value %s is undefined at line %d", entry[1], lineCount));
+			if (result.put(entry[0], entry[1]) != null)
+				throw new RuntimeException(String.format("Duplicate key %s at line %d", entry[0], lineCount));
 		}
 		
 		br.close();
@@ -75,7 +71,7 @@ public final class FileUtil {
 		if (file == null)
 			throw new NullPointerException("file is null!");
 		if (!file.isFile())
-			throw new IOException("file either doesn't exist or is not a file!");
+			throw new IOException("file either doesn't exist or is a directory!");
 		
 		writeConfig(new FileWriter(file), entryMap, splitter);
 	}
@@ -224,7 +220,7 @@ public final class FileUtil {
 		if (file == null)
 			throw new IllegalArgumentException("file is null!");
 		if (!file.isFile())
-			throw new IllegalArgumentException("file either doesn't exist or is not a file!");
+			throw new IllegalArgumentException("file either doesn't exist or is a directory!");
 		
 		return Files.readAllBytes(file.toPath());
 	}
