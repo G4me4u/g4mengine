@@ -79,6 +79,13 @@ public class MP3BitStream {
 	 */
 	private int bitsLeft;
 	
+	/**
+	 * A value indicating how many bytes have been read
+	 * from the InputStream.
+	 * NOTE: restoreBytes will modify this value.
+	 */
+	private long bytesRead;
+	
 	MP3BitStream(InputStream in) {
 		this.in = in;
 		if (in == null) {
@@ -87,8 +94,14 @@ public class MP3BitStream {
 		
 		buffer = new byte[MAX_BUFFER_SIZE];
 		count = avail = pos = 0;
-	
+		
+		// Set bufferedByte to -2, so
+		// we don't get false results
+		// when checking if it's the
+		// end of the stream.
 		bufferedByte = -2;
+
+		bytesRead = 0;
 	}
 	
 	private InputStream getIfOpen() throws IOException {
@@ -118,13 +131,15 @@ public class MP3BitStream {
 		InputStream in = getIfOpen();
 
 		if (avail > 0) {
-			bufferedByte = buffer[pos];
+			bufferedByte = (int)(buffer[pos]) & 0xFF;
 			bitsLeft = 0;
 		
 			avail--;
 			if (++pos >= buffer.length)
 				pos = 0;
-			return (int)(bufferedByte) & 0xFF;
+			bytesRead++;
+			
+			return bufferedByte;
 		}
 		
 		bufferedByte = in.read();
@@ -137,6 +152,7 @@ public class MP3BitStream {
 			if (count < buffer.length)
 				count++;
 		}
+		bytesRead++;
 		
 		return bufferedByte;
 	}
@@ -172,6 +188,11 @@ public class MP3BitStream {
 			throw new IndexOutOfBoundsException(Integer.toString(buf.length));
 		if (off < 0)
 			throw new IndexOutOfBoundsException(Integer.toString(off));
+
+		// Make sure we return, if
+		// no bytes should be read.
+		if (len == 0) 
+			return 0;
 		
 		int br = 0;
 		if (avail > 0) {
@@ -180,8 +201,10 @@ public class MP3BitStream {
 			off += br;
 			
 			if (len <= 0) {
-				bufferedByte = buf[off + len - 1];
+				bufferedByte = (int)(buf[off + len - 1]) & 0xFF;
 				bitsLeft = 0;
+				// readBuffer already modified bytesRead
+				// bytesRead += br;
 				return br;
 			}
 		}
@@ -189,14 +212,15 @@ public class MP3BitStream {
 		// avail is zero at this point
 		
 		int rfis = in.read(buf, off, len);
+
 		// No matter what, bufferedByte will be
 		// overwritten at this point in time.
 		// There will be no bits available at that
 		// point.
 		bitsLeft = 0;
 		
-		if (rfis != -1) {
-			bufferedByte = buf[off + rfis - 1];
+		if (rfis > 0) {
+			bufferedByte = (int)(buf[off + rfis - 1]) & 0xFF;
 
 			if (rfis > buffer.length) {
 				// Overwrite entire buffer with new data
@@ -222,7 +246,10 @@ public class MP3BitStream {
 					count = buffer.length;
 			}
 			
-			return rfis + br;
+			br += rfis;
+			bytesRead += br;
+			
+			return br;
 		}
 		
 		if (br > 0) {
@@ -231,7 +258,8 @@ public class MP3BitStream {
 			// available bytes in the buffer.
 			// So bufferedByte is still the last
 			// read byte at this point.
-			bufferedByte = buf[off + len - 1];
+			bufferedByte = (int)(buf[off + len - 1]) & 0xFF;
+			bytesRead += br;
 			return br;
 		}
 
@@ -245,11 +273,16 @@ public class MP3BitStream {
 	}
 	
 	public int readBuffer(byte[] dst, int off, int len) {
-		if (len <= 0)
-			return 0;
 		if (len > avail)
 			len = avail;
+		if (len <= 0)
+			return 0;
 
+		// We know we have len available
+		// bytes in the buffer, so we assume
+		// we'll read that number of bytes.
+		bytesRead += len;
+		
 		if (pos + len > buffer.length) {
 			int btr = buffer.length - pos;
 			System.arraycopy(buffer, pos, dst, off, btr);
@@ -290,8 +323,8 @@ public class MP3BitStream {
 		while (true) {
 			read();
 			if (bufferedByte == -1) {
-				// bitsLeft is already zero
-				// at this point, per definition.
+				// bitsLeft is already zero at 
+				// this point, from the check above.
 				// bitsLeft = 0;
 				return -1;
 			}
@@ -362,6 +395,16 @@ public class MP3BitStream {
 	}
 	
 	/**
+	 * @return The number of bits left in the
+	 *         currently bufferedByte. If this
+	 *         value is inadequate from zero,
+	 *         we're not on a byte-border.
+	 */
+	public int getBitsLeft() {
+		return bitsLeft;
+	}
+	
+	/**
 	 * @return True, if we've reached the end of the
 	 * 		   InputStream. If this is the case, it
 	 * 		   is possible to restore to the beginning
@@ -393,7 +436,21 @@ public class MP3BitStream {
 			pos += buffer.length;
 		
 		avail += bytesToRestore;
+		bytesRead -= bytesToRestore;
 		return bytesToRestore;
+	}
+	
+	/**
+	 * @return The number of bytes read from this
+	 *         bitStream. This can be used to determine
+	 *         how many bytes you need to restore to
+	 *         get back to a certain point.<br><br>
+	 *         <i>NOTE: restoreBytes will decrement
+	 *         this value with the amount of restored
+	 *         bytes.</i>
+	 */
+	public long getBytesRead() {
+		return bytesRead;
 	}
 	
 	/**
