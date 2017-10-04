@@ -343,8 +343,7 @@ public class MP3BitStream {
 		if (n > MAX_BUFFER_SIZE)
 			n = MAX_BUFFER_SIZE;
 
-		skip(n);
-		restoreBytes((int)n);
+		restoreBytes((int)skip(n));
 	}
 	
 	public long skip(long n) throws IOException {
