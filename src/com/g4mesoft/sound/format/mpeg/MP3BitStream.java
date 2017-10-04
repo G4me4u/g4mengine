@@ -28,11 +28,11 @@ public class MP3BitStream {
 	
 	/** 
 	 * A buffer of this size should for sure be able 
-	 * to hold at least a single frame of an mp3 file. 
+	 * to hold at least a single frame of an mpeg file. 
 	 * Most frames will be much smaller than this.<br>
-	 * This buffer size is provided in bytes.
+	 * This buffer size is provided in bytes. (4 kB)
 	 */
-	private static final int MAX_BUFFER_SIZE = 2881 + 8;
+	private static final int MAX_BUFFER_SIZE = 1024 * 4;
 	
 	/**
 	 * The InputStream provided in the constructor
@@ -151,8 +151,8 @@ public class MP3BitStream {
 				pos = 0;
 			if (count < buffer.length)
 				count++;
+			bytesRead++;
 		}
-		bytesRead++;
 		
 		return bufferedByte;
 	}
@@ -212,7 +212,7 @@ public class MP3BitStream {
 		// avail is zero at this point
 		
 		int rfis = in.read(buf, off, len);
-
+		
 		// No matter what, bufferedByte will be
 		// overwritten at this point in time.
 		// There will be no bits available at that
@@ -246,10 +246,9 @@ public class MP3BitStream {
 					count = buffer.length;
 			}
 			
-			br += rfis;
-			bytesRead += br;
+			bytesRead += rfis;
 			
-			return br;
+			return br + rfis;
 		}
 		
 		if (br > 0) {
@@ -259,7 +258,8 @@ public class MP3BitStream {
 			// So bufferedByte is still the last
 			// read byte at this point.
 			bufferedByte = (int)(buf[off + len - 1]) & 0xFF;
-			bytesRead += br;
+			// readBuffer already modified bytesRead
+			// bytesRead += br;
 			return br;
 		}
 
@@ -338,6 +338,14 @@ public class MP3BitStream {
 			res |= bufferedByte << bitsToRead;
 		}
 	}
+
+	public void prereadBytes(int n) throws IOException {
+		if (n > MAX_BUFFER_SIZE)
+			n = MAX_BUFFER_SIZE;
+
+		skip(n);
+		restoreBytes((int)n);
+	}
 	
 	public long skip(long n) throws IOException {
 		long remaining = n;
@@ -348,16 +356,18 @@ public class MP3BitStream {
 				if (pos >= buffer.length)
 					pos -= buffer.length;
 				avail -= remaining;
+				bytesRead += remaining;
 				return remaining;
 			} else {
 				pos += avail;
 				if (pos >= buffer.length)
 					pos -= buffer.length;
+				bytesRead += avail;
 				remaining -= avail;
 				avail = 0;
 			}
 		}
-		
+
 		long size = Math.min(MAX_SKIP_BUFFER_SIZE, remaining);
 		byte[] skipBuffer = new byte[(int)size];
 		while (remaining > 0) {
@@ -437,6 +447,7 @@ public class MP3BitStream {
 		
 		avail += bytesToRestore;
 		bytesRead -= bytesToRestore;
+		
 		return bytesToRestore;
 	}
 	
