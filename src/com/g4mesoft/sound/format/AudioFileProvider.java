@@ -6,5 +6,7 @@ import java.io.InputStream;
 public interface AudioFileProvider {
 
 	public AudioFile loadAudioFile(InputStream is) throws IOException, AudioParsingException;
+
+	public Class<? extends AudioFile> getAudioFileClass();
 	
 }

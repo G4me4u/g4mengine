@@ -37,7 +37,7 @@ public final class AudioHelper {
 	}
 
 	public static String toString(byte[] buffer, int len, int offset) {
-		return new String(buffer, offset, len, StandardCharsets.US_ASCII);
+		return toString(buffer, len, offset, StandardCharsets.US_ASCII);
 	}
 
 	public static String toString(byte[] buffer, int len, int offset, Charset charset) {

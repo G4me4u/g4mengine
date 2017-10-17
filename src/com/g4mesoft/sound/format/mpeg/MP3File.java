@@ -2,66 +2,41 @@ package com.g4mesoft.sound.format.mpeg;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.sound.sampled.AudioFormat;
 
+import com.g4mesoft.sound.SoundManager;
 import com.g4mesoft.sound.format.AudioFile;
 import com.g4mesoft.sound.format.AudioParsingException;
 import com.g4mesoft.sound.format.TagParsingException;
 import com.g4mesoft.sound.format.info.TextAudioInfo;
 import com.g4mesoft.sound.format.info.TextAudioInfo.TextAudioInfoType;
 import com.g4mesoft.sound.format.info.id3.ID3v2Tag;
+import com.g4mesoft.util.MemoryUtil;
 
 public class MP3File extends AudioFile {
 
+	/**
+	 * The maximum number of bytes able to get reset
+	 * by the InputStream.
+	 */
+	private static final int MAX_TOLERANCE_DEPTH = 1024;
+
+	/**
+	 * The file type specified in ID3 tags for MPEG.
+	 */
 	private static final String MPEG_FILE_TYPE = "MPG";
 	
-	private static final int MAX_FRAME_MARGIN = 8192;
+	private final byte[] data;
+	private final AudioFormat format;
 	
-	private static final int MPEG_V25 = 0x0;
-	private static final int MPEG_V20 = 0x2;
-	private static final int MPEG_V10 = 0x3;
-	
-	private static final int MPEG_INVALID = 0x1;
-	
-	private static final int LAYER_III = 0x1;
-	private static final int LAYER_II = 0x2;
-	private static final int LAYER_I = 0x3;
-
-	private static final int LAYER_INVALID = 0x0;
-
-	private static final int STEREO = 0x0;
-	private static final int JOINT_STEREO = 0x1; // TODO: implement intensity stereo and MS stereo
-	private static final int DUAL_CHANNEL = 0x2;
-	private static final int SINGLE_CHANNEL = 0x3;
-
-	// -1 is invalid values
-	private static final int[] BITRATE_TABLE = new int[] {
-		 // L3V2 L2V2 L1V2      L3V1 L2V1 L1V1
-		 -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-		 -1,   8,  32,  32,  -1,  32,  32,  32,
-		 -1,  16,  48,  64,  -1,  40,  48,  64,
-		 -1,  24,  56,  96,  -1,  48,  56,  96,
-		 -1,  32,  64, 128,  -1,  56,  64, 128,
-		 -1,  64,  80, 160,  -1,  64,  80, 160,
-		 -1,  80,  96, 192,  -1,  80,  96, 192,
-		 -1,  56, 112, 224,  -1,  96, 112, 224,
-		 -1,  64, 128, 256,  -1, 112, 128, 256,
-		 -1, 128, 160, 288,  -1, 128, 160, 288,
-		 -1, 160, 192, 320,  -1, 160, 192, 320,
-		 -1, 112, 224, 352,  -1, 192, 224, 352,
-		 -1, 128, 256, 384,  -1, 224, 256, 384,
-		 -1, 256, 320, 416,  -1, 256, 320, 416,
-		 -1, 320, 384, 448,  -1, 320, 384, 448,
-		 -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1
-	};
-	
-	private static final int[] FREQUENCY_TABLE = new int[] {
-		11025,    -1, 22050, 44100,
-		12000,    -1, 24000, 48000,
-		 8000,    -1, 16000, 32000,
-		   -1,    -1,    -1,    -1
-	};
+	MP3File(byte[] data, AudioFormat format) {
+		this.data = data;
+		this.format = format;
+	}
 	
 	public static MP3File loadMP3(InputStream is) throws IOException, AudioParsingException {
 		if (!is.markSupported())
@@ -72,135 +47,138 @@ public class MP3File extends AudioFile {
 		try {
 			tag = ID3v2Tag.loadTag(is);
 		} catch(TagParsingException e) {
-			e.printStackTrace();
 		}
 
-		if (tag == null) {
-			is.reset();
-			return null;
-		}
-		
-		System.out.println(tag.toString());
-		
-		TextAudioInfo type = (TextAudioInfo)tag.getFirstOccuringInformation(TextAudioInfoType.FILE_TYPE);
-		if (type != null && !type.getValue()[0].startsWith(MPEG_FILE_TYPE)) {
-			is.reset();
-			return null;
-		}
-		
-		MP3BitStream bs = new MP3BitStream(is);
-		if (!findFrameSync(bs)) {
-			is.reset();
-			return null;
-		}
-		
-		// 11 of 32 bits read by header sync
-		int version = bs.readBits(2);			// 13
-		int layer = bs.readBits(2);				// 15
-		boolean crc = bs.readBits(1) == 0;		// 16
-		int rateIndex = bs.readBits(4);			// 20
-		int freqIndex = bs.readBits(2);			// 22
-		boolean padding = bs.readBits(1) != 0;	// 23
-		int privBit = bs.readBits(1);			// 24
-		int channelMode = bs.readBits(2);		// 26
-		int modeExt = bs.readBits(2);			// 28 TODO: implement mode EXT
-		boolean cpyright = bs.readBits(1) != 0;	// 29
-		boolean orig = bs.readBits(1) != 0;		// 30
-		int emphasis = bs.readBits(2);			// 32
-
-		if (bs.isEndOfStream() || version == MPEG_INVALID || layer == LAYER_INVALID) {
-			is.reset();
-			return null;
-		}
-		
-		// rateIndex version layer
-		//    1110      1     01   =   1110101 in table
-		// NOTE: the bitrate table stores the result in kbits.
-		int bitrate = BITRATE_TABLE[layer | ((version & 0x1) << 2) | (rateIndex << 3)] * 1000;
-
-		// freqIndex version
-		//    00       11   =   0011 in table
-		int frequency  = FREQUENCY_TABLE[version | (freqIndex << 2)];
-		
-		// Bitrate or frequency is -1; invalid values.
-		if (bitrate <= 0 || frequency <= 0) {
-			is.reset();
-			return null;
-		}
-		
-		if (crc) { // Read CRC chunk
-			bs.readBits(16);
-		}
-
-		System.out.println(bitrate + " bits per second");
-		System.out.println(frequency + " Hz");
-		
-		int mainDataOffset = bs.readBits(9);
-		if (channelMode == SINGLE_CHANNEL) { // mono
-			int pb = bs.readBits(5);
-			int scfsi = bs.readBits(4);
-			
+		if (tag != null) {
+			TextAudioInfo type = (TextAudioInfo)tag.getFirstOccuringInformation(TextAudioInfoType.FILE_TYPE);
+			if (type != null && !type.getValue()[0].startsWith(MPEG_FILE_TYPE)) {
+				is.reset();
+				return null;
+			}
 		} else {
-			int pb = bs.readBits(3);
-			int scfsi0 = bs.readBits(4);
-			int scfsi1 = bs.readBits(4);
-			
-			
+			is.reset(); // We need to reset
+			is.mark(MAX_TOLERANCE_DEPTH);
 		}
+		
+		MP3BitStream bitStream = new MP3BitStream(is);
+		MPEGFrame frame = new MPEGFrame();
+		
+		int numSamples = 0;
+		List<float[]> data = new ArrayList<float[]>();
+		
+		int numFrames = 0;
+		
+		long oldByteLocation = 0;
+		
+		while (true) {
+			if (!frame.readFrame(bitStream))
+				break; // End of stream
+			
+			System.out.println("Last frame was approx. " + (frame.header.byteLocation - oldByteLocation) + " bytes long");
+			System.out.println("\nFrame at position: " + Long.toString(bitStream.getBytesRead()));
+			oldByteLocation = frame.header.byteLocation;
+			
+			switch(frame.header.version) {
+			case MPEGHeader.MPEG_V10:
+				System.out.println("Frame is mpeg 1");
+				break;
+			case MPEGHeader.MPEG_V20:
+				System.out.println("Frame is mpeg 2");
+				break;
+			case MPEGHeader.MPEG_V25:
+				System.out.println("Frame is mpeg 2.5");
+				break;
+			}
+			
+			switch(frame.header.layer) {
+			case MPEGHeader.LAYER_I:
+				System.out.println("Frame is layer 1");
+				break;
+			case MPEGHeader.LAYER_II:
+				System.out.println("Frame is layer 2");
+				break;
+			case MPEGHeader.LAYER_III:
+				System.out.println("Frame is layer 3");
+				break;
+			}
+			
+			switch(frame.header.mode) {
+			case MPEGHeader.SINGLE_CHANNEL:
+				System.out.println("Mono");
+				break;
+			case MPEGHeader.STEREO:
+				System.out.println("Stereo");
+				break;
+			case MPEGHeader.DUAL_CHANNEL:
+				System.out.println("Dual channel");
+				break;
+			case MPEGHeader.JOINT_STEREO:
+				System.out.println("Joint sterio");
+				break;
+			}
+			
+			System.out.println(frame.bitrate + " bits per second");
+			System.out.println(frame.frequency + " Hz");
+			
+			float[] samples = frame.header.layer == MPEGHeader.LAYER_I ? frame.audioLayer1.getSamples() : frame.audioLayer2.getSamples();
+			numSamples += samples.length;
+			data.add(samples);
+			
+			if (numFrames++ > 50000) break;
+		}
+		
+		System.out.println("\nNumber of valid frames: " + Integer.toString(numFrames));
+		
+		int br = 0;
+		byte[] dat = new byte[numSamples * 2];
+		Iterator<float[]> bufferItr = data.iterator();
+		while(bufferItr.hasNext()) {
+			float[] samples = bufferItr.next();
+			for (float sample : samples) {
+				sample *= Short.MAX_VALUE;
+				if (sample > Short.MAX_VALUE)
+					sample = Short.MAX_VALUE;
+				if (sample < Short.MIN_VALUE)
+					sample = Short.MIN_VALUE;
+				MemoryUtil.writeLittleEndianShort(dat, (short)sample, br);
+				br += 2;
+			}
+		}
+		data.clear();
+		data = null;
 		
 		is.mark(-1);
 		
-		return null;
+		return new MP3File(dat, getAudioFormat(AudioFormat.Encoding.PCM_SIGNED, frame.frequency, 16, 2, 4, false));
 	}
 
-	private static boolean findFrameSync(MP3BitStream bs) throws IOException {
-		int p = 0;
-		int b = bs.read();
-		if (b == -1) 
-			return false;
-		while(true) {
-			if (b == 0xFF) {
-				if ((b = bs.readBits(3)) == -1) 
-					return false;
-				if (b == 0x7) 
-					return true;
-				b = bs.invalidateBufferedBits();
-			} else {
-				b = bs.read();
-				if (b == -1) 
-					return false;
-			}
-
-			if (p++ > MAX_FRAME_MARGIN)
-				return false;
-		}
-	}
-	
 	@Override
 	public AudioFormat getFormat() {
-		// TODO Auto-generated method stub
-		return null;
+		return format;
 	}
 
+	public static AudioFormat getAudioFormat(AudioFormat.Encoding encoding, int sampleRate, int sampleSizeInBits, int channels, int frameSize, boolean bigEndian) {
+		return new AudioFormat(encoding, sampleRate, sampleSizeInBits, channels, frameSize, sampleRate * (sampleSizeInBits >>> 3) * channels / frameSize, bigEndian);
+	}
+	
 	@Override
 	public int getData(byte[] dst, int srcPos, int dstPos, int len) {
-		// TODO Auto-generated method stub
-		return 0;
+		if (len > data.length - srcPos)
+			len = data.length - srcPos;
+		System.arraycopy(data, srcPos, dst, dstPos, len);
+		return len;
 	}
 	
 	@Override
-	public long getLengthInMillis() {
-		// TODO Auto-generated method stub
-		return 0;
+	public long getLengthInFrames() {
+		return data.length / format.getFrameSize();
 	}
 	
-	public static void main(String[] args) throws Exception {
-		InputStream is = MP3File.class.getResourceAsStream("/assets/ifiwereaboytest.mp3");
-		long now = System.nanoTime();
-		loadMP3(is);
-		double t = (double)(System.nanoTime() - now) / 1000000.0;
-		System.out.println("Loading time (ms)");
-		System.out.println(t);
-		is.close();
+	public static void main(String[] args) throws IOException, AudioParsingException {
+		int id = SoundManager.getInstance().loadSound(MP3File.class.getResourceAsStream("/assets/test.audio.mp1"));
+		if (id == -1)
+			return;
+		
+		SoundManager.getInstance().playSound(id, 0.05f, false);
 	}
 }

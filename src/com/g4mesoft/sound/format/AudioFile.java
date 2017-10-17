@@ -19,7 +19,7 @@ public abstract class AudioFile {
 	 * @param srcPos	-	The starting position in the
 	 * 						raw audio data array.
 	 * @param dstPos	-	The destination start position
-	 * @param len		-	The amount of bytes to be copied.
+	 * @param len		-	The number of bytes to be copied.
 	 * 
 	 * @return  The amount of bytes actually copied to
 	 * 			the destination.
@@ -31,6 +31,6 @@ public abstract class AudioFile {
 	 */
 	public abstract int getData(byte[] dst, int srcPos, int dstPos, int len);
 	
-	public abstract long getLengthInMillis();
+	public abstract long getLengthInFrames();
 	
 }

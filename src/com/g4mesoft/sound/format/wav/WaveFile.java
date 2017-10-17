@@ -5,10 +5,6 @@ import java.io.InputStream;
 import java.util.Arrays;
 
 import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Line;
-import javax.sound.sampled.Mixer;
-import javax.sound.sampled.SourceDataLine;
 
 import com.g4mesoft.sound.format.AlawDecoder;
 import com.g4mesoft.sound.format.AudioFile;
@@ -19,6 +15,12 @@ import com.g4mesoft.util.MemoryUtil;
 
 public class WaveFile extends AudioFile {
 
+	/**
+	 * The maximum number of bytes able to get reset
+	 * by the InputStream.
+	 */
+	private static final int MAX_TOLERANCE_DEPTH = 1024;
+	
 	/*
 	 * The wave audio format contains multiple headers
 	 * with string indicators. Ex. "RIFF", "WAVE" etc.
@@ -69,8 +71,8 @@ public class WaveFile extends AudioFile {
 	 */
 	private static final int ULAW_ENCODING = 0x7;
 	
-	private final AudioFormat format;
 	private final byte[] data;
+	private final AudioFormat format;
 	
 	private WaveFile(byte[] data, AudioFormat format) {
 		this.data = data;
@@ -207,19 +209,30 @@ public class WaveFile extends AudioFile {
 		// wave file format.
 		if (!is.markSupported())
 			return null;
-		is.mark(Integer.MAX_VALUE);
+		is.mark(MAX_TOLERANCE_DEPTH);
 		
 		byte[] buffer = new byte[4];
-		int br = 0;
 		
-		br += AudioHelper.readBytes(is, buffer, 4, 0);
-		if (MemoryUtil.bigEndianToInt(buffer, 0) != RIFF_DEC) {
-			is.reset();
-			return null;
+		int br = AudioHelper.readBytes(is, buffer, 4, 0);
+		int beginCode = MemoryUtil.bigEndianToInt(buffer, 0);
+		
+		// Search for RIFF beginCode
+		while (beginCode != RIFF_DEC) {
+			if (br++ >= MAX_TOLERANCE_DEPTH) {
+				is.reset();
+				return null;
+			}
+			
+			int b = AudioHelper.readByte(is);
+			if (b == -1) {
+				is.reset();
+				return null;
+			}
+			beginCode = (beginCode << 8) | b;
 		}
 		
 		br += AudioHelper.readBytes(is, buffer, 4, 0);
-		// fileSize = toBigEndianInt(buffer, 0);
+		// long fileSize = MemoryUtil.littleEndianToInt(buffer, 0);
 		
 		br += AudioHelper.readBytes(is, buffer, 4, 0);
 		if (MemoryUtil.bigEndianToInt(buffer, 0) != WAVE_DEC) { // wave marker
@@ -295,10 +308,19 @@ public class WaveFile extends AudioFile {
 		// Read main audio data
 		buffer = new byte[dataChunkSize];
 		if (dataChunkSize > 0) {
-			br = is.read(buffer);
-		
+			br = 0;
+			while (br < dataChunkSize) {
+				int nbr = is.read(buffer, br, dataChunkSize - br);
+				if (nbr == -1)
+					break;
+				br += nbr;
+			}
+			
 			if (br <= 0)
 				throw new AudioParsingException("Audio file is corrupted");
+			
+			// Make sure we have a valid amount of frames
+			br -= br % blockAlign;
 			
 			if (br != dataChunkSize) {
 				// Audio file might be corrupted
@@ -308,29 +330,30 @@ public class WaveFile extends AudioFile {
 		}
 
 		// If data is not formatted in PCM, we
-		// need to decode it. Note that both ALAW
-		// and ULAW decoding will be little endian
+		// need to decode it. Note that both ULAW
+		// and ALAW decoding will be little endian
 		// byte order, so no need to change the
 		// format accordingly.
-		if (encoding == AudioFormat.Encoding.ALAW) {
-			buffer = AlawDecoder.decode(buffer);
-			encoding = AlawDecoder.getDecodedEncoding();
-		} else if (encoding == AudioFormat.Encoding.ULAW) {
+		if (encoding == AudioFormat.Encoding.ULAW) {
 			buffer = UlawDecoder.decode(buffer);
 			encoding = UlawDecoder.getDecodedEncoding();
 		}
-		
+		if (encoding == AudioFormat.Encoding.ALAW) {
+			buffer = AlawDecoder.decode(buffer);
+			encoding = AlawDecoder.getDecodedEncoding();
+		}
+
 		// The format is read from the header.
 		// NOTE: all data is stored in 
 		// little_endian byte order in wave files.
 		AudioFormat format = new AudioFormat(encoding,
-											 sampleRate, 
-											 bitsPerSample, 
-											 channels, 
-											 blockAlign, 
-											 byteRate / blockAlign, 
-											 false);
-		
+                                             sampleRate, 
+		                                     bitsPerSample, 
+		                                     channels, 
+		                                     blockAlign, 
+		                                     byteRate / blockAlign, 
+		                                     false);
+
 		return new WaveFile(buffer, format);
 	}
 	
@@ -338,28 +361,30 @@ public class WaveFile extends AudioFile {
 	 * @return  The audio format of the audio data.
 	 * @see #getData()
 	 */
+	@Override
 	public AudioFormat getFormat() {
 		return format;
 	}
 
 	/**
-	 * Copies the raw audio data in this WaveFile into
+	 * Copies the raw PCM audio data in this WaveFile into
 	 * the destination array.
 	 * 
 	 * @param dst		-	The destination array
 	 * @param srcPos	-	The starting position in the
 	 * 						raw audio data array.
 	 * @param dstPos	-	The destination start position
-	 * @param len		-	The amount of bytes to be copied.
+	 * @param len		-	The number of bytes to be copied.
 	 * 
-	 * @return  The amount of bytes actually copied to
-	 * 			the destination.
+	 * @return The amount of bytes actually copied to
+	 * 	       the destination.
 	 * @throws IndexOutOfBoundsException If copying would cause 
 	 * 									 access of data outside 
 	 * 									 array bounds.
 	 * 
 	 * @see #getData()
 	 */
+	@Override
 	public int getData(byte[] dst, int srcPos, int dstPos, int len) {
 		if (len > data.length - srcPos)
 			len = data.length - srcPos;
@@ -368,68 +393,13 @@ public class WaveFile extends AudioFile {
 	}
 	
 	/**
+	 * Calculates the number of frames in this wave file.
 	 * 
+	 * @return The number of playable frames stored in this
+	 *         wave file.
 	 */
-	public long getLengthInMillis() {
-		// TODO: implement time calculation - maybe change to number of frames?
-		return 0;
-	}
-	
-	public static void main(String[] args) throws Exception {
-		InputStream is = WaveFile.class.getResourceAsStream("/assets/soundtest_2big.wav");
-		WaveFile wave = loadWave(is);
-		is.close();
-		
-		if (wave == null) {
-			System.out.println("Unsupported wave file!");
-			return;
-		}
-		
-		Mixer.Info[] mixerInfos = AudioSystem.getMixerInfo();
-		if (mixerInfos.length <= 0) {
-			System.out.println("No mixers available");
-			return;
-		}
-
-		Mixer mixer = AudioSystem.getMixer(AudioSystem.getMixerInfo()[0]);
-		Line.Info sourceLineInfo = null;
-		for (Line.Info lineInfo : mixer.getSourceLineInfo()) {
-			if (SourceDataLine.class.isAssignableFrom(lineInfo.getLineClass())) {
-				sourceLineInfo = lineInfo;
-				break;
-			}
-		}
-		
-		if (sourceLineInfo == null) {
-			System.out.println("Default mixer doesn't support outgoing audio streaming");
-			return;
-		}
-		
-		SourceDataLine sdl = (SourceDataLine)mixer.getLine(sourceLineInfo);
-		sdl.open(wave.format);
-		
-		int bytesWritten = 0;
-		int bytesToWrite = wave.format.getFrameSize() << 2; // * 4
-		byte[] block = new byte[bytesToWrite];
-
-		float volume = 0.3f;
-		
-		sdl.start();
-		
-		while (true) {
-			int br = wave.getData(block, bytesWritten, 0, bytesToWrite);
-			if (br <= 0) 
-				break;
-			for (int i = br - 2; i >= 0; i -= 2) {
-				// works for 16-bits only
-				int sample = MemoryUtil.littleEndianToShort(block, i);
-				MemoryUtil.writeLittleEndianShort(block, (short)(sample * volume), i);
-			}
-			bytesWritten += sdl.write(block, 0, br);
-		}
-		
-		sdl.stop();
-		sdl.flush();
-		sdl.close();
+	@Override
+	public long getLengthInFrames() {
+		return data.length / format.getFrameSize();
 	}
 }

@@ -76,7 +76,7 @@ public final class MemoryUtil {
 		buffer[offset + 5] = (byte) ((i >>> 16) & 0xFF);
 		buffer[offset + 4] = (byte) ((i >>> 24) & 0xFF);
 		
-		i = (int) (value >> 32);
+		i = (int) (value >>> 32);
 		buffer[offset + 3] = (byte) ((i >>> 0) & 0xFF);
 		buffer[offset + 2] = (byte) ((i >>> 8) & 0xFF);
 		buffer[offset + 1] = (byte) ((i >>> 16) & 0xFF);
@@ -102,7 +102,7 @@ public final class MemoryUtil {
 		buffer[offset + 2] = (byte) ((i >>> 16) & 0xFF);
 		buffer[offset + 3] = (byte) ((i >>> 24) & 0xFF);
 		
-		i = (int) (value >> 32);
+		i = (int) (value >>> 32);
 		buffer[offset + 4] = (byte) ((i >>> 0) & 0xFF);
 		buffer[offset + 5] = (byte) ((i >>> 8) & 0xFF);
 		buffer[offset + 6] = (byte) ((i >>> 16) & 0xFF);

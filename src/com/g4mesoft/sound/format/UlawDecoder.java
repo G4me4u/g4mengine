@@ -12,19 +12,18 @@ public final class UlawDecoder {
 	static {
 		ulawTable = new short[256];
 		
-		for (int i = 0; i < 256; i++) {
-			ulawTable[i] = preDecode((byte)i);
-		}
+		for (int i = 0; i < 256; i++)
+			ulawTable[i] = preDecode(i);
 	}
 	
 	private UlawDecoder() {
 	}
 	
-	private static short preDecode(byte ulaw) {
-		ulaw = (byte)~ulaw;
+	private static short preDecode(int ulaw) {
+		ulaw = ~ulaw;
 
 		int sign = ulaw & 0x80;
-		int exponent = (ulaw & 0x70) >> 4;
+		int exponent = (ulaw & 0x70) >>> 4;
 		int data = ulaw & 0x0F;
 	
 		data |= 0x10;

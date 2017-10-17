@@ -78,9 +78,9 @@ public class AStarSearch {
 				break;
 			
 			visitNextNode(filter, current, CardinalDirection.NORTH);
-			visitNextNode(filter, current, CardinalDirection.EAST);
+			visitNextNode(filter, current, CardinalDirection.EAST );
 			visitNextNode(filter, current, CardinalDirection.SOUTH);
-			visitNextNode(filter, current, CardinalDirection.WEST);
+			visitNextNode(filter, current, CardinalDirection.WEST );
 			
 			if (allowDiagonals) {
 				visitNextNode(filter, current, CardinalDirection.NORTH_EAST);
@@ -93,6 +93,9 @@ public class AStarSearch {
 			if (min == null)
 				return null;
 			
+			// We know the openList tree contains min,
+			// so per definition removeFirst(min) will 
+			// never return null.
 			current = openList.removeFirst(min).value;
 		}
 		

@@ -11,19 +11,18 @@ public final class AlawDecoder {
 	static {
 		alawTable = new short[256];
 		
-		for (int i = 0; i < 256; i++) {
+		for (int i = 0; i < 256; i++)
 			alawTable[i] = preDecode((byte)i);
-		}
 	}
 	
 	private AlawDecoder() {
 	}
 	
-	private static short preDecode(byte alaw) {
+	private static short preDecode(int alaw) {
 		alaw ^= 0xD5;
 
 		int sign = alaw & 0x80;
-		int exponent = (alaw & 0x70) >> 4;
+		int exponent = (alaw & 0x70) >>> 4;
 		int data = alaw & 0x0F;
 	
 		data <<= 4;
@@ -52,8 +51,7 @@ public final class AlawDecoder {
 	public static void decode(byte[] src, int srcPos, byte[] dest, int destPos, int length) {
 		int end = srcPos + length;
 		while(srcPos < end) {
-			short pcm = decode(src[srcPos++]);
-			MemoryUtil.writeLittleEndianShort(dest, pcm, destPos);
+			MemoryUtil.writeLittleEndianShort(dest, decode(src[srcPos++]), destPos);
 			destPos += 2;
 		}
 	}

@@ -131,7 +131,7 @@ public class MP3BitStream {
 		InputStream in = getIfOpen();
 
 		if (avail > 0) {
-			bufferedByte = (int)(buffer[pos]) & 0xFF;
+			bufferedByte = ((int)buffer[pos]) & 0xFF;
 			bitsLeft = 0;
 		
 			avail--;
@@ -201,7 +201,6 @@ public class MP3BitStream {
 			off += br;
 			
 			if (len <= 0) {
-				bufferedByte = (int)(buf[off + len - 1]) & 0xFF;
 				bitsLeft = 0;
 				// readBuffer already modified bytesRead
 				// bytesRead += br;
@@ -220,7 +219,7 @@ public class MP3BitStream {
 		bitsLeft = 0;
 		
 		if (rfis > 0) {
-			bufferedByte = (int)(buf[off + rfis - 1]) & 0xFF;
+			bufferedByte = ((int)buf[off + rfis - 1]) & 0xFF;
 
 			if (rfis > buffer.length) {
 				// Overwrite entire buffer with new data
@@ -252,12 +251,6 @@ public class MP3BitStream {
 		}
 		
 		if (br > 0) {
-			// We didn't read anything from
-			// the InputStream, but there were
-			// available bytes in the buffer.
-			// So bufferedByte is still the last
-			// read byte at this point.
-			bufferedByte = (int)(buf[off + len - 1]) & 0xFF;
 			// readBuffer already modified bytesRead
 			// bytesRead += br;
 			return br;
@@ -298,6 +291,9 @@ public class MP3BitStream {
 				pos = 0;
 		}
 		
+		bufferedByte = ((int)dst[off + len - 1]) & 0xFF;
+		bitsLeft = 0; // Reset bits left
+		
 		return len;
 	}
 	
@@ -313,7 +309,7 @@ public class MP3BitStream {
 		
 		if (bitsLeft >= bitsToRead) {
 			bitsLeft -= bitsToRead;
-			return (bufferedByte >> bitsLeft) & MASK_TABLE[bitsToRead];
+			return (bufferedByte >>> bitsLeft) & MASK_TABLE[bitsToRead];
 		}
 		
 
@@ -331,7 +327,7 @@ public class MP3BitStream {
 			
 			if (BYTE_SIZE >= bitsToRead) {
 				bitsLeft = BYTE_SIZE - bitsToRead;
-				return res | ((bufferedByte >> bitsLeft) & MASK_TABLE[bitsToRead]);
+				return res | ((bufferedByte >>> bitsLeft) & MASK_TABLE[bitsToRead]);
 			}
 			
 			bitsToRead -= BYTE_SIZE;
