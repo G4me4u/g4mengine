@@ -88,8 +88,10 @@ public final class SoundManager {
 		if (numAudioFiles < audioFiles.length)
 			return; // Enough room for at least one more
 		
-		// Double the audioFiles capacity
-		audioFiles = Arrays.copyOf(audioFiles, audioFiles.length << 1);
+		synchronized(audioFiles) {
+			// Double the audioFiles capacity
+			audioFiles = Arrays.copyOf(audioFiles, audioFiles.length << 1);
+		}
 	}
 	
 	private AudioFile loadAudioFile(InputStream is) throws IOException, AudioParsingException {
@@ -122,6 +124,12 @@ public final class SoundManager {
 		
 		return false;
 	}
+	
+	public AudioFile getAudioFile(int id) {
+		if (id < 0 || id >= audioFiles.length)
+			return null;
+		return audioFiles[id];
+	}
 
 	public boolean hasProviderClass(Class<? extends AudioFile> audioFileClass) {
 		return getAudioFileClassProvider(audioFileClass) != null;
@@ -140,10 +148,7 @@ public final class SoundManager {
 	}
 
 	public boolean playSound(int id, float volume, boolean daemon) {
-		if (id < 0 || id >= audioFiles.length)
-			return false;
-		
-		AudioFile audioFile = audioFiles[id];
+		AudioFile audioFile = getAudioFile(id);
 		if (audioFile == null)
 			return false;
 		

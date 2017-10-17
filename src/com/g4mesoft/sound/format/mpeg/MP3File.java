@@ -129,21 +129,33 @@ public class MP3File extends AudioFile {
 		
 		System.out.println("\nNumber of valid frames: " + Integer.toString(numFrames));
 		
+		float mx = 0.0f, mn = 0.0f;
+		
+		int clips = 0;
+		
 		int br = 0;
 		byte[] dat = new byte[numSamples * 2];
-		Iterator<float[]> bufferItr = data.iterator();
-		while(bufferItr.hasNext()) {
-			float[] samples = bufferItr.next();
+		for (float[] samples : data) {
 			for (float sample : samples) {
+				if (sample > mx)
+					mx = sample;
+				if (sample < mn)
+					mn = sample;
 				sample *= Short.MAX_VALUE;
-				if (sample > Short.MAX_VALUE)
+				if (sample > Short.MAX_VALUE) {
 					sample = Short.MAX_VALUE;
-				if (sample < Short.MIN_VALUE)
+					clips++;
+				} else if (sample < Short.MIN_VALUE) {
 					sample = Short.MIN_VALUE;
+					clips++;
+				}
 				MemoryUtil.writeLittleEndianShort(dat, (short)sample, br);
 				br += 2;
 			}
 		}
+		System.out.println(mx + ", " + mn);
+		System.out.println(clips + " clips");
+		System.out.println((float)clips / numSamples * 100.0f + "%");
 		data.clear();
 		data = null;
 		
@@ -175,10 +187,10 @@ public class MP3File extends AudioFile {
 	}
 	
 	public static void main(String[] args) throws IOException, AudioParsingException {
-		int id = SoundManager.getInstance().loadSound(MP3File.class.getResourceAsStream("/assets/test.audio.mp1"));
+		int id = SoundManager.getInstance().loadSound(MP3File.class.getResourceAsStream("/assets/test.ifiwereaboytest.mp2"));
 		if (id == -1)
 			return;
 		
-		SoundManager.getInstance().playSound(id, 0.05f, false);
+		SoundManager.getInstance().playSound(id, 0.1f, false);
 	}
 }

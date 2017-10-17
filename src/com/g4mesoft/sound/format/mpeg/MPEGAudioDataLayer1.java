@@ -8,9 +8,9 @@ public class MPEGAudioDataLayer1 {
 	private static final int SUBBANDS_PER_CH = 32;
 	private static final int SAMPLES_PER_SB_CH = 12;
 	
-	private int[][] allocation;
-	private int[][] scalefactor;
-	private float[] samples;
+	private final int[][] allocation;
+	private final int[][] scalefactor;
+	private final float[] samples;
 	
 	public MPEGAudioDataLayer1() {
 		allocation = new int[2][SUBBANDS_PER_CH];
@@ -45,31 +45,32 @@ public class MPEGAudioDataLayer1 {
 			for (sb = 0; sb < bound; sb++)
 				for (ch = 0; ch < frame.nch; ch++) {
 					nb = MPEGTables.L1_BITS_PER_SAMPLE_TABLE[allocation[ch][sb]];
-					samples[sp] = (nb != 0) ? readSample(bitStream, nb) : 0.0f;
+					samples[sp] = (nb != 0) ? requantize(bitStream, nb) : 0.0f;
 					
 					sp += pa;
 				}
 			for ( ; sb < SUBBANDS_PER_CH; sb++) {
 				nb = MPEGTables.L1_BITS_PER_SAMPLE_TABLE[allocation[0][sb]];
-				samples[sp++] = samples[sp++] = (nb != 0) ? readSample(bitStream, nb) : 0.0f;
+				samples[sp++] = samples[sp++] = (nb != 0) ? requantize(bitStream, nb) : 0.0f;
 			}
 		}
 		
 		if (bitStream.isEndOfStream())
 			return false;
 		
-		// Requantize samples
-		requantize(frame.nch);
+		// Rescale samples
+		rescale(frame.nch);
 		// Synthesis subband filter
 		synthesisFilter.synthesizeSamples(samples, frame.nch, SAMPLES_PER_SB_CH);
 		
 		// If single channel, copy the
 		// samples to the right channel.
 		if (frame.nch == 1) {
+			float sample;
 			int i = 0;
 			for (int s = 0; s < SAMPLES_PER_SB_CH; s++)
 				for (sb = 0; sb < SUBBANDS_PER_CH; sb++) {
-					float sample = samples[i++];
+					sample = samples[i++];
 					samples[i++] = sample;
 				}
 		}
@@ -77,35 +78,31 @@ public class MPEGAudioDataLayer1 {
 		return true;
 	}
 
-	private float readSample(MP3BitStream bitStream, int nb) throws IOException {
+	private float requantize(MP3BitStream bitStream, int nb) throws IOException {
 		int sample = bitStream.readBits(nb);
-		int mask = MPEGTables.BITS_MASK_TABLE[nb];
+		int mask = MPEGTables.SIGN_MASK_TABLE[nb];
+		
+		float fraction = (sample & mask) != 0 ?
+			(float)(sample ^ mask) / mask :
+			(float)(sample) / mask - 1.0f;
 
-		if ((sample & mask) != 0)
-			return (float)(sample ^ mask) / mask;
-		return (float)sample / mask - 1.0f;
+		fraction += MPEGTables.L1_QUANTIZATION_D_TABLE[nb];
+		fraction *= MPEGTables.L1_QUANTIZATION_C_TABLE[nb];
+		
+		return fraction;
 	}
 	
-	private void requantize(int nch) {
-		// Here we're requantizing and rescaling
-		// the samples. This is done with the
-		// following formula:
-		//
-		// s'' = (2 + 2^nb * s''')/(2^nb - 1)
-		// s'  = factor * s''
+	private void rescale(int nch) {
+		int ch, s, sp;
+		float sf;
 		
-		int ch, s;
 		for (int sb = SUBBANDS_PER_CH - 1; sb >= 0; sb--) {
 			for (ch = 0; ch < nch; ch++) {
-				int nb = MPEGTables.L1_BITS_PER_SAMPLE_TABLE[allocation[ch][sb]];
-				if (nb != 0) {
-					float sf = MPEGTables.L12_SCALEFACTOR_TABLE[scalefactor[ch][sb]];
-					float pt = (float)(1 << nb);
-					float ptmo = pt - 1.0f;
-					
-					int sp = ch + (sb << 1);
+				if (allocation[ch][sb] != 0) {
+					sf = MPEGTables.L12_SCALEFACTOR_TABLE[scalefactor[ch][sb]];
+					sp = ch + (sb << 1);
 					for (s = SAMPLES_PER_SB_CH - 1; s >= 0; s--) {
-						samples[sp] = sf * (2.0f + pt * samples[sp]) / ptmo;
+						samples[sp] *= sf;
 						sp += SUBBANDS_PER_CH * 2;
 					}
 				}

@@ -83,14 +83,14 @@ public class MPEGTables {
 		-1  // ...        = 15 (invalid)
 	};
 	
-	// Bits mask used to get the MSB of a
+	// Bit mask used to get the MSB of a
 	// word of up to 16 bits length. Can
 	// also be found by doing:
 	//
-	// BITS_MASK_TABLE[0] = 0
-	// BITS_MASK_TABLE[i] = 1 << (i - 1)
+	// SIGN_MASK_TABLE[0] = 0
+	// SIGN_MASK_TABLE[i] = 1 << (i - 1)
 	// where 0 > i >= 16
-	public static final int[] BITS_MASK_TABLE = new int[] {
+	public static final int[] SIGN_MASK_TABLE = new int[] {
 		0x0000, // nb  = 0
 		0x0001,
 		0x0002,
@@ -296,6 +296,48 @@ public class MPEGTables {
 		3, 5, 7, 9, 15, 31, 63, 127, 255, 511, 1023, 2047, 4095, 8191, 16383, 32767, 65535
 	};
 	
+	// Table used to find the MSB of the fractions in layer 2
+	public static final int[] L2_QUANTIZATION_MSB_MASK = new int[] {
+		0x0001, 
+		0x0002, 
+		0x0002, 
+		0x0008, 
+		0x0008, 
+		0x0010, 
+		0x0020, 
+		0x0040, 
+		0x0080, 
+		0x0100,
+		0x0200,
+		0x0400,
+		0x0800,
+		0x1000,
+		0x2000,
+		0x4000,
+		0x8000
+	};
+	
+	// Table used to determine the coefficient used for
+	// requantization in layer 1
+	public static final float[] L1_QUANTIZATION_C_TABLE = new float[] {
+		0.00000000000000f, // nb = 0
+		2.00000000000000f, 
+		1.33333337306976f, 
+		1.14285719394684f, 
+		1.06666672229767f, 
+		1.03225803375244f, 
+		1.01587307453156f, 
+		1.00787401199341f, 
+		1.00392162799835f, 
+		1.00195693969727f, 
+		1.00097751617432f, 
+		1.00048851966858f, 
+		1.00024425983429f, 
+		1.00012207031250f, 
+		1.00006103515625f, 
+		1.00003051757812f  // nb = 15
+	};
+
 	// Table used to determine the coefficient used for
 	// requantization in layer 2
 	public static final float[] L2_QUANTIZATION_C_TABLE = new float[] {
@@ -316,6 +358,27 @@ public class MPEGTables {
 		1.00006103888f,
 		1.00003051851f,
 		1.00001525902f
+	};
+
+	// Table used to determine the constant D used for
+	// requantization in layer 1
+	public static final float[] L1_QUANTIZATION_D_TABLE = new float[] {
+		2.00000000000000f, // nb = 0
+		1.00000000000000f, 
+		0.50000000000000f, 
+		0.25000000000000f, 
+		0.12500000000000f, 
+		0.06250000000000f, 
+		0.03125000000000f, 
+		0.01562500000000f, 
+		0.00781250000000f, 
+		0.00390625000000f, 
+		0.00195312500000f, 
+		0.00097656250000f, 
+		0.00048828125000f, 
+		0.00024414062500f, 
+		0.00012207031250f, 
+		0.00006103515625f  // nb = 15
 	};
 
 	// Table used to determine the constant D used for

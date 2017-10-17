@@ -1,6 +1,7 @@
 package com.g4mesoft.sound.format.mpeg;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 public class MPEGAudioDataLayer2 {
 
@@ -8,18 +9,18 @@ public class MPEGAudioDataLayer2 {
 	private static final int NUM_GRANULES = 12;
 	private static final int SAMPLES_PER_TRIPLET = 3;
 	
-	private int[][] allocation;
-	private int[][] scfsi;
-	private int[][][] scalefactor;
-	private int[][][] samples;
-	
-	private float[] realSamples;
+	private final int[][] allocation;
+	private final int[][] scfsi;
+	private final int[][][] scalefactor;
+	private final float[][][] fractions;
+	private final float[] samples;
 	
 	public MPEGAudioDataLayer2() {
-		allocation = new int[2][MAX_SUBBANDS_PER_CH];
+		allocation  = new int[2][MAX_SUBBANDS_PER_CH];
 		scfsi       = new int[2][MAX_SUBBANDS_PER_CH];
 		scalefactor = new int[2][MAX_SUBBANDS_PER_CH][SAMPLES_PER_TRIPLET];
-		samples  = new int[2][MAX_SUBBANDS_PER_CH][NUM_GRANULES * SAMPLES_PER_TRIPLET];
+		fractions   = new float[2][MAX_SUBBANDS_PER_CH][NUM_GRANULES * SAMPLES_PER_TRIPLET];
+		samples     = new float[2 * NUM_GRANULES * MAX_SUBBANDS_PER_CH * SAMPLES_PER_TRIPLET];
 	}
 	
 	public boolean loadAudioData(MP3BitStream bitStream, MPEGFrame frame, MPEGSynthesisSubbandFilter synthesisFilter) throws IOException {
@@ -32,6 +33,7 @@ public class MPEGAudioDataLayer2 {
 
 		int sb, ch, s;
 		int alloc, step;
+		int c, nlevels;
 
 		for (sb = 0; sb < bound; sb++)
 			for (ch = 0; ch < frame.nch; ch++)
@@ -86,19 +88,21 @@ public class MPEGAudioDataLayer2 {
 					if (alloc != 0) {
 						step = MPEGTables.L2_QUANTIZATION_TABLE[table][sb][alloc];
 						if (MPEGTables.L2_GROUPING_TABLE[step] != 0) {
-							int c = bitStream.readBits(MPEGTables.L2_NBCODEWORD_TABLE[step]);
-							int nlevels = MPEGTables.L2_QUANTIZATION_STEPS_TABLE[step];
+							nlevels = MPEGTables.L2_QUANTIZATION_STEPS_TABLE[step];
+							c = bitStream.readBits(MPEGTables.L2_NBCODEWORD_TABLE[step]);
 							for (s = 0; s < SAMPLES_PER_TRIPLET; s++) {
-								samples[ch][sb][s + gr * 3] = c % nlevels;
+								fractions[ch][sb][s + gr * 3] = requantize(c % nlevels, step);
 								c /= nlevels;
 							}
 						} else {
-							for (s = 0; s < SAMPLES_PER_TRIPLET; s++)
-								samples[ch][sb][s + gr * 3] = bitStream.readBits(MPEGTables.L2_NBCODEWORD_TABLE[step]);
+							for (s = 0; s < SAMPLES_PER_TRIPLET; s++) {
+								c = bitStream.readBits(MPEGTables.L2_NBCODEWORD_TABLE[step]);
+								fractions[ch][sb][s + gr * 3] = requantize(c, step);
+							}
 						}
 					} else {
 						for (s = 0; s < SAMPLES_PER_TRIPLET; s++)
-							samples[ch][sb][s + gr * 3] = 0;
+							fractions[ch][sb][s + gr * 3] = 0.0f;
 					}
 				}
 			}
@@ -108,70 +112,43 @@ public class MPEGAudioDataLayer2 {
 				if (alloc != 0) {
 					step = MPEGTables.L2_QUANTIZATION_TABLE[table][sb][alloc];
 					if (MPEGTables.L2_GROUPING_TABLE[step] != 0) {
-						int c = bitStream.readBits(MPEGTables.L2_NBCODEWORD_TABLE[step]);
-						int nlevels = MPEGTables.L2_QUANTIZATION_STEPS_TABLE[step];
+						c = bitStream.readBits(MPEGTables.L2_NBCODEWORD_TABLE[step]);
+						nlevels = MPEGTables.L2_QUANTIZATION_STEPS_TABLE[step];
 						for (s = 0; s < SAMPLES_PER_TRIPLET; s++) {
-							samples[0][sb][s + gr * 3] = samples[1][sb][s + gr * 3] = c % nlevels;
+							fractions[0][sb][s + gr * 3] = fractions[1][sb][s + gr * 3] = requantize(c % nlevels, step);
 							c /= nlevels;
 						}
 					} else {
-						for (s = 0; s < SAMPLES_PER_TRIPLET; s++)
-							samples[0][sb][s + gr * 3] = samples[1][sb][s + gr * 3] = bitStream.readBits(MPEGTables.L2_NBCODEWORD_TABLE[step]);
+						for (s = 0; s < SAMPLES_PER_TRIPLET; s++) {
+							c = bitStream.readBits(MPEGTables.L2_NBCODEWORD_TABLE[step]);
+							fractions[0][sb][s + gr * 3] = fractions[1][sb][s + gr * 3] = requantize(c, step);
+						}
 					}
 				} else {
 					for (s = 0; s < SAMPLES_PER_TRIPLET; s++)
-						samples[0][sb][s + gr * 3] = samples[1][sb][s + gr * 3] = 0;
-				}
-			}
-			// Set remaining samples to zero
-			for ( ; sb < MAX_SUBBANDS_PER_CH; sb++)
-				for (ch = 0; ch < frame.nch; ch++)
-					for (s = 0; s < SAMPLES_PER_TRIPLET; s++)
-						samples[ch][sb][s + gr * 3] = 0;
-		}
-		
-		realSamples = new float[2 * NUM_GRANULES * MAX_SUBBANDS_PER_CH * SAMPLES_PER_TRIPLET];
-		for (int gr = 0; gr < NUM_GRANULES; gr++) {
-			for (s = 0; s < SAMPLES_PER_TRIPLET; s++) {
-				for (sb = 0 ; sb < sblimit; sb++) {
-					for (ch = 0; ch < frame.nch; ch++) {
-						alloc = allocation[ch][sb];
-						if (alloc != 0) {
-							step = MPEGTables.L2_QUANTIZATION_TABLE[table][sb][alloc];
-							
-							int mask = MPEGTables.BITS_MASK_TABLE[MPEGTables.L2_NBCODEWORD_TABLE[step]];
-
-							int sample = samples[ch][sb][s + gr * 3];
-							float fraction;
-							
-							if ((sample & mask) != 0) {
-								fraction = (float)(sample ^ mask) / mask;
-							} else fraction = (float)sample / mask - 1.0f;
-						
-							float c = MPEGTables.L2_QUANTIZATION_C_TABLE[step];
-							float d = MPEGTables.L2_QUANTIZATION_D_TABLE[step];
-							float sf = MPEGTables.L12_SCALEFACTOR_TABLE[scalefactor[ch][sb][s]];
-							realSamples[ch + (sb + (s + gr * 3) * 32) * 2] = c * (fraction + d) * sf;
-						} else {
-							realSamples[ch + (sb + (s + gr * 3) * 32) * 2] = 0.0f;
-						}
-					}
+						fractions[0][sb][s + gr * 3] = fractions[1][sb][s + gr * 3] = 0.0f;
 				}
 			}
 		}
 
+		if (bitStream.isEndOfStream())
+			return false;
+
+		// Rescale samples
+		rescale(frame.nch, table, sblimit);
 		// Synthesis subband filter
-		synthesisFilter.synthesizeSamples(realSamples, frame.nch, NUM_GRANULES * SAMPLES_PER_TRIPLET);
+		synthesisFilter.synthesizeSamples(samples, frame.nch, NUM_GRANULES * SAMPLES_PER_TRIPLET);
 
 		// If single channel, copy the
 		// samples to the right channel.
 		if (frame.nch == 1) {
+			float sample;
 			int i = 0;
 			for (int gr = 0; gr < NUM_GRANULES; gr++) {
 				for (s = 0; s < SAMPLES_PER_TRIPLET; s++) {
-					for (sb = 0 ; sb < MAX_SUBBANDS_PER_CH; sb++) {
-						float sample = realSamples[i++];
-						realSamples[i++] = sample;
+					for (sb = 0 ; sb < sblimit; sb++) {
+						sample = samples[i++];
+						samples[i++] = sample;
 					}
 				}
 			}
@@ -180,7 +157,44 @@ public class MPEGAudioDataLayer2 {
 		return true;
 	}
 
+	private float requantize(int sample, int step) {
+		int mask = MPEGTables.L2_QUANTIZATION_MSB_MASK[step];
+		
+		float fraction = (sample & mask) != 0 ?
+			(float)(sample & (mask - 1)) / mask : 
+			(float)(sample) / mask - 1.0f;
+		
+		fraction += MPEGTables.L2_QUANTIZATION_D_TABLE[step];
+		fraction *= MPEGTables.L2_QUANTIZATION_C_TABLE[step];
+		
+		return fraction;
+	}
+	
+	private void rescale(int nch, int table, int sblimit) {
+		int sp = 0;
+		int pa = nch == 1 ? 2 : 1;
+		
+		int s, sb, ch;
+		
+		float sf;
+		
+		for (int gr = 0; gr < NUM_GRANULES; gr++) {
+			for (s = 0; s < SAMPLES_PER_TRIPLET; s++) {
+				for (sb = 0 ; sb < sblimit; sb++) {
+					for (ch = 0; ch < nch; ch++) {
+						sf = MPEGTables.L12_SCALEFACTOR_TABLE[scalefactor[ch][sb][gr >> 2]];
+						samples[sp] = (allocation[ch][sb] != 0) ? fractions[ch][sb][s + gr * 3] * sf : 0.0f;
+						sp += pa;
+					}
+				}
+
+				for ( ; sb < MAX_SUBBANDS_PER_CH; sb++)
+					samples[sp++] = samples[sp++] = 0.0f;
+			}
+		}
+	}
+
 	public float[] getSamples() {
-		return realSamples;
+		return Arrays.copyOf(samples, 2 * NUM_GRANULES * MAX_SUBBANDS_PER_CH * SAMPLES_PER_TRIPLET);
 	}
 }

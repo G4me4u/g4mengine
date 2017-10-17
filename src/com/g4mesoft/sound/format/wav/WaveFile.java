@@ -274,7 +274,7 @@ public class WaveFile extends AudioFile {
 			encoding = AudioFormat.Encoding.ULAW;
 			break;
 		default:
-			// Format is not supported
+			// Format is not supported (or end of stream)
 			is.reset();
 			return null;
 		}
@@ -347,7 +347,7 @@ public class WaveFile extends AudioFile {
 		// NOTE: all data is stored in 
 		// little_endian byte order in wave files.
 		AudioFormat format = new AudioFormat(encoding,
-                                             sampleRate, 
+		                                     sampleRate, 
 		                                     bitsPerSample, 
 		                                     channels, 
 		                                     blockAlign, 
