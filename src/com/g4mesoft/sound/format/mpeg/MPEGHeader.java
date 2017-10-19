@@ -103,10 +103,14 @@ public class MPEGHeader {
 		
 		emphasis = bitStream.readBits(2);
 		
-		// The header is 32 bits long, hence - 4
-		byteLocation = bitStream.getBytesRead() - 4;
-		
-		return !bitStream.isEndOfStream() && isValidHeader();
+		if (!bitStream.isEndOfStream()) {
+			// The header is 32 bits long, hence - 4
+			byteLocation = bitStream.getBytesRead() - 4;
+
+			return isValidHeader();
+		}
+
+		return false;
 	}
 	
 	public boolean isValidHeader() {
