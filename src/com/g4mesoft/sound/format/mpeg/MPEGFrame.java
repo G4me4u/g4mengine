@@ -4,6 +4,7 @@ import java.io.IOException;
 
 public class MPEGFrame {
 
+	// Calculated frame data
 	public int bitrate;
 	public int frequency;
 	public int nch;
@@ -12,12 +13,16 @@ public class MPEGFrame {
 
 	public int crc;
 	
+	// Layer 1 & 2 decoders
 	public MPEGAudioDataLayer1 audioLayer1;
 	public MPEGAudioDataLayer2 audioLayer2;
-	//public final MPEGAudioDataLayer3 audioLayer3;
 
 	private MPEGSynthesisSubbandFilter synthesisFilter;
 
+	// Layer 3 decoders
+	public MPEGSideInformationLayer3 sideInformation;
+
+	// Common header
 	public final MPEGHeader header;
 	
 	public MPEGFrame() {
@@ -33,9 +38,10 @@ public class MPEGFrame {
 		
 		audioLayer1 = null;
 		audioLayer2 = null;
-//		audioLayer3 = null;
-
+		
 		synthesisFilter = null;
+		
+		sideInformation = null;
 	}
 
 	public boolean readFrame(MP3BitStream bitStream) throws IOException {
@@ -52,6 +58,9 @@ public class MPEGFrame {
 		if (!header.readHeader(bitStream))
 			return false;
 		
+		if (header.version != MPEGHeader.MPEG_V10)
+			return false; // Currently only supporting MPEG v1
+		
 		//  bitrate  version layer
 		//    1110      1     01   =   1110101 in table
 		// NOTE: the bitrate table stores the result in kbits.
@@ -60,7 +69,7 @@ public class MPEGFrame {
 		//    00       11   =   0011 in table
 		frequency  = MPEGTables.FREQUENCY_TABLE[header.version | (header.sampling_frequency << 2)];
 
-		// NOTE: free mode is unsupported
+		// NOTE: free format mode not supported
 		if (bitrate < 0 || frequency < 0)
 			return false;
 
@@ -80,7 +89,7 @@ public class MPEGFrame {
 
 		// Preload the frame (single read optimization)
 		bitStream.prereadBytes(accumulated_size);
-
+		
 		switch(header.layer) {
 		case MPEGHeader.LAYER_I:
 			if (audioLayer1 == null) {
@@ -88,7 +97,7 @@ public class MPEGFrame {
 				if (synthesisFilter == null)
 					synthesisFilter = new MPEGSynthesisSubbandFilter();
 			}
-			if (audioLayer1.loadAudioData(bitStream, this, synthesisFilter))
+			if (audioLayer1.readAudioData(bitStream, this, synthesisFilter))
 				break;
 			return false;
 		case MPEGHeader.LAYER_II:
@@ -97,11 +106,16 @@ public class MPEGFrame {
 				if (synthesisFilter == null)
 					synthesisFilter = new MPEGSynthesisSubbandFilter();
 			}
-			if (audioLayer2.loadAudioData(bitStream, this, synthesisFilter))
+			if (audioLayer2.readAudioData(bitStream, this, synthesisFilter))
 				break;
 			return false;
 		case MPEGHeader.LAYER_III:
-			//throw new RuntimeException("Unsupported layer");
+			if (sideInformation == null)
+				sideInformation = new MPEGSideInformationLayer3();
+			if (sideInformation.readSideInformation(bitStream, this)) {
+				bitStream.skip(header.byteLocation + accumulated_size - bitStream.getBytesRead());
+				return true;
+			}
 			return false;
 		}
 		

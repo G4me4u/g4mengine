@@ -3,7 +3,6 @@ package com.g4mesoft.sound.format.mpeg;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.sound.sampled.AudioFormat;
@@ -32,10 +31,12 @@ public class MP3File extends AudioFile {
 	
 	private final byte[] data;
 	private final AudioFormat format;
+	private final ID3v2Tag audioTag;
 	
-	MP3File(byte[] data, AudioFormat format) {
+	MP3File(byte[] data, AudioFormat format, ID3v2Tag audioTag) {
 		this.data = data;
 		this.format = format;
+		this.audioTag = audioTag;
 	}
 	
 	public static MP3File loadMP3(InputStream is) throws IOException, AudioParsingException {
@@ -120,9 +121,11 @@ public class MP3File extends AudioFile {
 			System.out.println(frame.bitrate + " bits per second");
 			System.out.println(frame.frequency + " Hz");
 			
-			float[] samples = frame.header.layer == MPEGHeader.LAYER_I ? frame.audioLayer1.getSamples() : frame.audioLayer2.getSamples();
-			numSamples += samples.length;
-			data.add(samples);
+			if (frame.header.layer != MPEGHeader.LAYER_III) {
+				float[] samples = frame.header.layer == MPEGHeader.LAYER_I ? frame.audioLayer1.getSamples() : frame.audioLayer2.getSamples();
+				numSamples += samples.length;
+				data.add(samples);
+			}
 			
 			if (numFrames++ > 50000) break;
 		}
@@ -161,7 +164,11 @@ public class MP3File extends AudioFile {
 		
 		is.mark(-1);
 		
-		return new MP3File(dat, getAudioFormat(AudioFormat.Encoding.PCM_SIGNED, frame.frequency, 16, 2, 4, false));
+		return new MP3File(dat, getAudioFormat(AudioFormat.Encoding.PCM_SIGNED, frame.frequency, 16, 2, 4, false), tag);
+	}
+
+	public static AudioFormat getAudioFormat(AudioFormat.Encoding encoding, int sampleRate, int sampleSizeInBits, int channels, int frameSize, boolean bigEndian) {
+		return new AudioFormat(encoding, sampleRate, sampleSizeInBits, channels, frameSize, sampleRate * (sampleSizeInBits >>> 3) * channels / frameSize, bigEndian);
 	}
 
 	@Override
@@ -169,10 +176,6 @@ public class MP3File extends AudioFile {
 		return format;
 	}
 
-	public static AudioFormat getAudioFormat(AudioFormat.Encoding encoding, int sampleRate, int sampleSizeInBits, int channels, int frameSize, boolean bigEndian) {
-		return new AudioFormat(encoding, sampleRate, sampleSizeInBits, channels, frameSize, sampleRate * (sampleSizeInBits >>> 3) * channels / frameSize, bigEndian);
-	}
-	
 	@Override
 	public int getData(byte[] dst, int srcPos, int dstPos, int len) {
 		if (len > data.length - srcPos)
@@ -185,12 +188,22 @@ public class MP3File extends AudioFile {
 	public long getLengthInFrames() {
 		return data.length / format.getFrameSize();
 	}
+
+	public ID3v2Tag getAudioTag() {
+		return audioTag;
+	}
 	
 	public static void main(String[] args) throws IOException, AudioParsingException {
-		int id = SoundManager.getInstance().loadSound(MP3File.class.getResourceAsStream("/assets/test.ifiwereaboytest.mp2"));
+		int id = SoundManager.getInstance().loadSound(MP3File.class.getResourceAsStream("/assets/test.audio.mp1"));
 		if (id == -1)
 			return;
 		
-		SoundManager.getInstance().playSound(id, 0.1f, false);
+		AudioFile file = SoundManager.getInstance().getAudioFile(id);
+		if (file != null && file instanceof MP3File) {
+			ID3v2Tag tag = ((MP3File)file).getAudioTag();
+			System.out.println(tag);
+		}
+		
+		SoundManager.getInstance().playSound(id, 0.4f, false);
 	}
 }

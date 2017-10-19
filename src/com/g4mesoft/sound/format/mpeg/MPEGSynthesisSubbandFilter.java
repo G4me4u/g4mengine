@@ -47,6 +47,9 @@ public class MPEGSynthesisSubbandFilter {
 				for (i = 1023; i >= 64; i--)
 					v[i] = v[i - 64];
 				
+				// A native, but unfortunately slower way:
+				// System.arraycopy(v, 0, v, 64, 1024 - 64);
+				
 				// Matrixing
 				tp = 0;
 				for (i = 0; i < 64; i++) {
@@ -60,18 +63,16 @@ public class MPEGSynthesisSubbandFilter {
 				}
 				
 				// Build a 512 values vector U
-				for (i = 7; i >= 0; i--) {
-					for (j = 31; j >= 0; j--) {
+				// And reset samples before adding W
+				spc = sp;
+				for (j = 31; j >= 0; j--) {
+					samples[spc] = 0.0f;
+					spc += 2;
+
+					for (i = 7; i >= 0; i--) {
 						u[i * 64 +  0 + j] = v[i * 128 +  0 + j];
 						u[i * 64 + 32 + j] = v[i * 128 + 96 + j];
 					}
-				}
-				
-				// Reset samples before adding W
-				spc = sp;
-				for (i = 31; i >= 0; i--) {
-					samples[spc] = 0.0f;
-					spc += 2;
 				}
 				
 				// Calculate 32 samples

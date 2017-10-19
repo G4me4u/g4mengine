@@ -23,7 +23,7 @@ public class MPEGAudioDataLayer2 {
 		samples     = new float[2 * NUM_GRANULES * MAX_SUBBANDS_PER_CH * SAMPLES_PER_TRIPLET];
 	}
 	
-	public boolean loadAudioData(MP3BitStream bitStream, MPEGFrame frame, MPEGSynthesisSubbandFilter synthesisFilter) throws IOException {
+	public boolean readAudioData(MP3BitStream bitStream, MPEGFrame frame, MPEGSynthesisSubbandFilter synthesisFilter) throws IOException {
 		int chan_rate = (frame.header.mode == MPEGHeader.SINGLE_CHANNEL) ? 
 				frame.header.bitrate_index : MPEGTables.CHAN_RATE_INDEX_TABLE[frame.header.bitrate_index - 4];
 		int table = MPEGTables.L2_TABLEINDEX_TABLE[frame.header.sampling_frequency][chan_rate];
@@ -35,17 +35,20 @@ public class MPEGAudioDataLayer2 {
 		int alloc, step;
 		int c, nlevels;
 
+		// Read allocation
 		for (sb = 0; sb < bound; sb++)
 			for (ch = 0; ch < frame.nch; ch++)
 				allocation[ch][sb] = bitStream.readBits(MPEGTables.NBAL_TABLE[table][sb]);
 		for ( ; sb < sblimit; sb++)
 			allocation[0][sb] = allocation[1][sb] = bitStream.readBits(MPEGTables.NBAL_TABLE[table][sb]);
 		
+		// Read scalefactor selection info
 		for (sb = 0; sb < sblimit; sb++)
 			for (ch = 0; ch < frame.nch; ch++)
 				if (allocation[ch][sb] != 0)
 					scfsi[ch][sb] = bitStream.readBits(2);
 		
+		// Read scalefactors
 		for (sb = 0; sb < sblimit; sb++) {
 			for (ch = 0; ch < frame.nch; ch++) {
 				if (allocation[ch][sb] != 0) {
@@ -81,11 +84,11 @@ public class MPEGAudioDataLayer2 {
 			}
 		}
 		
+		// Read samples
 		for (int gr = 0; gr < NUM_GRANULES; gr++) {
 			for (sb = 0; sb < bound; sb++) {
 				for (ch = 0; ch < frame.nch; ch++) {
-					alloc = allocation[ch][sb];
-					if (alloc != 0) {
+					if ((alloc = allocation[ch][sb]) != 0) {
 						step = MPEGTables.L2_QUANTIZATION_TABLE[table][sb][alloc];
 						if (MPEGTables.L2_GROUPING_TABLE[step] != 0) {
 							nlevels = MPEGTables.L2_QUANTIZATION_STEPS_TABLE[step];
@@ -100,16 +103,12 @@ public class MPEGAudioDataLayer2 {
 								fractions[ch][sb][s + gr * 3] = requantize(c, step);
 							}
 						}
-					} else {
-						for (s = 0; s < SAMPLES_PER_TRIPLET; s++)
-							fractions[ch][sb][s + gr * 3] = 0.0f;
 					}
 				}
 			}
 			
 			for ( ; sb < sblimit; sb++) {
-				alloc = allocation[0][sb];
-				if (alloc != 0) {
+				if ((alloc = allocation[0][sb]) != 0) {
 					step = MPEGTables.L2_QUANTIZATION_TABLE[table][sb][alloc];
 					if (MPEGTables.L2_GROUPING_TABLE[step] != 0) {
 						c = bitStream.readBits(MPEGTables.L2_NBCODEWORD_TABLE[step]);
@@ -124,9 +123,6 @@ public class MPEGAudioDataLayer2 {
 							fractions[0][sb][s + gr * 3] = fractions[1][sb][s + gr * 3] = requantize(c, step);
 						}
 					}
-				} else {
-					for (s = 0; s < SAMPLES_PER_TRIPLET; s++)
-						fractions[0][sb][s + gr * 3] = fractions[1][sb][s + gr * 3] = 0.0f;
 				}
 			}
 		}
@@ -165,9 +161,7 @@ public class MPEGAudioDataLayer2 {
 			(float)(sample) / mask - 1.0f;
 		
 		fraction += MPEGTables.L2_QUANTIZATION_D_TABLE[step];
-		fraction *= MPEGTables.L2_QUANTIZATION_C_TABLE[step];
-		
-		return fraction;
+		return fraction * MPEGTables.L2_QUANTIZATION_C_TABLE[step];
 	}
 	
 	private void rescale(int nch, int table, int sblimit) {
@@ -176,14 +170,13 @@ public class MPEGAudioDataLayer2 {
 		
 		int s, sb, ch;
 		
-		float sf;
-		
 		for (int gr = 0; gr < NUM_GRANULES; gr++) {
 			for (s = 0; s < SAMPLES_PER_TRIPLET; s++) {
 				for (sb = 0 ; sb < sblimit; sb++) {
 					for (ch = 0; ch < nch; ch++) {
-						sf = MPEGTables.L12_SCALEFACTOR_TABLE[scalefactor[ch][sb][gr >> 2]];
-						samples[sp] = (allocation[ch][sb] != 0) ? fractions[ch][sb][s + gr * 3] * sf : 0.0f;
+						if (allocation[ch][sb] != 0) {
+							samples[sp] = MPEGTables.L12_SCALEFACTOR_TABLE[scalefactor[ch][sb][gr >> 2]] * fractions[ch][sb][s + gr * 3];
+						} else samples[sp] = 0.0f;
 						sp += pa;
 					}
 				}
