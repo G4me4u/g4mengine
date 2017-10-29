@@ -28,7 +28,7 @@ public class Timer {
 	public void initTimer() {
 		last = System.currentTimeMillis();
 		dMs = 0;
-		dt = 0.0f;
+		dt = 1.0f; // init to 1 tick on startup
 	}
 
 	public void update() {
