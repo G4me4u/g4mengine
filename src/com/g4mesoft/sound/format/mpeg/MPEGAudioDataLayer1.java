@@ -41,6 +41,9 @@ public class MPEGAudioDataLayer1 {
 					if ((scalefactor[ch][sb] = bitStream.readBits(6)) == 0x3F)
 						return false;
 		
+		if (bitStream.isEndOfStream())
+			return false;
+		
 		int sp = 0;
 		int pa = frame.nch == 1 ? 2 : 1;
 
