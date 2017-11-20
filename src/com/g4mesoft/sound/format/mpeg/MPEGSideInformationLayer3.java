@@ -4,8 +4,8 @@ import java.io.IOException;
 
 public class MPEGSideInformationLayer3 {
 
-	private static final int NUM_SCFSI_BANDS = 4;
-	private static final int NUM_GRANULES = 2;
+	static final int NUM_SCFSI_BANDS = 4;
+	static final int NUM_GRANULES = 2;
 	
 	public int main_data_begin;
 	
