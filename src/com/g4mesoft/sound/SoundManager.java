@@ -249,6 +249,6 @@ public final class SoundManager {
 			return;
 		}
 		
-		SoundManager.getInstance().playSound(id, 0.4f, false);
+		SoundManager.getInstance().playSound(id, 0.1f, false);
 	}
 }

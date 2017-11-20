@@ -114,20 +114,20 @@ public class MP3File extends AudioFile {
 				System.out.println("Dual channel");
 				break;
 			case MPEGHeader.JOINT_STEREO:
-				System.out.println("Joint sterio");
+				System.out.println("Joint stereo");
 				break;
 			}
 			
 			System.out.println(frame.bitrate + " bits per second");
 			System.out.println(frame.frequency + " Hz");
-			
+
 			if (frame.header.layer != MPEGHeader.LAYER_III) {
 				float[] samples = frame.header.layer == MPEGHeader.LAYER_I ? frame.audioLayer1.getSamples() : frame.audioLayer2.getSamples();
 				numSamples += samples.length;
 				data.add(samples);
 			}
 			
-			if (numFrames++ > 50000) break;
+			if (numFrames++ > 30000) break;
 		}
 		
 		System.out.println("\nNumber of valid frames: " + Integer.toString(numFrames));
@@ -194,16 +194,16 @@ public class MP3File extends AudioFile {
 	}
 	
 	public static void main(String[] args) throws IOException, AudioParsingException {
-		int id = SoundManager.getInstance().loadSound(MP3File.class.getResourceAsStream("/assets/test.audio.mp1"));
+		int id = SoundManager.getInstance().loadSound(MP3File.class.getResourceAsStream("/assets/test.ifiwereaboytest.mp2"));
 		if (id == -1)
 			return;
 		
 		AudioFile file = SoundManager.getInstance().getAudioFile(id);
-		if (file != null && file instanceof MP3File) {
+		if (file instanceof MP3File) {
 			ID3v2Tag tag = ((MP3File)file).getAudioTag();
 			System.out.println(tag);
 		}
 		
-		SoundManager.getInstance().playSound(id, 0.4f, false);
+		SoundManager.getInstance().playSound(id, .5f, false);
 	}
 }

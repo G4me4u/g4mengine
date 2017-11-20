@@ -41,7 +41,7 @@ public class MPEGSynthesisSubbandFilter {
 			float[] v = this.v[ch];
 			
 			for (s = 0; s < ns; s++) {
-				sp = ch + (s * 32 << 1);
+				sp = ch + s * 32 * 2;
 				
 				// Shifting
 				for (i = 1023; i >= 64; i--)
