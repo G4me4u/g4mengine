@@ -35,6 +35,9 @@ public class AStarSearch {
 		this.stepSize = stepSize;
 		this.allowDiagonals = allowDiagonals;
 
+		if (stepSize <= 0.0f)
+			throw new RuntimeException("stepSize <= 0.0f");
+		
 		openList = new BinaryTree<Float, Node>();
 		searchList = new BinaryTree<Long, Node>();
 		
