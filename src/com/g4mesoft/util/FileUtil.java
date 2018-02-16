@@ -53,6 +53,7 @@ public final class FileUtil {
 		while ((line = br.readLine()) != null) {
 			lineCount++;
 			if (line.startsWith(COMMENT_START)) continue;
+			if (line.isEmpty()) continue;
 			String[] entry = line.split(splitter);
 			if (entry.length != 2)
 				throw new RuntimeException(String.format("Invalid entry %s, should be 'x%sy' at line %d", line, splitter, lineCount));
