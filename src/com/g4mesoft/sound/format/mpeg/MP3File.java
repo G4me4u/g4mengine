@@ -185,7 +185,7 @@ public class MP3File extends AudioFile {
 	}
 	
 	@Override
-	public long getLengthInFrames() {
+	public int getLengthInFrames() {
 		return data.length / format.getFrameSize();
 	}
 
@@ -204,6 +204,6 @@ public class MP3File extends AudioFile {
 			System.out.println(tag);
 		}
 		
-		SoundManager.getInstance().playSound(id, .5f, false);
+		SoundManager.getInstance().playSound(id, false).setVolume(0.5f);
 	}
 }
