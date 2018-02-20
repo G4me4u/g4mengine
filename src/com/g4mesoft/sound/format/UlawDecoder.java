@@ -7,6 +7,11 @@ import com.g4mesoft.util.MemoryUtil;
 public final class UlawDecoder {
 
 	private static final int BIAS = 0x84;
+	private static final int SIGN_BIT_MASK = 0x80;
+	private static final int SEG_MASK = 0x70;
+	private static final int SEG_SHIFT = 4;
+	private static final int QUANT_MASK = 0x0F;
+	
 	private static final short[] ulawTable;
 	
 	static {
@@ -22,18 +27,10 @@ public final class UlawDecoder {
 	private static short preDecode(int ulaw) {
 		ulaw = ~ulaw;
 
-		int sign = ulaw & 0x80;
-		int exponent = (ulaw & 0x70) >>> 4;
-		int data = ulaw & 0x0F;
-	
-		data |= 0x10;
-		data <<= 1;
-		data += 1;
+		int t = ((ulaw & QUANT_MASK) << 3) + BIAS;
+		t <<= (ulaw & SEG_MASK) >>> SEG_SHIFT;
 		
-		data <<= exponent + 2;
-		data -= UlawDecoder.BIAS;
-		
-		return (short)(sign == 0 ? data : -data);
+		return (short)((ulaw & SIGN_BIT_MASK) != 0 ? (BIAS - t) : (t - BIAS));
 	}
 	
 	public static byte[] decode(byte[] src) {

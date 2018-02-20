@@ -6,36 +6,39 @@ import com.g4mesoft.util.MemoryUtil;
 
 public final class AlawDecoder {
 
+	private static final int SIGN_BIT_MASK = 0x80;
+	private static final int SEG_MASK = 0x70;
+	private static final int QUANT_MASK = 0x0F;
+	
 	private static final short[] alawTable;
 	
 	static {
 		alawTable = new short[256];
 		
 		for (int i = 0; i < 256; i++)
-			alawTable[i] = preDecode((byte)i);
+			alawTable[i] = preDecode(i);
 	}
 	
 	private AlawDecoder() {
 	}
 	
 	private static short preDecode(int alaw) {
-		alaw ^= 0xD5;
+		alaw ^= 0x55;
 
-		int sign = alaw & 0x80;
-		int exponent = (alaw & 0x70) >>> 4;
-		int data = alaw & 0x0F;
+		int t = (alaw & QUANT_MASK) << 4;
+		int e = (alaw & SEG_MASK) >>> 4;
 	
-		data <<= 4;
-		data += 8;
-		
-		if (exponent != 0) {
-			data += 0x100;
-
-			if (exponent > 1)
-				data <<= exponent - 1;
+		switch (e) {
+		case 0:
+			t += 0x08;
+		case 1:
+			t += 0x108;
+		default:
+			t += 0x108;
+			t <<= e - 1;
 		}
 		
-		return (short)(sign == 0 ? data : -data);
+		return (short)((t & SIGN_BIT_MASK) != 0 ? t : -t);
 	}
 	
 	public static byte[] decode(byte[] src) {
