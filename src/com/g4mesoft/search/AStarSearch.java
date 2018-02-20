@@ -28,6 +28,8 @@ public class AStarSearch {
 	private final Vec2f goal;
 	private final Vec2f tmp;
 
+	private final float halfStepSize;
+	
 	private final float stepSize;
 	private final boolean allowDiagonals;
 	
@@ -36,13 +38,15 @@ public class AStarSearch {
 		this.allowDiagonals = allowDiagonals;
 
 		if (stepSize <= 0.0f)
-			throw new RuntimeException("stepSize <= 0.0f");
-		
+			throw new IllegalArgumentException("stepSize <= 0.0f");
+	
 		openList = new BinaryTree<Float, Node>();
 		searchList = new BinaryTree<Long, Node>();
 		
 		goal = new Vec2f();
 		tmp = new Vec2f();
+
+		halfStepSize = stepSize * 0.5f;
 	}
 	
 	public float getDistance(Vec2f pos) {
@@ -113,12 +117,12 @@ public class AStarSearch {
 	
 	private boolean isGoalNode(Node current) {
 		Vec2f dist = tmp.set(goal).sub(current.pos);
-		if (dist.x > stepSize / 2.0f || dist.x < -stepSize / 2.0f) return false;
-		if (dist.y > stepSize / 2.0f || dist.y < -stepSize / 2.0f) return false;
+		if (dist.x > halfStepSize || dist.x < -halfStepSize) return false;
+		if (dist.y > halfStepSize || dist.y < -halfStepSize) return false;
 		return true;
 	}
 
-	public interface PositionFilter {
+	public static interface PositionFilter {
 		
 		public boolean isValidPos(Vec2f pos, int step);
 		
