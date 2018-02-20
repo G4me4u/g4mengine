@@ -16,6 +16,7 @@ public final class DisplayConfig {
 	public static final boolean DEFAULT_RESIZABLE = true;
 	public static final boolean DEFAULT_CENTERED = true;
 	public static final DisplayMode DEFAULT_DISPLAY_MODE = DisplayMode.NORMAL;
+	public static final boolean DEFAULT_DISPLAY_VISIBLE = true;
 	
 	public static final DisplayConfig DEFAULT_DISPLAY_CONFIG = new DisplayConfig(	
 			DEFAULT_TITLE, 
@@ -23,7 +24,8 @@ public final class DisplayConfig {
 			DEFAULT_HEIGHT, 
 			DEFAULT_RESIZABLE, 
 			DEFAULT_CENTERED, 
-			DEFAULT_DISPLAY_MODE
+			DEFAULT_DISPLAY_MODE,
+			DEFAULT_DISPLAY_VISIBLE
 	);
 	
 	public final String title;
@@ -32,15 +34,17 @@ public final class DisplayConfig {
 	public final boolean resizable;
 	public final boolean centered;
 	public final DisplayMode displayMode;
-
+	public final boolean displayVisible;
+	
 	public DisplayConfig(String title, int preferredWidth, int preferredHeight, 
-			boolean resizable, boolean centered, DisplayMode displayMode) {
+			boolean resizable, boolean centered, DisplayMode displayMode, boolean displayVisible) {
 		this.title = title;
 		this.preferredWidth = preferredWidth;
 		this.preferredHeight = preferredHeight;
 		this.resizable = resizable;
 		this.centered = centered;
 		this.displayMode = displayMode == null ? DisplayMode.NORMAL : displayMode;
+		this.displayVisible = displayVisible;
 	}
 	
 	public static DisplayConfig loadConfigReader(File configFile) throws IOException {
@@ -63,8 +67,9 @@ public final class DisplayConfig {
 		boolean resizable = getBoolean(configurations, "resizable", DEFAULT_RESIZABLE);
 		boolean centered = getBoolean(configurations, "centered", DEFAULT_CENTERED);
 		DisplayMode displayMode = getDisplayMode(configurations, "displayMode", DEFAULT_DISPLAY_MODE);
+		boolean displayVisible = getBoolean(configurations, "displayVisible", DEFAULT_DISPLAY_VISIBLE);
 		
-		return new DisplayConfig(title, preferredWidth, preferredHeight, resizable, centered, displayMode);
+		return new DisplayConfig(title, preferredWidth, preferredHeight, resizable, centered, displayMode, displayVisible);
 	}
 	
 	private static String getString(Map<String, String> configurations, String key, String defaultValue) {

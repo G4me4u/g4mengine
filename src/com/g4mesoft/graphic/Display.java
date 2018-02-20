@@ -58,6 +58,9 @@ public class Display {
 	}
 	
 	private void initDisplay() {
+		if (!displayConfig.displayVisible)
+			return;
+		
 		frame = new JFrame(displayConfig.title);
 		frame.setResizable(displayConfig.resizable);
 
@@ -138,8 +141,7 @@ public class Display {
 	}
 	
 	private Renderer2D initRenderer(BufferStrategy bs) {
-		if (bs == null) return null;
-		return renderer.start(bs);
+		return bs == null ? null : renderer.start(bs);
 	}
 	
 	public void stopRendering() {
@@ -169,24 +171,29 @@ public class Display {
 	}
 
 	private void dispose() {
-		frame.setVisible(false);
-		frame.dispose();
+		if (frame != null) {
+			frame.setVisible(false);
+			frame.dispose();
+		}
 		
 		frame = null;
 		canvas = null;
 		
-		exitable.exit();
+		if (exitable != null)
+			exitable.exit();
 	}
 	
 	public int getWidth() {
-		return canvas.getWidth();
+		return canvas == null ? 0 : canvas.getWidth();
 	}
 	
 	public int getHeight() {
-		return canvas.getHeight();
+		return canvas == null ? 0 : canvas.getHeight();
 	}
 
 	public void registerKeyListener(KeyListener keyListener) {
+		if (canvas == null) return;
+			
 		// Make sure the keyListener doesn't exist
 		for (KeyListener listener : canvas.getKeyListeners()) {
 			if (listener.equals(keyListener)) {
