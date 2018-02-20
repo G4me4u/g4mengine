@@ -20,7 +20,7 @@ public class AudioSource extends AudioLine {
 		this.audioFile = audioFile;
 		
 		frameLocation = 0;
-		loopAmount = LOOP_CONTINOUSLY;
+		loopAmount = 0;
 	}
 
 	public AudioSource setVolume(float volume) {
@@ -69,6 +69,10 @@ public class AudioSource extends AudioLine {
 	
 	public void setFrameLocation(int nFrameLocation) {
 		frameLocation = nFrameLocation;
+	}
+
+	public void setLoopAmount(int nLoopAmount) {
+		loopAmount = nLoopAmount;
 	}
 
 	public void stop() {
