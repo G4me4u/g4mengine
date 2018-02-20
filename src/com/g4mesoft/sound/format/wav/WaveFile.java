@@ -213,35 +213,23 @@ public class WaveFile extends AudioFile {
 		
 		byte[] buffer = new byte[4];
 		
-		int br = AudioHelper.readBytes(is, buffer, 4, 0);
-		int beginCode = MemoryUtil.bigEndianToInt(buffer, 0);
-		
-		// Search for RIFF beginCode
-		while (beginCode != RIFF_DEC) {
-			if (br++ >= MAX_TOLERANCE_DEPTH) {
-				is.reset();
-				return null;
-			}
-			
-			int b = AudioHelper.readByte(is);
-			if (b == -1) {
-				is.reset();
-				return null;
-			}
-			beginCode = (beginCode << 8) | b;
-		}
-		
-		br += AudioHelper.readBytes(is, buffer, 4, 0);
-		// long fileSize = MemoryUtil.littleEndianToInt(buffer, 0);
-		
-		br += AudioHelper.readBytes(is, buffer, 4, 0);
-		if (MemoryUtil.bigEndianToInt(buffer, 0) != WAVE_DEC) { // wave marker
+		int br = findMarker(is, RIFF_DEC, 0, buffer);
+		if (br == -1) { // riff marker
 			is.reset();
 			return null;
 		}
 		
 		br += AudioHelper.readBytes(is, buffer, 4, 0);
-		if (MemoryUtil.bigEndianToInt(buffer, 0) != FMT_DEC) { // fmt chunk marker
+		// long fileSize = MemoryUtil.littleEndianToInt(buffer, 0);
+		
+		br = findMarker(is, WAVE_DEC, br, buffer);
+		if (br == -1) { // wave marker
+			is.reset();
+			return null;
+		}
+		
+		br = findMarker(is, FMT_DEC, br, buffer);
+		if (br == -1) { // fmt chunk marker
 			is.reset();
 			return null;
 		}
@@ -289,8 +277,8 @@ public class WaveFile extends AudioFile {
 			br++;
 		}
 		
-		br += AudioHelper.readBytes(is, buffer, 4, 0);
-		if (MemoryUtil.bigEndianToInt(buffer, 0) != DATA_DEC) { // data chunk marker
+		br = findMarker(is, DATA_DEC, br, buffer);
+		if (br == -1) { // data chunk marker
 			is.reset();
 			return null;
 		}
@@ -328,19 +316,25 @@ public class WaveFile extends AudioFile {
 				buffer = Arrays.copyOf(buffer, br);
 			}
 		}
-
+		
 		// If data is not formatted in PCM, we
 		// need to decode it. Note that both ULAW
 		// and ALAW decoding will be little endian
 		// byte order, so no need to change the
 		// format accordingly.
-		if (encoding == AudioFormat.Encoding.ULAW) {
-			buffer = UlawDecoder.decode(buffer);
-			encoding = UlawDecoder.getDecodedEncoding();
-		}
-		if (encoding == AudioFormat.Encoding.ALAW) {
-			buffer = AlawDecoder.decode(buffer);
-			encoding = AlawDecoder.getDecodedEncoding();
+		if (encoding == AudioFormat.Encoding.ULAW || encoding == AudioFormat.Encoding.ALAW) {
+			if (encoding == AudioFormat.Encoding.ULAW) {
+				buffer = UlawDecoder.decode(buffer);
+				encoding = UlawDecoder.getDecodedEncoding();
+			}
+			if (encoding == AudioFormat.Encoding.ALAW) {
+				buffer = AlawDecoder.decode(buffer);
+				encoding = AlawDecoder.getDecodedEncoding();
+			}
+			
+			blockAlign <<= 1;
+			bitsPerSample <<= 1;
+			byteRate <<= 1;
 		}
 
 		// The format is read from the header.
@@ -355,6 +349,24 @@ public class WaveFile extends AudioFile {
 		                                     false);
 
 		return new WaveFile(buffer, format);
+	}
+	
+	private static int findMarker(InputStream is, int expectedMarker, int br, byte[] buffer) throws IOException {
+		br += AudioHelper.readBytes(is, buffer, 4, 0);
+		int marker = MemoryUtil.bigEndianToInt(buffer, 0);
+		
+		// Search for marker
+		while (marker != expectedMarker) {
+			if (br++ >= MAX_TOLERANCE_DEPTH)
+				return -1;
+			
+			int b = AudioHelper.readByte(is);
+			if (b == -1)
+				return -1;
+			marker = (marker << 8) | b;
+		}
+		
+		return br;
 	}
 	
 	/**
@@ -399,7 +411,7 @@ public class WaveFile extends AudioFile {
 	 *         wave file.
 	 */
 	@Override
-	public long getLengthInFrames() {
+	public int getLengthInFrames() {
 		return data.length / format.getFrameSize();
 	}
 }
