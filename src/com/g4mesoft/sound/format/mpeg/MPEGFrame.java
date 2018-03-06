@@ -44,7 +44,7 @@ public class MPEGFrame {
 		sideInformation = null;
 	}
 
-	public boolean readFrame(MP3BitStream bitStream) throws IOException {
+	public boolean readFrame(MPEGBitStream bitStream) throws IOException {
 		while (!readNextFrame(bitStream)) {
 			if (header.byteLocation == -1)
 				return false;
@@ -54,7 +54,7 @@ public class MPEGFrame {
 		return true;
 	}
 	
-	private boolean readNextFrame(MP3BitStream bitStream) throws IOException {
+	private boolean readNextFrame(MPEGBitStream bitStream) throws IOException {
 		if (!header.readHeader(bitStream))
 			return false;
 		
@@ -122,7 +122,7 @@ public class MPEGFrame {
 		return true;
 	}
 	
-	protected void readCrc(MP3BitStream bitStream) throws IOException {
+	protected void readCrc(MPEGBitStream bitStream) throws IOException {
 		// TODO: implement proper checksum(crc) check.
 		crc = bitStream.readBits(16);
 	}

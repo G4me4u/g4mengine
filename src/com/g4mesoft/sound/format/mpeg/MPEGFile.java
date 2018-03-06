@@ -16,8 +16,13 @@ import com.g4mesoft.sound.format.info.TextAudioInfo.TextAudioInfoType;
 import com.g4mesoft.sound.format.info.id3.ID3v2Tag;
 import com.g4mesoft.util.MemoryUtil;
 
-public class MP3File extends AudioFile {
+public class MPEGFile extends AudioFile {
 
+	/**
+	 * The minimum number of frames in a valid mpeg file
+	 */
+	private static final int MIN_FRAMES = 3;
+	
 	/**
 	 * The maximum number of bytes able to get reset
 	 * by the InputStream.
@@ -33,13 +38,13 @@ public class MP3File extends AudioFile {
 	private final AudioFormat format;
 	private final ID3v2Tag audioTag;
 	
-	MP3File(byte[] data, AudioFormat format, ID3v2Tag audioTag) {
+	MPEGFile(byte[] data, AudioFormat format, ID3v2Tag audioTag) {
 		this.data = data;
 		this.format = format;
 		this.audioTag = audioTag;
 	}
 	
-	public static MP3File loadMP3(InputStream is) throws IOException, AudioParsingException {
+	public static MPEGFile loadMPEG(InputStream is) throws IOException, AudioParsingException {
 		if (!is.markSupported())
 			return null;
 		is.mark(Integer.MAX_VALUE);
@@ -61,7 +66,7 @@ public class MP3File extends AudioFile {
 			is.mark(MAX_TOLERANCE_DEPTH);
 		}
 		
-		MP3BitStream bitStream = new MP3BitStream(is);
+		MPEGBitStream bitStream = new MPEGBitStream(is);
 		MPEGFrame frame = new MPEGFrame();
 		
 		int numSamples = 0;
@@ -130,6 +135,11 @@ public class MP3File extends AudioFile {
 			if (numFrames++ > 30000) break;
 		}
 		
+		if (numFrames < MIN_FRAMES || !bitStream.isEndOfStream()) {
+			is.reset();
+			return null;
+		}
+		
 		System.out.println("\nNumber of valid frames: " + Integer.toString(numFrames));
 		
 		float mx = 0.0f, mn = 0.0f;
@@ -164,7 +174,7 @@ public class MP3File extends AudioFile {
 		
 		is.mark(-1);
 		
-		return new MP3File(dat, getAudioFormat(AudioFormat.Encoding.PCM_SIGNED, frame.frequency, 16, 2, 4, false), tag);
+		return new MPEGFile(dat, getAudioFormat(AudioFormat.Encoding.PCM_SIGNED, frame.frequency, 16, 2, 4, false), tag);
 	}
 
 	public static AudioFormat getAudioFormat(AudioFormat.Encoding encoding, int sampleRate, int sampleSizeInBits, int channels, int frameSize, boolean bigEndian) {
@@ -194,13 +204,13 @@ public class MP3File extends AudioFile {
 	}
 	
 	public static void main(String[] args) throws IOException, AudioParsingException {
-		int id = SoundManager.getInstance().loadSound(MP3File.class.getResourceAsStream("/assets/test.ifiwereaboytest.mp2"));
+		int id = SoundManager.getInstance().loadSound(MPEGFile.class.getResourceAsStream("/assets/test.ifiwereaboytest.mp2"));
 		if (id == -1)
 			return;
 		
 		AudioFile file = SoundManager.getInstance().getAudioFile(id);
-		if (file instanceof MP3File) {
-			ID3v2Tag tag = ((MP3File)file).getAudioTag();
+		if (file instanceof MPEGFile) {
+			ID3v2Tag tag = ((MPEGFile)file).getAudioTag();
 			System.out.println(tag);
 		}
 		

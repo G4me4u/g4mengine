@@ -53,7 +53,7 @@ public class MPEGHeader {
 		layer = LAYER_INVALID;
 	}
 
-	private boolean findFrameSync(MP3BitStream bitStream) throws IOException {
+	private boolean findFrameSync(MPEGBitStream bitStream) throws IOException {
 		// NOTE: this is not necessary, as we're
 		// calling bitStream.read(), which sets bitsLeft
 		// to zero. So we're always on a byte-border.
@@ -78,7 +78,7 @@ public class MPEGHeader {
 		return false;
 	}
 	
-	public boolean readHeader(MP3BitStream bitStream) throws IOException {
+	public boolean readHeader(MPEGBitStream bitStream) throws IOException {
 		byteLocation = -1;
 		
 		if (!findFrameSync(bitStream))

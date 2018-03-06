@@ -11,11 +11,11 @@ public class MPEGFileProvider implements AudioFileProvider {
 
 	@Override
 	public AudioFile loadAudioFile(InputStream is) throws IOException, AudioParsingException {
-		return MP3File.loadMP3(is);
+		return MPEGFile.loadMPEG(is);
 	}
 
 	@Override
 	public Class<? extends AudioFile> getAudioFileClass() {
-		return MP3File.class;
+		return MPEGFile.class;
 	}
 }

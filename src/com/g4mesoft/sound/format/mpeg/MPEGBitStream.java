@@ -3,7 +3,7 @@ package com.g4mesoft.sound.format.mpeg;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class MP3BitStream {
+public class MPEGBitStream {
 
 	/**
 	 * The maximum amount of bytes to read, when skipping.
@@ -86,7 +86,7 @@ public class MP3BitStream {
 	 */
 	private long bytesRead;
 	
-	MP3BitStream(InputStream in) {
+	MPEGBitStream(InputStream in) {
 		this.in = in;
 		if (in == null) {
 			throw new NullPointerException("in is null");

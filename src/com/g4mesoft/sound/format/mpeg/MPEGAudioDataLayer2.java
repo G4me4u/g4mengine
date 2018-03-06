@@ -40,7 +40,7 @@ public class MPEGAudioDataLayer2 {
 		samples     = new float[2 * NUM_GRANULES * MAX_SUBBANDS_PER_CH * SAMPLES_PER_TRIPLET];
 	}
 	
-	public boolean readAudioData(MP3BitStream bitStream, MPEGFrame frame, MPEGSynthesisSubbandFilter synthesisFilter) throws IOException {
+	public boolean readAudioData(MPEGBitStream bitStream, MPEGFrame frame, MPEGSynthesisSubbandFilter synthesisFilter) throws IOException {
 		int chan_rate = (frame.header.mode == SINGLE_CHANNEL) ? 
 				frame.header.bitrate_index : CHAN_RATE_INDEX_TABLE[frame.header.bitrate_index - 4];
 		int table = L2_TABLEINDEX_TABLE[frame.header.sampling_frequency][chan_rate];

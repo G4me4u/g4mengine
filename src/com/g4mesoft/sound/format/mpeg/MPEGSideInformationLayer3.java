@@ -52,7 +52,7 @@ public class MPEGSideInformationLayer3 {
 		
 	}
 	
-	public boolean readSideInformation(MP3BitStream bitStream, MPEGFrame frame) throws IOException {
+	public boolean readSideInformation(MPEGBitStream bitStream, MPEGFrame frame) throws IOException {
 		main_data_begin = bitStream.readBits(9);
 		/* private_bits = */ bitStream.readBits(frame.nch == 1 ? 5 : 3);
 		

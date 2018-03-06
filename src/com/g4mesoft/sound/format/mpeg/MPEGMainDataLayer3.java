@@ -20,7 +20,7 @@ public class MPEGMainDataLayer3 {
 		scalefac_s = new float[NUM_GRANULES][2][NUM_SCALEFACTOR_S_BANDS][NUM_WINDOWS];
 	}
 	
-	public boolean readMainData(MP3BitStream bitStream, MPEGFrame frame, MPEGSideInformationLayer3 sideInfo) throws IOException {
+	public boolean readMainData(MPEGBitStream bitStream, MPEGFrame frame, MPEGSideInformationLayer3 sideInfo) throws IOException {
 		int ch, sfb, nb;
 		
 		for (int gr = 0; gr < NUM_GRANULES; gr++) {

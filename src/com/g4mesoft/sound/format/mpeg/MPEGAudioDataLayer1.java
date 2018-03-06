@@ -25,7 +25,7 @@ public class MPEGAudioDataLayer1 {
 		samples = new float[2 * SAMPLES_PER_SB_CH * SUBBANDS_PER_CH];
 	}
 	
-	public boolean readAudioData(MP3BitStream bitStream, MPEGFrame frame, MPEGSynthesisSubbandFilter synthesisFilter) throws IOException {
+	public boolean readAudioData(MPEGBitStream bitStream, MPEGFrame frame, MPEGSynthesisSubbandFilter synthesisFilter) throws IOException {
 		int bound = (frame.header.mode == MPEGHeader.JOINT_STEREO) ? 
 				BOUND_TABLE[frame.header.mode_extension] : 
 				SUBBANDS_PER_CH;
@@ -102,7 +102,7 @@ public class MPEGAudioDataLayer1 {
 		return true;
 	}
 
-	private float requantize(MP3BitStream bitStream, int nb) throws IOException {
+	private float requantize(MPEGBitStream bitStream, int nb) throws IOException {
 		int sample = bitStream.readBits(nb);
 		int mask = SIGN_MASK_TABLE[nb];
 		

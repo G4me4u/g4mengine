@@ -12,7 +12,7 @@ public class MPEGAudioDataLayer3 {
 		mainData = new MPEGMainDataLayer3();
 	}
 	
-	public boolean readAudioData(MP3BitStream bitStream, MPEGFrame frame) throws IOException {
+	public boolean readAudioData(MPEGBitStream bitStream, MPEGFrame frame) throws IOException {
 		if (!sideInformation.readSideInformation(bitStream, frame))
 			return false;
 		
