@@ -301,8 +301,7 @@ public class MPEGBitStream {
 		if (bitsToRead <= 0) return 0;
 		
 		if (bitsLeft <= 0) {
-			read();
-			if (bufferedByte == -1)
+			if (read() == -1)
 				return -1;
 			bitsLeft = BYTE_SIZE;
 		}
@@ -317,8 +316,7 @@ public class MPEGBitStream {
 		int res = (bufferedByte & MASK_TABLE[bitsLeft]) << bitsToRead;
 
 		while (true) {
-			read();
-			if (bufferedByte == -1) {
+			if (read() == -1) {
 				// bitsLeft is already zero at 
 				// this point, from the check above.
 				// bitsLeft = 0;
