@@ -3,7 +3,6 @@ package com.g4mesoft.sound;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +19,7 @@ import com.g4mesoft.sound.format.AudioFile;
 import com.g4mesoft.sound.format.AudioFileProvider;
 import com.g4mesoft.sound.format.AudioParsingException;
 import com.g4mesoft.sound.format.mpeg.MPEGFileProvider;
+import com.g4mesoft.sound.format.wav.WaveFile;
 import com.g4mesoft.sound.format.wav.WaveFileProvider;
 import com.g4mesoft.sound.processor.AudioChannel;
 import com.g4mesoft.sound.processor.AudioSource;
@@ -31,7 +31,7 @@ public final class SoundManager {
 	
 	private static final float SAMPLE_MULTIPLIER = 32768;
 	private static final float SAMPLE_DIVIDER = 1.0f / SAMPLE_MULTIPLIER;
-	private static final int SAMPLES_PER_PLAYBACK = 512;
+	public static final int SAMPLES_PER_PLAYBACK = 4096;
 	
 	private static SoundManager instance;
 	
@@ -262,7 +262,7 @@ public final class SoundManager {
 			sdl.start();
 			
 			while (audioSource.isPlaying()) {
-				int fr = audioSource.readFrames(blockIn, framesToRead);
+				int fr = audioSource.readRawFrames(blockIn, framesToRead);
 				if (fr <= 0) 
 					break;
 				
@@ -286,9 +286,10 @@ public final class SoundManager {
 	public static void main(String[] args) throws Exception {
 		int id = -1;
 		try {
-			//InputStream is = WaveFile.class.getResourceAsStream("/assets/test.soundtest_2big.wav");
-			URL url = new URL("http://www.class-connection.com/dealers/8bit-ulaw/Female-Voice/Saturday%20Female%20Voice.wav");
-			id = SoundManager.getInstance().loadSound(url.openStream());
+			InputStream is = WaveFile.class.getResourceAsStream("/assets/test.soundtest.wav");
+//			InputStream is = WaveFile.class.getResourceAsStream("/assets/test.soundtest_2big.wav");
+			//URL url = new URL("http://www.class-connection.com/dealers/8bit-ulaw/Female-Voice/Saturday%20Female%20Voice.wav");
+			id = SoundManager.getInstance().loadSound(is);
 		} catch(IOException | AudioParsingException e) {
 		}
 		
@@ -297,6 +298,6 @@ public final class SoundManager {
 			return;
 		}
 		
-		SoundManager.getInstance().playSound(id, false).setVolume(0.05f);
+		SoundManager.getInstance().playSound(id, false).setPitch(1.0f).setVolume(0.1f).setFrameLocation(48000 * 60);
 	}
 }

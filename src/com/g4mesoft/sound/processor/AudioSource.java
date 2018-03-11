@@ -8,6 +8,7 @@ public class AudioSource extends AudioLine {
 	public static final int LOOP_CONTINOUSLY = -1;
 	
 	private VolumeAudioProcessor volumeProcessor;
+	private PitchAudioProcessor pitchProcessor;
 	
 	private int frameLocation;
 	private int loopAmount;
@@ -32,8 +33,18 @@ public class AudioSource extends AudioLine {
 
 		return this;
 	}
+	
+	public AudioSource setPitch(float pitch) {
+		if (pitchProcessor == null) {
+			addPreProcessor(pitchProcessor = new PitchAudioProcessor(pitch, audioFile.getFormat().getSampleRate()));
+		} else {
+			pitchProcessor.setPitch(pitch);
+		}
+		
+		return this;
+	}
 
-	public int readFrames(byte[] block, int framesToRead) {
+	public int readRawFrames(byte[] block, int framesToRead) {
 		if (frameLocation == -1)
 			return 0;
 		
