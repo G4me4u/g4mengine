@@ -20,7 +20,15 @@ public abstract class Application implements Exitable {
 
 // Abstract functions //
 	
-	protected Application() { }
+	private final String displayConfig;
+	
+	protected Application(String displayConfig) {
+		this.displayConfig = displayConfig;
+	}
+	
+	protected Application() {
+		this(DISPLAY_CONFIG_LOCATION);
+	}
 
 	/**
 	 * When this function is overriden, it should be in
@@ -97,7 +105,7 @@ public abstract class Application implements Exitable {
 	 * executing properly.</i>
 	 */
 	protected void init() {
-		display = new Display(Application.class.getResourceAsStream(DISPLAY_CONFIG_LOCATION), this);
+		display = new Display(Application.class.getResourceAsStream(displayConfig), this);
 
 		timer = new Timer(TPS, DEBUG);
 		minimumFps = MIN_FPS;
