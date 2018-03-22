@@ -203,6 +203,17 @@ public abstract class Application implements Exitable {
 		this.minimumFps = minimumFps;
 	}
 	
+	/**
+	 * Sets running to false. The thread will terminate
+	 * if the application is running at the time of the
+	 * call to this method.
+	 * 
+	 * @see #start()
+	 */
+	public void stopRunning() {
+		running = false;
+	}
+	
 // Interface functions //
 	
 	/**
