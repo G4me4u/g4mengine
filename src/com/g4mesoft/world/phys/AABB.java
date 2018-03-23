@@ -50,12 +50,12 @@ public class AABB {
 	public float clipX(AABB other, float xm) {
 		if (y0 >= other.y1 || y1 <= other.y0) return xm;
 		
-		if (xm > 0.0f && x1 <= other.x0) {
-			float max = other.x0 - x1;
-			if (max < xm) return max;
-		} else if (xm < 0.0f && x0 >= other.x1) {
-			float max = other.x1 - x0;
+		if (xm < 0.0f && x1 <= other.x0) {
+			float max = x1 - other.x0;
 			if (max > xm) return max;
+		} else if (xm > 0.0f && x0 >= other.x1) {
+			float max = x0 - other.x1;
+			if (max < xm) return max;
 		}
 		
 		return xm;
@@ -64,12 +64,12 @@ public class AABB {
 	public float clipY(AABB other, float ym) {
 		if (x0 >= other.x1 || x1 <= other.x0) return ym;
 		
-		if (ym > 0.0f && y1 <= other.y0) {
-			float max = other.y0 - y1;
-			if (max < ym) return max;
-		} else if (ym < 0.0f && y0 >= other.y1) {
-			float max = other.y1 - y0;
+		if (ym < 0.0f && y1 <= other.y0) {
+			float max = y1 - other.y0;
 			if (max > ym) return max;
+		} else if (ym > 0.0f && y0 >= other.y1) {
+			float max = y0 - other.y1;
+			if (max < ym) return max;
 		}
 		
 		return ym;
