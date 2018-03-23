@@ -6,14 +6,14 @@ import java.util.Arrays;
  * Used as a multi-activated KeyInput extension. If either
  * of the given key-combinations are active, this KeyInput is 
  * represented as being "pressed". If none of the key-combinations
- * are pressed, this KeyInput is not pressed and {@ling #isPressed()} 
+ * are pressed, this KeyInput is not pressed and {@link #isPressed()} 
  * will return false. A key-combination is "pressed" when all keys
  * in the combo are active.
  * <br><br>
  * A {@code KeyComboInput} representing either 'SHIFT+A' or 'CTRL+D' can be
  * initialized as follows:
  * <pre>
- * KeyInput key = new KeySingleInput("SHIFT+A or CTRL+D", 
+ * KeyInput key = new KeyComboInput("SHIFT+A or CTRL+D", 
  * 	new int[] { KeyEvent.VK_SHIFT, KeyEvent.VK_A }, 
  * 	new int[] { KEY_EVENT.VK_CTRL, KEY_EVENT.VK_D });
  * </pre>
