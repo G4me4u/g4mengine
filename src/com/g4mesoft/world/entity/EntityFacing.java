@@ -57,6 +57,8 @@ public enum EntityFacing {
 	}
 
 	public static EntityFacing fromIndex(int index) {
+		if (index < 0 || index >= ENTITY_FACES.length)
+			return null;
 		return ENTITY_FACES[index];
 	}
 	
