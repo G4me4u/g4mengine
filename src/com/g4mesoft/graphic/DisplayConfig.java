@@ -13,6 +13,8 @@ public final class DisplayConfig {
 	public static final String DEFAULT_TITLE = "My Title";
 	public static final int DEFAULT_WIDTH = 400;
 	public static final int DEFAULT_HEIGHT = 400;
+	public static final int DEFAULT_MINIMUM_WIDTH = 200;
+	public static final int DEFAULT_MINIMUM_HEIGHT = 200;
 	public static final boolean DEFAULT_RESIZABLE = true;
 	public static final boolean DEFAULT_CENTERED = true;
 	public static final DisplayMode DEFAULT_DISPLAY_MODE = DisplayMode.NORMAL;
@@ -22,6 +24,8 @@ public final class DisplayConfig {
 			DEFAULT_TITLE, 
 			DEFAULT_WIDTH, 
 			DEFAULT_HEIGHT, 
+			DEFAULT_MINIMUM_WIDTH,
+			DEFAULT_MINIMUM_HEIGHT,
 			DEFAULT_RESIZABLE, 
 			DEFAULT_CENTERED, 
 			DEFAULT_DISPLAY_MODE,
@@ -31,16 +35,20 @@ public final class DisplayConfig {
 	public final String title;
 	public final int preferredWidth;
 	public final int preferredHeight;
+	public final int minimumWidth;
+	public final int minimumHeight;
 	public final boolean resizable;
 	public final boolean centered;
 	public final DisplayMode displayMode;
 	public final boolean displayVisible;
 	
-	public DisplayConfig(String title, int preferredWidth, int preferredHeight, 
-			boolean resizable, boolean centered, DisplayMode displayMode, boolean displayVisible) {
+	public DisplayConfig(String title, int preferredWidth, int preferredHeight,int minimumWidth, int minimumHeight, 
+	                     boolean resizable, boolean centered, DisplayMode displayMode, boolean displayVisible) {
 		this.title = title;
 		this.preferredWidth = preferredWidth;
 		this.preferredHeight = preferredHeight;
+		this.minimumWidth = minimumWidth;
+		this.minimumHeight = minimumHeight;
 		this.resizable = resizable;
 		this.centered = centered;
 		this.displayMode = displayMode == null ? DisplayMode.NORMAL : displayMode;
@@ -64,12 +72,15 @@ public final class DisplayConfig {
 		String title = getString(configurations, "title", DEFAULT_TITLE);
 		int preferredWidth = getInt(configurations, "preferredWidth", DEFAULT_WIDTH);
 		int preferredHeight = getInt(configurations, "preferredHeight", DEFAULT_HEIGHT);
+		int minimumWidth = getInt(configurations, "minimumWidth", DEFAULT_MINIMUM_WIDTH);
+		int minimumHeight = getInt(configurations, "minimumHeight", DEFAULT_MINIMUM_HEIGHT);
 		boolean resizable = getBoolean(configurations, "resizable", DEFAULT_RESIZABLE);
 		boolean centered = getBoolean(configurations, "centered", DEFAULT_CENTERED);
 		DisplayMode displayMode = getDisplayMode(configurations, "displayMode", DEFAULT_DISPLAY_MODE);
 		boolean displayVisible = getBoolean(configurations, "displayVisible", DEFAULT_DISPLAY_VISIBLE);
 		
-		return new DisplayConfig(title, preferredWidth, preferredHeight, resizable, centered, displayMode, displayVisible);
+		return new DisplayConfig(title, preferredWidth, preferredHeight, minimumWidth, minimumHeight,
+		                         resizable, centered, displayMode, displayVisible);
 	}
 	
 	private static String getString(Map<String, String> configurations, String key, String defaultValue) {

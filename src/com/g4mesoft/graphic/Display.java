@@ -1,5 +1,6 @@
 package com.g4mesoft.graphic;
 
+import java.awt.BorderLayout;
 import java.awt.Canvas;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -15,6 +16,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 import com.g4mesoft.graphic.DisplayConfig.DisplayMode;
 
@@ -69,9 +71,18 @@ public class Display {
 				displayConfig.preferredWidth, 
 				displayConfig.preferredHeight
 		));
+		canvas.setMinimumSize(new Dimension(
+				displayConfig.minimumWidth,
+				displayConfig.minimumHeight
+		));
 		
 		frame.add(canvas);
 		frame.pack();
+		
+		// A bug with minimum size in JFrame (and java.awt.Canvas). 
+		// It has to be set by the user. Too bad... The following
+		// is a hack (we know the minimum size wont change)
+		frame.setMinimumSize(canvas.getMinimumSize());
 
 		if (displayConfig.centered)
 			frame.setLocationRelativeTo(null);

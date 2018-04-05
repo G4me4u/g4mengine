@@ -15,6 +15,13 @@ title=My Title
 preferredWidth=400
 preferredHeight=400
 
+# The minimum size of the canvas. The frame will be slightly
+# bigger if it has decoration enabled. Setting this value to
+# zero will disable minimumSize.
+# Default value: 100, 100
+minimumWidth=100
+minimumHeight=100
+
 # Wether or not the frame should be resizable. - if false, 
 # the size of the frame will always be preferred size, if not 
 # otherwise specified (displayMode)
