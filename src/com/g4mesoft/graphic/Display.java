@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.GridLayout;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -76,7 +77,8 @@ public class Display {
 				displayConfig.minimumHeight
 		));
 		
-		frame.add(canvas);
+		frame.setLayout(new BorderLayout());
+		frame.add(canvas, BorderLayout.CENTER);
 		frame.pack();
 		
 		// A bug with minimum size in JFrame (and java.awt.Canvas). 
@@ -214,6 +216,12 @@ public class Display {
 		}
 		
 		canvas.addKeyListener(keyListener);
+	}
+
+	public boolean isVisible() {
+		if (frame != null)
+			return frame.isVisible();
+		return displayConfig.displayVisible;
 	}
 	
 	@SuppressWarnings("serial")

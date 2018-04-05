@@ -6,9 +6,9 @@ import com.g4mesoft.graphic.Renderer2D;
 
 public abstract class Application implements Exitable {
 
-	private static final boolean DEBUG = true;
-	private static final float TPS = 20.0f;
-	private static final float MIN_FPS = 60.0f;
+	private static final boolean DEFAULT_DEBUG = true;
+	private static final float DEFAULT_TPS = 20.0f;
+	private static final float DEFAULT_MIN_FPS = 60.0f;
 
 	private static final String DISPLAY_CONFIG_LOCATION = "/config/display.txt";
 	
@@ -107,8 +107,8 @@ public abstract class Application implements Exitable {
 	protected void init() {
 		display = new Display(Application.class.getResourceAsStream(displayConfig), this);
 
-		timer = new Timer(TPS, DEBUG);
-		minimumFps = MIN_FPS;
+		timer = new Timer(DEFAULT_TPS, DEFAULT_DEBUG);
+		minimumFps = DEFAULT_MIN_FPS;
 	}
 	
 	protected void stop() { }
@@ -133,8 +133,12 @@ public abstract class Application implements Exitable {
 				tick();
 				timer.tickPassed();
 			}
-			draw(timer.getDeltaTick());
-			timer.framePassed();
+
+			if (display.isVisible()) {
+				draw(timer.getDeltaTick());
+				timer.framePassed();
+			}
+
 			timer.sleep(minimumFps);
 		}
 	}
@@ -201,6 +205,18 @@ public abstract class Application implements Exitable {
 	 */
 	public void setMinimumFps(float minimumFps) {
 		this.minimumFps = minimumFps;
+	}
+	
+	/**
+	 * Sets the debugging state of the timer. Setting debug
+	 * to false will disable tps and fps logging.
+	 * 
+	 * @param debug 	-	The new debug state
+	 * 
+	 * @see com.g4mesoft.Timer
+	 */
+	public void setDebug(boolean debug) {
+		timer.setDebug(debug);
 	}
 	
 	/**
