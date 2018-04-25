@@ -1,5 +1,6 @@
 package com.g4mesoft.input.key;
 
+import java.awt.event.KeyEvent;
 import java.util.Arrays;
 
 /**
@@ -48,6 +49,14 @@ public class KeySingleInput extends KeyInput {
 	
 	@Override
 	public void update() {
+		if (keyCodes[0] == KeyEvent.VK_SPACE) {
+			System.out.println("-----------");
+			System.out.println(pressed);
+			System.out.println(wasPressed);
+			System.out.println(Arrays.toString(keyStates));
+			System.out.println(isKeyStatePressed(keyStates));
+		}
+		
 		wasPressed = pressed;
 		pressed = isKeyStatePressed(keyStates);
 	}
@@ -95,9 +104,10 @@ public class KeySingleInput extends KeyInput {
 		if (setKeyState(keyCode, true) && !pressed) {
 			// Make sure to keep the state, as it
 			// might change within the same tick
-			if (pressed = isKeyStatePressed(keyStates)) {
+			wasPressed = pressed;
+			pressed = isKeyStatePressed(keyStates);
+			if (pressed)
 				activationTime = System.currentTimeMillis();
-			}
 		}
 	}
 

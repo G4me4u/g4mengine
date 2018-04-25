@@ -111,9 +111,10 @@ public class KeyComboInput extends KeyInput {
 	@Override
 	public void keyPressed(int keyCode) {
 		if (setKeyState(keyCode, true) && !pressed) {
-			if (pressed = isKeyStatePressed(keyStates)) {
+			wasPressed = pressed;
+			pressed = isKeyStatePressed(keyStates);
+			if (pressed)
 				activationTime = System.currentTimeMillis();
-			}
 		}
 	}
 
