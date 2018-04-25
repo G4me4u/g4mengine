@@ -47,3 +47,8 @@ displayMode=normal
 # ignored.
 # Default value: true
 displayVisible=true
+
+# The path to the icon of the display. If the path equals 'none'
+# the display will have the default java icon.
+# Default value: none
+icon=none

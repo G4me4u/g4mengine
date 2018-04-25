@@ -6,18 +6,18 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
-import java.awt.GridLayout;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferStrategy;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 
 import com.g4mesoft.graphic.DisplayConfig.DisplayMode;
 
@@ -95,6 +95,19 @@ public class Display {
 				Display.this.dispose();
 			}
 		});
+		
+		// Set frame icon, if it exists
+		if (!DisplayConfig.NO_ICON_PATH.equals(displayConfig.iconPath)) {
+			BufferedImage icon = null;
+			try {
+				icon = ImageIO.read(Display.class.getResource(displayConfig.iconPath));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			if (icon != null)
+				frame.setIconImage(icon);
+		}
 		
 		frame.setVisible(true);
 		
@@ -216,6 +229,10 @@ public class Display {
 		}
 		
 		canvas.addKeyListener(keyListener);
+	}
+	
+	public Canvas getCanvas() {
+		return canvas;
 	}
 
 	public boolean isVisible() {

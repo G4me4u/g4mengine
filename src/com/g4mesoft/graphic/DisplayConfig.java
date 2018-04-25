@@ -10,6 +10,8 @@ import com.g4mesoft.util.FileUtil;
 
 public final class DisplayConfig {
 
+	public static final String NO_ICON_PATH = "none";
+	
 	public static final String DEFAULT_TITLE = "My Title";
 	public static final int DEFAULT_WIDTH = 400;
 	public static final int DEFAULT_HEIGHT = 400;
@@ -19,6 +21,7 @@ public final class DisplayConfig {
 	public static final boolean DEFAULT_CENTERED = true;
 	public static final DisplayMode DEFAULT_DISPLAY_MODE = DisplayMode.NORMAL;
 	public static final boolean DEFAULT_DISPLAY_VISIBLE = true;
+	public static final String DEFAULT_ICON_PATH = NO_ICON_PATH;
 	
 	public static final DisplayConfig DEFAULT_DISPLAY_CONFIG = new DisplayConfig(	
 			DEFAULT_TITLE, 
@@ -29,7 +32,8 @@ public final class DisplayConfig {
 			DEFAULT_RESIZABLE, 
 			DEFAULT_CENTERED, 
 			DEFAULT_DISPLAY_MODE,
-			DEFAULT_DISPLAY_VISIBLE
+			DEFAULT_DISPLAY_VISIBLE,
+			DEFAULT_ICON_PATH
 	);
 	
 	public final String title;
@@ -41,9 +45,10 @@ public final class DisplayConfig {
 	public final boolean centered;
 	public final DisplayMode displayMode;
 	public final boolean displayVisible;
+	public final String iconPath;
 	
 	public DisplayConfig(String title, int preferredWidth, int preferredHeight,int minimumWidth, int minimumHeight, 
-	                     boolean resizable, boolean centered, DisplayMode displayMode, boolean displayVisible) {
+	                     boolean resizable, boolean centered, DisplayMode displayMode, boolean displayVisible, String iconPath) {
 		this.title = title;
 		this.preferredWidth = preferredWidth;
 		this.preferredHeight = preferredHeight;
@@ -53,6 +58,7 @@ public final class DisplayConfig {
 		this.centered = centered;
 		this.displayMode = displayMode == null ? DisplayMode.NORMAL : displayMode;
 		this.displayVisible = displayVisible;
+		this.iconPath = iconPath;
 	}
 	
 	public static DisplayConfig loadConfigReader(File configFile) throws IOException {
@@ -78,9 +84,10 @@ public final class DisplayConfig {
 		boolean centered = getBoolean(configurations, "centered", DEFAULT_CENTERED);
 		DisplayMode displayMode = getDisplayMode(configurations, "displayMode", DEFAULT_DISPLAY_MODE);
 		boolean displayVisible = getBoolean(configurations, "displayVisible", DEFAULT_DISPLAY_VISIBLE);
+		String iconPath = getString(configurations, "icon", DEFAULT_ICON_PATH);
 		
 		return new DisplayConfig(title, preferredWidth, preferredHeight, minimumWidth, minimumHeight,
-		                         resizable, centered, displayMode, displayVisible);
+		                         resizable, centered, displayMode, displayVisible, iconPath);
 	}
 	
 	private static String getString(Map<String, String> configurations, String key, String defaultValue) {
