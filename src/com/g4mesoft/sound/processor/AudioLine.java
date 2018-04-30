@@ -18,12 +18,16 @@ public abstract class AudioLine {
 	}
 
 	public void addPreProcessor(AudioProcessor preAudioProcessor) {
-		preProcessors.add(preAudioProcessor);
+		synchronized (preProcessors) {
+			preProcessors.add(preAudioProcessor);
+		}
 	}
 	
 	public void preProcess(float[] samples, int numSamples, AudioChannel channel) {
-		for (AudioProcessor audioProcessor : preProcessors)
-			audioProcessor.process(samples, numSamples, channel);
+		synchronized (preProcessors) {
+			for (AudioProcessor audioProcessor : preProcessors)
+				audioProcessor.process(samples, numSamples, channel);
+		}
 	}
 
 	public boolean hasPreProcessors() {
