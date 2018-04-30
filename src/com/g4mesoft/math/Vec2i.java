@@ -399,4 +399,14 @@ public class Vec2i {
 	public int dist(Vec2i other) {
 		return (int)Math.sqrt(distSqr(other));
 	}
+	
+	@Override
+	public boolean equals(Object other) {
+		if (!(other instanceof Vec2i))
+			return false;
+
+		Vec2i otherVec = ((Vec2i)other);
+		return otherVec.x == x && 
+		       otherVec.y == y;
+	}
 }

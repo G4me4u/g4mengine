@@ -490,4 +490,16 @@ public class Vec4i {
 	public int dist(Vec4i other) {
 		return (int)Math.sqrt(distSqr(other));
 	}
+	
+	@Override
+	public boolean equals(Object other) {
+		if (!(other instanceof Vec4i))
+			return false;
+
+		Vec4i otherVec = ((Vec4i)other);
+		return otherVec.x == x && 
+		       otherVec.y == y &&
+		       otherVec.z == z &&
+		       otherVec.w == w;
+	}
 }
