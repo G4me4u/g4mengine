@@ -76,48 +76,42 @@ public enum CardinalDirection {
 
 	public static CardinalDirection fromVector(Vec2f dir) {
 		if (dir.x > 0.0f) {
-			if (dir.y > 0.0f) {
+			if (dir.y > 0.0f)
 				return SOUTH_EAST;
-			} else if (dir.y == 0.0f) {
+			if (dir.y == 0.0f)
 				return EAST;
-			} else return NORTH_EAST;
-		}
-		
-		if (dir.x == 0.0f) {
-			if (dir.y > 0.0f) {
-				return SOUTH;
-			} else return NORTH;
+			return NORTH_EAST;
 		}
 
-		if (dir.y > 0.0f) {
-			return SOUTH_WEST;
-		} else if (dir.y == 0.0f) {
-			return WEST;
+		if (dir.x < 0.0f) {
+			if (dir.y > 0.0f)
+				return SOUTH_WEST;
+			if (dir.y == 0.0f)
+				return WEST;
+			return NORTH_WEST;
 		}
 		
-		return NORTH_WEST;
+		return dir.y > 0.0f ? SOUTH : NORTH;
 	}
 	
 	public static CardinalDirection fromVector(Vec2i dir) {
 		if (dir.x > 0) {
-			if (dir.y > 0) {
+			if (dir.y > 0)
 				return SOUTH_EAST;
-			} else if (dir.y == 0) {
+			if (dir.y == 0)
 				return EAST;
-			} else return NORTH_EAST;
+			return NORTH_EAST;
 		}
 		
-		if (dir.x == 0) {
-			if (dir.y > 0) {
-				return SOUTH;
-			} else return NORTH;
+		if (dir.x < 0) {
+			if (dir.y > 0)
+				return SOUTH_WEST;
+			if (dir.y == 0)
+				return WEST;
+			return NORTH_WEST;
 		}
-
-		if (dir.y > 0) {
-			return SOUTH_WEST;
-		} else if (dir.y == 0) {
-			return WEST;
-		} else return NORTH_WEST;
+		
+		return dir.y > 0 ? SOUTH : NORTH;
 	}
 	
 	static {
