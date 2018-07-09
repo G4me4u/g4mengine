@@ -15,7 +15,7 @@ import java.util.Arrays;
  * <pre>
  * KeyInput key = new KeyComboInput("SHIFT+A or CTRL+D", 
  * 	new int[] { KeyEvent.VK_SHIFT, KeyEvent.VK_A }, 
- * 	new int[] { KEY_EVENT.VK_CTRL, KEY_EVENT.VK_D });
+ * 	new int[] { KeyEvent.VK_CTRL,  KeyEvent.VK_D });
  * </pre>
  * <b>
  * NOTE: Each key has to be registered manually in an instance of the

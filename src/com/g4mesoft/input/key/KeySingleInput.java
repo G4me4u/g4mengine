@@ -12,7 +12,7 @@ import java.util.Arrays;
  * A {@code KeySingleInput} representing either 'A' or 'D' can be
  * initialized as follows:
  * <pre>
- * KeyInput key = new KeySingleInput("A or D", KeyEvent.VK_A, KEY_EVENT.VK_D);
+ * KeyInput key = new KeySingleInput("A or D", KeyEvent.VK_A, KeyEvent.VK_D);
  * </pre>
  * <b>
  * NOTE: Each key has to be registered manually in an instance of the

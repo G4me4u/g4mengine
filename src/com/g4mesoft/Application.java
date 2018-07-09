@@ -51,7 +51,7 @@ public abstract class Application implements Exitable {
 
 	/**
 	 * When this function is overriden, it should be in
-	 * charge for rendering to the display through the
+	 * charge of rendering to the display through the
 	 * Renderer2D object.<br>
 	 * The dt time constant can be used for 
 	 * smoother drawing of moving objects. 
