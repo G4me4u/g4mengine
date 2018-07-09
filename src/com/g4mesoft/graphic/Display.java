@@ -23,6 +23,8 @@ import com.g4mesoft.graphic.DisplayConfig.DisplayMode;
 
 public class Display {
 
+	private final Object renderingLock = new Object();
+	
 	private final DisplayConfig displayConfig;
 	private final Exitable exitable;
 
@@ -32,6 +34,7 @@ public class Display {
 	private boolean fullscreen;
 	private boolean windowed;
 	private Renderer2D renderer;
+	private BufferStrategy bs;
 	
 	private boolean rendering;
 	
@@ -116,7 +119,7 @@ public class Display {
 			toggleFullscreen(displayConfig.displayMode == DisplayMode.FULLSCREEN_WINDOWED);
 		}
 
-		renderer = new Renderer2D(this);
+		renderer = new DefaultRenderer2D(this);
 		
 		canvas.requestFocus();
 	}
@@ -155,33 +158,48 @@ public class Display {
 	public Renderer2D startRendering() {
 		if (frame == null || !frame.isShowing()) return null;
 		
-		BufferStrategy bs = canvas.getBufferStrategy();
-		if (bs == null) {
-			canvas.createBufferStrategy(3);
-			return null;
+		synchronized (renderingLock) {
+			if (rendering)
+				throw new IllegalStateException("Already started rendering!");
+			
+			bs = canvas.getBufferStrategy();
+			if (bs == null) {
+				canvas.createBufferStrategy(3);
+				return null;
+			}
+			
+			if (renderer == null || !renderer.start(bs))
+				return null;
+			rendering = true;
+			return renderer;
 		}
-		
-		Renderer2D renderer = initRenderer(bs);
-		rendering = (renderer != null);
-		return renderer;
-	}
-	
-	private Renderer2D initRenderer(BufferStrategy bs) {
-		return bs == null ? null : renderer.start(bs);
 	}
 	
 	public void stopRendering() {
-		if (!rendering)
-			throw new IllegalStateException("Already stopped rendering!");
-		
-		BufferStrategy bs = renderer.stop();
-		bs.show();
-		
-		rendering = false;
+		synchronized (renderingLock) {
+			if (!rendering)
+				throw new IllegalStateException("Already stopped rendering!");
+			
+			renderer.stop();
+			bs.show();
+			
+			rendering = false;
+		}
 	}
 	
 	public boolean isRendering() {
 		return rendering;
+	}
+	
+	public void setRenderer(Renderer2D renderer) {
+		if (renderer == null)
+			throw new IllegalArgumentException("Renderer is null!");
+	
+		synchronized (renderingLock) {
+			if (rendering)
+				throw new IllegalStateException("Cannot change renderer if display is already rendering!");
+			this.renderer = renderer;
+		}
 	}
 	
 	public Renderer2D getRenderer() {

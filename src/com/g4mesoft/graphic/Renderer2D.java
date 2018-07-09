@@ -4,92 +4,21 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferStrategy;
 
-public class Renderer2D {
+public interface Renderer2D {
 
-	private final Display display;
+	public boolean start(BufferStrategy bs);
 
-	private BufferStrategy bs;
-	private Graphics g;
+	public void stop();
 	
-	public Renderer2D(Display display) {
-		this.display = display;
-	}
+	public Graphics getGraphics();
 	
-	public void clear(Color color) {
-		g.setColor(color);
-		g.fillRect(0, 0, display.getWidth(), display.getHeight());
-	}
-	
-	public Renderer2D start(BufferStrategy bs) {
-		this.bs = bs;
-		g = bs.getDrawGraphics();
-		return this;
-	}
+	public void drawGrid(int x, int y, int gw, int gh, int xc, int yc);
 
-	public BufferStrategy stop() {
-		g.dispose();
-		g = null;
-		return bs;
-	}
+	public void drawRect(int x, int y, int width, int height);
 	
-	public Graphics getGraphics() {
-		return g;
-	}
-
-	public void drawGrid(int x, int y, int gw, int gh, int xc, int yc) {
-		if (gw == 0) return;
-		if (gh == 0) return;
-
-		if (gw < 0) {
-			x += gw * xc;
-			gw = -gw;
-		}
-		if (gh < 0) {
-			y += gh * yc;
-			gh = -gh;
-		}
-		
-		if (x < 0 || 
-			y < 0 || 
-			x >= display.getWidth() ||
-			y >= display.getHeight()) return;
-		
-		int x1 = x + gw * xc;
-		int y1 = y + gh * yc;
-		for (int xl = x; xl <= x1; xl += gw) {
-			if (x < 0) break;
-			if (x >= display.getWidth()) break;
-			
-			drawLine(xl, y, xl, y1);
-		}
-
-		for (int yl = y; yl <= y1; yl += gh) {
-			if (y < 0) break;
-			if (y >= display.getHeight()) break;
-			
-			drawLine(x, yl, x1, yl);
-		}
-	}
+	public void fillRect(int x, int y, int width, int height);
 	
-	public void drawRect(int x, int y, int width, int height) {
-		int x1 = x + width;
-		int y1 = y + height;
-		
-		drawLine(x, y, x1, y);
-		drawLine(x, y1, x1, y1);
-		drawLine(x, y, x, y1);
-		drawLine(x1, y, x1, y1);
-	}
+	public void drawLine(int x0, int y0, int x1, int y1);
 	
-	public void fillRect(int x, int y, int width, int height) {
-		g.fillRect(x, y, width, height);
-	}
-	
-	public void drawLine(int x0, int y0, int x1, int y1) {
-		g.drawLine(x0, y0, x1, y1);
-	}
-
-	public void setColor(Color color) {
-		g.setColor(color);
-	}
+	public void setColor(Color color);
 }
