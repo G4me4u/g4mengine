@@ -44,10 +44,10 @@ public abstract class KeyInput extends Input {
 	 * Should be called whenever a key with the given {@code keyCode}
 	 * is pressed.
 	 * 
-	 * @param keyCode	-	An integer representing the {@code keyCode}
-	 * 						of the given key. Key codes can be found in
-	 * 						the {@link java.awt.event.KeyEvent KeyEvent} 
-	 * 						class.
+	 * @param keyCode  -  An integer representing the {@code keyCode}
+	 *                    of the given key. Key codes can be found in
+	 *                    the {@link java.awt.event.KeyEvent KeyEvent} 
+	 *                    class.
 	 * 
 	 * @see java.awt.event.KeyEvent KeyEvent
 	 */
@@ -57,10 +57,10 @@ public abstract class KeyInput extends Input {
 	 * Should be called whenever a key with the given {@code keyCode}
 	 * is released.
 	 * 
-	 * @param keyCode	-	An integer representing the {@code keyCode}
-	 * 						of the given key. Key codes can be found in
-	 * 						the {@link java.awt.event.KeyEvent KeyEvent} 
-	 * 						class.
+	 * @param keyCode  -  An integer representing the {@code keyCode}
+	 *                    of the given key. Key codes can be found in
+	 *                    the {@link java.awt.event.KeyEvent KeyEvent} 
+	 *                    class.
 	 * 
 	 * @see java.awt.event.KeyEvent KeyEvent
 	 */
@@ -85,8 +85,8 @@ public abstract class KeyInput extends Input {
 	 * will always be one tick behind. This value is used for the
 	 * {@link #isClicked()} and {@link #isReleased()} functions.
 	 * 
-	 * @return 	True, if this key input was pressed one tick ago, false
-	 * 			otherwise.
+	 * @return True, if this key input was pressed one tick ago, false
+	 *         otherwise.
 	 * 
 	 * @see #isPressed()
 	 * @see #isClicked()
@@ -103,11 +103,11 @@ public abstract class KeyInput extends Input {
 	 * This function will only return true for a single update making it
 	 * useful for <i>"rising-edge"</i> based events.
 	 * 
-	 * @return 	True, the first tick this key input is pressed, false 
-	 *  		otherwise.
+	 * @return True, the first tick this key input is pressed, false 
+	 *         otherwise.
 	 *  
-	 *  @see #isPressed()
-	 *  @see #wasPressed()
+	 * @see #isPressed()
+	 * @see #wasPressed()
 	 */
 	public final boolean isClicked() {
 		return (isPressed()) && (!wasPressed());
@@ -122,8 +122,8 @@ public abstract class KeyInput extends Input {
 	 * This function will only return true for a single update making is 
 	 * useful for <i>"falling-edge"</i> based events.
 	 * 
-	 * @return 	The, the first tick this key input is released, false
-	 * 			otherwise
+	 * @return True, the first tick this key input is released, false
+	 *         otherwise
 	 * 
 	 * @see #isPressed()
 	 * @see #wasPressed()
@@ -133,8 +133,8 @@ public abstract class KeyInput extends Input {
 	}
 	
 	/**
-	 * @return 	The name of this key input. Can be useful for translations
-	 * 			and debugging.
+	 * @return The name of this key input. Can be useful for translations
+	 *         and debugging.
 	 */
 	public final String getName() {
 		return name;

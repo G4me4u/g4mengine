@@ -81,11 +81,11 @@ public class KeyComboInput extends KeyInput {
 	 * will change nothing, however it will still have to loop 
 	 * through all keys to know.
 	 * 
-	 * @param keyCode	-	The keyCode representing the key
-	 * @param state		-	The new state, which will be given to
-	 * 						the key in the {@code keyStates} array.
+	 * @param keyCode  -  The keyCode representing the key
+	 * @param state    -  The new state, which will be given to
+	 *                    the key in the {@code keyStates} array.
 	 * 
-	 * @return	True, if the a key state changed, false otherwise.
+	 * @return True, if the a key state changed, false otherwise.
 	 * 
 	 * @see #keyPressed(int) keyPressed(keyCode)
 	 * @see #keyReleased(int) keyPressed(keyCode)
@@ -128,8 +128,8 @@ public class KeyComboInput extends KeyInput {
 	 * Each key-combination will be in a single array inside an array
 	 * of combinations {@code boolean[][] keyStates}
 	 * 
-	 * @param keyStates		-	The array of key-combinations to loop
-	 * 							through.
+	 * @param keyStates  -  The array of key-combinations to loop
+	 *                      through.
 	 * 
 	 * @return 	True, if one of the key-combinations are pressed, false
 	 * 			otherwise.

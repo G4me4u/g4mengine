@@ -80,7 +80,7 @@ public class KeyInputListener implements KeyListener {
 	 * given key already exists in the key registry, the key
 	 * will not be added, and this function will return false.
 	 * 
-	 * @param key	-	The key to be registered in the registry.
+	 * @param key  -  The key to be registered in the registry.
 	 * 
 	 * @return True, if the key registry changed, false otherwise.
 	 * 
@@ -97,7 +97,7 @@ public class KeyInputListener implements KeyListener {
 	 * If the key doesn't exist and the registry didn't change,
 	 * this function returns false.
 	 * 
-	 * @param key	-	The key to be removed from the registry.
+	 * @param key  -  The key to be removed from the registry.
 	 * 
 	 * @return True, if the key registry changed, false otherwise.
 	 * 
@@ -115,8 +115,8 @@ public class KeyInputListener implements KeyListener {
 	 * display.registerKeyListener(KeyInputListener.getInstance());
 	 * </pre>
 	 * 
-	 * @param display	-	The display which this {@code KeyInputListener}
-	 * 						should be registered by.
+	 * @param display  -  The display which this {@code KeyInputListener}
+	 *                    should be registered by.
 	 */
 	public void registerDisplay(Display display) {
 		display.registerKeyListener(this);
@@ -127,7 +127,7 @@ public class KeyInputListener implements KeyListener {
 	 * static instance is not yet defined, this function initiate a 
 	 * new instance and return it in future calls to this method.
 	 * 
-	 * @return 	A static instance of the {@code KeyInputListener}
+	 * @return A static instance of the {@code KeyInputListener}
 	 */
 	public static KeyInputListener getInstance() {
 		if (instance == null)

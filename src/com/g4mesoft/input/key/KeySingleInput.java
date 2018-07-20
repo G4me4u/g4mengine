@@ -6,7 +6,7 @@ import java.util.Arrays;
  * Used as a single-activated KeyInput extension. If either
  * of the given keyCodes are invoked, this KeyInput is represented
  * as being "pressed". If none of the keyCodes are pressed, this
- * KeyInput is not pressed and {@ling #isPressed()} will return 
+ * KeyInput is not pressed and {@link #isPressed()} will return 
  * false.
  * <br><br>
  * A {@code KeySingleInput} representing either 'A' or 'D' can be
@@ -67,11 +67,11 @@ public class KeySingleInput extends KeyInput {
 	 * will change nothing, however it will still have to loop 
 	 * through all keys to know.
 	 * 
-	 * @param keyCode	-	The keyCode representing the key
-	 * @param state		-	The new state, which will be given to
-	 * 						the key in the {@code keyStates} array.
+	 * @param keyCode  -  The keyCode representing the key
+	 * @param state    -  The new state, which will be given to
+	 *                    the key in the {@code keyStates} array.
 	 * 
-	 * @return	True, if a key state changed, false otherwise.
+	 * @return True, if a key state changed, false otherwise.
 	 * 
 	 * @see #keyPressed(int) keyPressed(keyCode)
 	 * @see #keyReleased(int) keyPressed(keyCode)
@@ -112,9 +112,9 @@ public class KeySingleInput extends KeyInput {
 	 * key will be represented by a boolean inside the {@code boolean[] keyStates}
 	 * array.
 	 * 
-	 * @param keyStates		-	The array of keys to loop through.
+	 * @param keyStates  -  The array of keys to loop through.
 	 * 
-	 * @return	True, if one of the keys are pressed, false otherwise.
+	 * @return True, if one of the keys are pressed, false otherwise.
 	 */
 	private boolean isKeyStatePressed(boolean[] keyStates) {
 		for (int i = 0; i < keyStates.length; i++) {
