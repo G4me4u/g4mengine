@@ -182,7 +182,6 @@ public final class FileUtil {
 			if (bytesRead < 0)
 				break;
 			
-			
 			p += bytesRead;
 			br += bytesRead;
 		}
