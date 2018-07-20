@@ -3,7 +3,7 @@ package com.g4mesoft.world.entity;
 import com.g4mesoft.world.World;
 import com.g4mesoft.world.phys.AABB;
 
-public abstract class LivingEntity extends Entity implements Collidable {
+public abstract class LivingEntity extends Entity implements ICollidable {
 
 	protected AABB body;
 	

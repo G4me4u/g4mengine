@@ -16,7 +16,7 @@ import javax.sound.sampled.SourceDataLine;
 
 import com.g4mesoft.math.Vec3f;
 import com.g4mesoft.sound.format.AudioFile;
-import com.g4mesoft.sound.format.AudioFileProvider;
+import com.g4mesoft.sound.format.IAudioFileProvider;
 import com.g4mesoft.sound.format.AudioParsingException;
 import com.g4mesoft.sound.format.mpeg.MPEGFileProvider;
 import com.g4mesoft.sound.format.wav.WaveFile;
@@ -36,14 +36,14 @@ public final class SoundManager {
 	private static SoundManager instance;
 	
 	private final Mixer mixer;
-	private final List<AudioFileProvider> providers;
+	private final List<IAudioFileProvider> providers;
 
 	private AudioFile[] audioFiles;
 	private int numAudioFiles;
 	
 	private SoundManager() {
 		mixer = getOpenDefaultMixer();
-		providers = new ArrayList<AudioFileProvider>();
+		providers = new ArrayList<IAudioFileProvider>();
 
 		audioFiles = new AudioFile[AUDIO_FILE_CAPACITY];
 		numAudioFiles = 0;
@@ -64,7 +64,7 @@ public final class SoundManager {
 		addAudioFileProvider(new MPEGFileProvider());
 	}
 	
-	public void addAudioFileProvider(AudioFileProvider provider) {
+	public void addAudioFileProvider(IAudioFileProvider provider) {
 		if (hasProviderClass(provider.getAudioFileClass()))
 			throw new RuntimeException("Audio file is already supported!");
 		providers.add(provider);
@@ -107,7 +107,7 @@ public final class SoundManager {
 		
 		AudioFile audioFile = null;
 		try {
-			for (AudioFileProvider provider : providers)
+			for (IAudioFileProvider provider : providers)
 				if ((audioFile = provider.loadAudioFile(is)) != null)
 					break;
 		} finally {
@@ -146,8 +146,8 @@ public final class SoundManager {
 		return getAudioFileClassProvider(audioFileClass) != null;
 	}
 	
-	private AudioFileProvider getAudioFileClassProvider(Class<? extends AudioFile> audioFileClass) {
-		for (AudioFileProvider provider : providers)
+	private IAudioFileProvider getAudioFileClassProvider(Class<? extends AudioFile> audioFileClass) {
+		for (IAudioFileProvider provider : providers)
 			if (provider.getAudioFileClass().isAssignableFrom(audioFileClass))
 				return provider;
 		

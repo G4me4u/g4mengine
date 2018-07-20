@@ -26,23 +26,23 @@ public class Display {
 	private final Object renderingLock = new Object();
 	
 	private final DisplayConfig displayConfig;
-	private final Exitable exitable;
+	private final IExitable exitable;
 
 	private JFrame frame;
 	private DisplayCanvas canvas;
 	
 	private boolean fullscreen;
 	private boolean windowed;
-	private Renderer2D renderer;
+	private IRenderer2D renderer;
 	private BufferStrategy bs;
 	
 	private boolean rendering;
 	
-	public Display(Exitable exitable) { 
+	public Display(IExitable exitable) { 
 		this(null, exitable); 
 	}
 	
-	public Display(InputStream configInputStream, Exitable exitable) {
+	public Display(InputStream configInputStream, IExitable exitable) {
 		DisplayConfig displayConfig = null;
 		
 		if (configInputStream != null) {
@@ -155,7 +155,7 @@ public class Display {
 		return GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()[0];
 	}
 	
-	public Renderer2D startRendering() {
+	public IRenderer2D startRendering() {
 		if (frame == null || !frame.isShowing()) return null;
 		
 		synchronized (renderingLock) {
@@ -191,7 +191,7 @@ public class Display {
 		return rendering;
 	}
 	
-	public void setRenderer(Renderer2D renderer) {
+	public void setRenderer(IRenderer2D renderer) {
 		if (renderer == null)
 			throw new IllegalArgumentException("Renderer is null!");
 	
@@ -202,7 +202,7 @@ public class Display {
 		}
 	}
 	
-	public Renderer2D getRenderer() {
+	public IRenderer2D getRenderer() {
 		return rendering ? renderer : null;
 	}
 	

@@ -1,10 +1,10 @@
 package com.g4mesoft;
 
 import com.g4mesoft.graphic.Display;
-import com.g4mesoft.graphic.Exitable;
-import com.g4mesoft.graphic.Renderer2D;
+import com.g4mesoft.graphic.IExitable;
+import com.g4mesoft.graphic.IRenderer2D;
 
-public abstract class Application implements Exitable {
+public abstract class Application implements IExitable {
 
 	private static final boolean DEFAULT_DEBUG = true;
 	private static final float DEFAULT_TPS = 20.0f;
@@ -31,8 +31,8 @@ public abstract class Application implements Exitable {
 	}
 
 	/**
-	 * When this function is overriden, it should be in
-	 * charge of ticking/updating neccesary world objects,
+	 * When this function is overridden, it should be in
+	 * charge of ticking/updating necessary world objects,
 	 * inputs or doing other necessary calculations. 
 	 * <br>
 	 * This function should not be used for drawing, as there
@@ -40,17 +40,18 @@ public abstract class Application implements Exitable {
 	 * used for handling that. 
 	 * <br><br>
 	 * <b>NOTE:</b> this function will always be called with
-	 * approx. the same interval (if the system isn't overloaded).
-	 * If you want to change the interval between each tick, call
-	 * {@code setTps(float)} with the desired ticks per second.
+	 * approximately the same interval (if the system isn't 
+	 * overloaded). If you want to change the interval between 
+	 * each tick, call {@code setTps(float)} with the desired 
+	 * amount of ticks per second.
 	 * 
 	 * @see #setTps(float)
-	 * @see #render(Renderer2D, float)
+	 * @see #render(IRenderer2D, float)
 	 */
 	protected abstract void tick();
 
 	/**
-	 * When this function is overriden, it should be in
+	 * When this function is overridden, it should be in
 	 * charge of rendering to the display through the
 	 * Renderer2D object.<br>
 	 * The dt time constant can be used for 
@@ -61,6 +62,11 @@ public abstract class Application implements Exitable {
 	 * int xPixel = prevX + (x - prevX) * dt;
 	 * int yPixel = prevY + (y - prevY) * dt;
 	 * </pre>
+	 * Where {@code prevX} and {@code prevY} represent the
+	 * coordinates of an object or a point (in the previous 
+	 * tick) to be drawn with a smooth motion onto the 
+	 * display. The {@code x} and {@code y} coordinates are
+	 * the current location of the object or point.
 	 * 
 	 * @param renderer	-	A renderer used for drawing to
 	 * 						the display.
@@ -71,14 +77,14 @@ public abstract class Application implements Exitable {
 	 * @see #setMinimumFps(float)
 	 * @see #tick()
 	 */
-	protected abstract void render(Renderer2D renderer, float dt);
+	protected abstract void render(IRenderer2D renderer, float dt);
 	
 // Overridable functions //
 	
 	/**
 	 * This function should be overridden by sub-classes and
 	 * used for general startup calls. This function will be
-	 * called before init().
+	 * called before {@code init()}.
 	 * <br><br>
 	 * <b>NOTE:</b><i> any sub-classes overriding this function should
 	 * call {@code super.start()} to make sure the application starts 
@@ -87,6 +93,13 @@ public abstract class Application implements Exitable {
 	 * will cause the execution to pause until the game has stopped.</i>
 	 */
 	protected void start() {
+		// Running has to be set to true
+		// before calling init. This is
+		// done to make sure we're able
+		// to call exit or stopRunning
+		// before the during init.
+		running = true;
+		
 		init();
 		startLoop();
 		stop();
@@ -123,8 +136,6 @@ public abstract class Application implements Exitable {
 	 * @see com.g4mesoft.Timer Timer
 	 */
 	private void startLoop() {
-		running = true;
-		
 		timer.initTimer();
 		while (running) {
 			timer.update();
@@ -144,18 +155,18 @@ public abstract class Application implements Exitable {
 	}
 
 	/**
-	 * Sets up the drawing before calling the overriden
+	 * Sets up the drawing before calling the overridden
 	 * render function. This will start and stop rendering
 	 * automatically.
 	 * 
 	 * @param dt	-	A constant representing how much 
 	 * 					time has passed since previous tick.
 	 * 
-	 * @see #render(Renderer2D, float) 
+	 * @see #render(IRenderer2D, float) 
 	 * @see #tick()
 	 */
 	private void draw(float dt) {
-		Renderer2D renderer = display.startRendering();
+		IRenderer2D renderer = display.startRendering();
 		if (renderer == null) return;
 		render(renderer, dt);
 		display.stopRendering();
@@ -194,13 +205,13 @@ public abstract class Application implements Exitable {
 	/**
 	 * Sets the minimumFps in the timer used for ticking
 	 * and drawing. If this constant is lower than the tps,
-	 * the timer will not allow for such a low framerate,
+	 * the timer will not allow for such a low frame-rate,
 	 * and compensate, to make sure the ticks per second is
 	 * met.
 	 * 
 	 * @param minimumFps	-	The minimum frames per second.
 	 * 
-	 * @see #render(Renderer2D, float)
+	 * @see #render(IRenderer2D, float)
 	 * @see #setTps(float)
 	 */
 	public void setMinimumFps(float minimumFps) {
@@ -225,6 +236,7 @@ public abstract class Application implements Exitable {
 	 * call to this method.
 	 * 
 	 * @see #start()
+	 * @see #exit()
 	 */
 	public void stopRunning() {
 		running = false;

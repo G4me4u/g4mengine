@@ -1,6 +1,6 @@
 package com.g4mesoft.graphic;
 
-public interface Exitable {
+public interface IExitable {
 
 	public void exit();
 	

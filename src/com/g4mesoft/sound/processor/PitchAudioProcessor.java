@@ -2,7 +2,7 @@ package com.g4mesoft.sound.processor;
 
 import com.g4mesoft.sound.analysis.FastFourierTransform;
 
-public class PitchAudioProcessor implements AudioProcessor {
+public class PitchAudioProcessor implements IAudioProcessor {
 
 	private static final float PIF = 3.14159265358979f;
 	

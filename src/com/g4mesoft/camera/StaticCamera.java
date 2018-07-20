@@ -2,7 +2,7 @@ package com.g4mesoft.camera;
 
 import com.g4mesoft.math.Vec2f;
 
-public class StaticCamera implements Camera {
+public class StaticCamera implements ICamera {
 
 	private final float xOffset;
 	private final float yOffset;

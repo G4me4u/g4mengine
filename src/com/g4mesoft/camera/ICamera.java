@@ -2,7 +2,7 @@ package com.g4mesoft.camera;
 
 import com.g4mesoft.math.Vec2f;
 
-public interface Camera {
+public interface ICamera {
 
 	public float getXOffset();
 	public float getYOffset();

@@ -1,6 +1,6 @@
 package com.g4mesoft.sound.processor;
 
-public class VolumeAudioProcessor implements AudioProcessor {
+public class VolumeAudioProcessor implements IAudioProcessor {
 
 	private float volume;
 	

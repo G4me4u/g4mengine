@@ -7,17 +7,17 @@ import com.g4mesoft.math.Vec3f;
 
 public abstract class AudioLine {
 
-	protected final List<AudioProcessor> preProcessors;
+	protected final List<IAudioProcessor> preProcessors;
 	
 	protected final Vec3f pos;
 	
 	public AudioLine(Vec3f pos) {
 		this.pos = new Vec3f(pos);
 		
-		preProcessors = new ArrayList<AudioProcessor>();
+		preProcessors = new ArrayList<IAudioProcessor>();
 	}
 
-	public void addPreProcessor(AudioProcessor preAudioProcessor) {
+	public void addPreProcessor(IAudioProcessor preAudioProcessor) {
 		synchronized (preProcessors) {
 			preProcessors.add(preAudioProcessor);
 		}
@@ -25,7 +25,7 @@ public abstract class AudioLine {
 	
 	public void preProcess(float[] samples, int numSamples, AudioChannel channel) {
 		synchronized (preProcessors) {
-			for (AudioProcessor audioProcessor : preProcessors)
+			for (IAudioProcessor audioProcessor : preProcessors)
 				audioProcessor.process(samples, numSamples, channel);
 		}
 	}

@@ -4,10 +4,12 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferStrategy;
 
-public class DefaultRenderer2D implements Renderer2D {
+public class DefaultRenderer2D implements IRenderer2D {
 
 	private final Display display;
 
+	private int offsetX;
+	private int offsetY;
 	private Graphics g;
 	
 	public DefaultRenderer2D(Display display) {
@@ -29,6 +31,9 @@ public class DefaultRenderer2D implements Renderer2D {
 	public void stop() {
 		g.dispose();
 		g = null;
+
+		offsetX = 0;
+		offsetY = 0;
 	}
 	
 	@Override
@@ -41,6 +46,9 @@ public class DefaultRenderer2D implements Renderer2D {
 		if (gw == 0) return;
 		if (gh == 0) return;
 
+		x += offsetX;
+		y += offsetY;
+		
 		if (gw < 0) {
 			x += gw * xc;
 			gw = -gw;
@@ -61,14 +69,14 @@ public class DefaultRenderer2D implements Renderer2D {
 			if (x < 0) break;
 			if (x >= display.getWidth()) break;
 			
-			drawLine(xl, y, xl, y1);
+			g.drawLine(xl, y, xl, y1);
 		}
 
 		for (int yl = y; yl <= y1; yl += gh) {
 			if (y < 0) break;
 			if (y >= display.getHeight()) break;
 			
-			drawLine(x, yl, x1, yl);
+			g.drawLine(x, yl, x1, yl);
 		}
 	}
 	
@@ -77,6 +85,7 @@ public class DefaultRenderer2D implements Renderer2D {
 		int x1 = x + width;
 		int y1 = y + height;
 		
+		// Offset handled by drawLine
 		drawLine(x, y, x1, y);
 		drawLine(x, y1, x1, y1);
 		drawLine(x, y, x, y1);
@@ -85,16 +94,67 @@ public class DefaultRenderer2D implements Renderer2D {
 	
 	@Override
 	public void fillRect(int x, int y, int width, int height) {
+		x += offsetX;
+		y += offsetY;
+		
+		if (x + width < 0 || x >= display.getWidth())
+			return;
+		if (y + height < 0 || y >= display.getHeight())
+			return;
+		
 		g.fillRect(x, y, width, height);
 	}
 	
 	@Override
 	public void drawLine(int x0, int y0, int x1, int y1) {
+		x0 += offsetX;
+		y0 += offsetY;
+		x1 += offsetX;
+		y1 += offsetY;
+		
+		int w = display.getWidth();
+		if ((x0 < 0 && x1 < 0) || (x0 >= w && x1 >= w))
+			return;
+		int h = display.getHeight();
+		if ((y0 < 0 && y1 < 0) || (y0 >= h && y1 >= h))
+			return;
+		
 		g.drawLine(x0, y0, x1, y1);
 	}
 
 	@Override
 	public void setColor(Color color) {
 		g.setColor(color);
+	}
+
+	@Override
+	public void setOffsetX(int ox) {
+		offsetX = ox;
+	}
+
+	@Override
+	public void setOffsetY(int oy) {
+		offsetY = oy;
+	}
+
+	@Override
+	public void setOffset(int ox, int oy) {
+		setOffsetX(ox);
+		setOffsetY(oy);
+	}
+	
+	@Override
+	public void translateX(int tx) {
+		setOffsetX(offsetX + tx);
+	}
+
+	@Override
+	public void translateY(int ty) {
+		setOffsetY(offsetY + ty);
+	}
+
+	@Override
+	public void translate(int tx, int ty) {
+		setOffset(offsetX + tx, offsetY + ty);
 	}
 }

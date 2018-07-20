@@ -4,7 +4,7 @@ import java.util.Random;
 
 import com.g4mesoft.math.Vec2f;
 
-public class DynamicCamera implements Camera {
+public class DynamicCamera implements ICamera {
 
 	private static final Random random = new Random();
 
@@ -57,7 +57,7 @@ public class DynamicCamera implements Camera {
 		zoom = 100.0f;
 	}
 
-	public void update(float dt) {
+	public void update() {
 		finishMovement();
 		finishZoom();
 		

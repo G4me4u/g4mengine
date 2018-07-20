@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import com.g4mesoft.world.entity.Collidable;
+import com.g4mesoft.world.entity.ICollidable;
 import com.g4mesoft.world.entity.Entity;
 import com.g4mesoft.world.entity.LivingEntity;
 import com.g4mesoft.world.phys.AABB;
@@ -122,9 +122,9 @@ public abstract class World {
 		List<Entity> collidingEntities = new ArrayList<Entity>();
 		
 		for (Entity e : entities) {
-			if (!(e instanceof Collidable)) continue;
+			if (!(e instanceof ICollidable)) continue;
 			
-			AABB bb1 = ((Collidable) e).getBody();
+			AABB bb1 = ((ICollidable) e).getBody();
 			if (body.collides(bb1))
 				collidingEntities.add((Entity)e);
 		}
