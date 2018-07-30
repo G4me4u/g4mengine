@@ -42,6 +42,11 @@ public class DefaultRenderer2D implements IRenderer2D {
 	}
 
 	@Override
+	public void clear() {
+		g.fillRect(0, 0, display.getWidth(), display.getHeight());
+	}
+	
+	@Override
 	public void drawGrid(int x, int y, int gw, int gh, int xc, int yc) {
 		if (gw == 0) return;
 		if (gh == 0) return;
