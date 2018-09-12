@@ -1,6 +1,6 @@
 package com.g4mesoft.net.packet;
 
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 import java.util.UUID;
 
 import com.g4mesoft.net.NetworkManager;
@@ -8,7 +8,7 @@ import com.g4mesoft.net.PacketByteBuffer;
 
 public abstract class Packet {
 
-	public SocketAddress senderAddress;
+	public InetSocketAddress senderAddress;
 	public UUID senderUUID;
 	
 	public boolean received;
@@ -28,7 +28,7 @@ public abstract class Packet {
 	 * @param senderAddress - the address of the sender
 	 * @param senderUUID - the connection UUID of the sender
 	 */
-	public final void setSender(SocketAddress senderAddress, UUID senderUUID) {
+	public final void setSender(InetSocketAddress senderAddress, UUID senderUUID) {
 		this.senderAddress = senderAddress;
 		this.senderUUID = senderUUID;
 

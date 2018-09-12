@@ -35,8 +35,8 @@ public final class SendThread extends Thread {
 		canSend = true;
 	}
 	
-	void addPacketToSend(Packet packet, UUID receiverUUID) {
-		sendQueue.add(new PacketEntry(packet, receiverUUID));
+	void addPacketToSend(Packet packet, UUID receiverUUID, int flags) {
+		sendQueue.add(new PacketEntry(packet, receiverUUID, flags));
 	}
 
 	void stopSending() {
@@ -61,7 +61,7 @@ public final class SendThread extends Thread {
 				continue;
 			}
 			
-			manager.sendPacket(entry.packet, entry.receiverUUID);
+			manager.sendPacket(entry.packet, entry.receiverUUID, entry.flags);
 		}
 	}
 	
@@ -69,10 +69,12 @@ public final class SendThread extends Thread {
 		
 		private final Packet packet;
 		private final UUID receiverUUID;
+		private final int flags;
 		
-		private PacketEntry(Packet packet, UUID receiverUUID) {
+		private PacketEntry(Packet packet, UUID receiverUUID, int flags) {
 			this.packet = packet;
 			this.receiverUUID = receiverUUID;
+			this.flags = flags;
 		}
 	}
 }
