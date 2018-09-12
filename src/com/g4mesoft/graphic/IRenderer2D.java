@@ -11,6 +11,8 @@ public interface IRenderer2D {
 	public void stop();
 	
 	public Graphics getGraphics();
+
+	public void clear();
 	
 	public void drawGrid(int x, int y, int gw, int gh, int xc, int yc);
 
@@ -33,4 +35,5 @@ public interface IRenderer2D {
 	public void translateY(int ty);
 
 	public void translate(int tx, int ty);
+
 }
