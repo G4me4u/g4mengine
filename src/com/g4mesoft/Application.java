@@ -1,5 +1,8 @@
 package com.g4mesoft;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
 import com.g4mesoft.graphic.Display;
 import com.g4mesoft.graphic.IExitable;
 import com.g4mesoft.graphic.IRenderer2D;
@@ -251,5 +254,34 @@ public abstract class Application implements IExitable {
 	@Override
 	public void exit() {
 		running = false;
+	}
+	
+// Static functions //
+	
+	public static void start(String[] args, Class<? extends Application> appClazz) {
+		Constructor<?> defaultConstructor = null;
+		try {
+			defaultConstructor = appClazz.getDeclaredConstructor(new Class<?>[0]);
+		} catch (NoSuchMethodException | SecurityException e) {
+			e.printStackTrace();
+		}
+		
+		if (defaultConstructor == null)
+			return;
+		
+		Application app = null;
+		try {
+			app = (Application)defaultConstructor.newInstance(new Object[0]);
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		}
+		
+		app.start();
 	}
 }
