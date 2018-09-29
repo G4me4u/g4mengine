@@ -76,7 +76,7 @@ public class AStarSearch {
 		openList.clear();
 		searchList.clear();
 
-		Node current = new Node(null, start, null);
+		Node current = new Node(start);
 		
 		searchList.insert(current.index, current);
 		
@@ -139,20 +139,24 @@ public class AStarSearch {
 		private final float movecost;
 		private final int step;
 		
+		public Node(Vec2f pos) {
+			parent = null;
+			this.pos = pos;
+			dir = null;
+			
+			index = 0;
+			movecost = 0.0f;
+			step = 0;
+		}
+		
 		public Node(Node parent, Vec2f pos, CardinalDirection dir) {
 			this.parent = parent;
 			this.pos = pos;
 			this.dir = dir;
 			
-			if (parent != null) {
-				index = offsetIndex(parent.index, dir);
-				movecost = parent.movecost + (dir.isDiagonal() ? MOVE_COST_DIAG : MOVE_COST);
-				step = parent.step + 1;
-			} else {
-				index = 0;
-				movecost = 0.0f;
-				step = 0;
-			}
+			index = offsetIndex(parent.index, dir);
+			movecost = parent.movecost + (dir.isDiagonal() ? MOVE_COST_DIAG : MOVE_COST);
+			step = parent.step + 1;
 		}
 	}
 }
