@@ -63,23 +63,21 @@ public class DefaultRenderer2D implements IRenderer2D {
 			gh = -gh;
 		}
 		
-		if (x < 0 || 
-			y < 0 || 
-			x >= display.getWidth() ||
+		if (x >= display.getWidth() ||
 			y >= display.getHeight()) return;
 		
 		int x1 = x + gw * xc;
 		int y1 = y + gh * yc;
 		for (int xl = x; xl <= x1; xl += gw) {
-			if (x < 0) break;
-			if (x >= display.getWidth()) break;
+			if (xl < 0) continue;
+			if (xl >= display.getWidth()) break;
 			
 			g.drawLine(xl, y, xl, y1);
 		}
 
 		for (int yl = y; yl <= y1; yl += gh) {
-			if (y < 0) break;
-			if (y >= display.getHeight()) break;
+			if (yl < 0) continue;
+			if (yl >= display.getHeight()) break;
 			
 			g.drawLine(x, yl, x1, yl);
 		}
