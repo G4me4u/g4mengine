@@ -18,22 +18,28 @@ public class DefaultRenderer2D implements IRenderer2D {
 	
 	public void clear(Color color) {
 		g.setColor(color);
-		g.fillRect(0, 0, display.getWidth(), display.getHeight());
+		g.fillRect(0, 0, getWidth(), getHeight());
 	}
 	
 	@Override
 	public boolean start(BufferStrategy bs) {
-		g = bs.getDrawGraphics();
-		return g != null;
+		return (g = bs.getDrawGraphics()) != null;
 	}
 
 	@Override
 	public void stop() {
-		g.dispose();
-		g = null;
+		if (g != null) {
+			g.dispose();
+			g = null;
+		}
 
 		offsetX = 0;
 		offsetY = 0;
+	}
+	
+	@Override
+	public boolean isRendering() {
+		return g != null;
 	}
 	
 	@Override
@@ -43,13 +49,18 @@ public class DefaultRenderer2D implements IRenderer2D {
 
 	@Override
 	public void clear() {
-		g.fillRect(0, 0, display.getWidth(), display.getHeight());
+		g.fillRect(0, 0, getWidth(), getHeight());
+	}
+
+	@Override
+	public void setColor(Color color) {
+		g.setColor(color);
 	}
 	
 	@Override
 	public void drawGrid(int x, int y, int gw, int gh, int xc, int yc) {
-		if (gw == 0) return;
-		if (gh == 0) return;
+		if (gw == 0 || gh == 0) 
+			return;
 
 		x += offsetX;
 		y += offsetY;
@@ -63,21 +74,24 @@ public class DefaultRenderer2D implements IRenderer2D {
 			gh = -gh;
 		}
 		
-		if (x >= display.getWidth() ||
-			y >= display.getHeight()) return;
+		int width = getWidth();
+		int height = getHeight();
+		
+		if (x >= width ||
+			y >= height) return;
 		
 		int x1 = x + gw * xc;
 		int y1 = y + gh * yc;
 		for (int xl = x; xl <= x1; xl += gw) {
 			if (xl < 0) continue;
-			if (xl >= display.getWidth()) break;
+			if (xl >= width) break;
 			
 			g.drawLine(xl, y, xl, y1);
 		}
 
 		for (int yl = y; yl <= y1; yl += gh) {
 			if (yl < 0) continue;
-			if (yl >= display.getHeight()) break;
+			if (yl >= height) break;
 			
 			g.drawLine(x, yl, x1, yl);
 		}
@@ -100,9 +114,9 @@ public class DefaultRenderer2D implements IRenderer2D {
 		x += offsetX;
 		y += offsetY;
 		
-		if (x + width < 0 || x >= display.getWidth())
+		if (x + width < 0 || x >= getWidth())
 			return;
-		if (y + height < 0 || y >= display.getHeight())
+		if (y + height < 0 || y >= getHeight())
 			return;
 		
 		g.fillRect(x, y, width, height);
@@ -115,19 +129,14 @@ public class DefaultRenderer2D implements IRenderer2D {
 		x1 += offsetX;
 		y1 += offsetY;
 		
-		int w = display.getWidth();
+		int w = getWidth();
 		if ((x0 < 0 && x1 < 0) || (x0 >= w && x1 >= w))
 			return;
-		int h = display.getHeight();
+		int h = getHeight();
 		if ((y0 < 0 && y1 < 0) || (y0 >= h && y1 >= h))
 			return;
 		
 		g.drawLine(x0, y0, x1, y1);
-	}
-
-	@Override
-	public void setColor(Color color) {
-		g.setColor(color);
 	}
 
 	@Override
@@ -159,5 +168,15 @@ public class DefaultRenderer2D implements IRenderer2D {
 	@Override
 	public void translate(int tx, int ty) {
 		setOffset(offsetX + tx, offsetY + ty);
+	}
+	
+	@Override
+	public int getWidth() {
+		return display.getWidth();
+	}
+	
+	@Override
+	public int getHeight() {
+		return display.getHeight();
 	}
 }

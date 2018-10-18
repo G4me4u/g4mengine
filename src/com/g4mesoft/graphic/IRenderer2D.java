@@ -10,19 +10,21 @@ public interface IRenderer2D {
 
 	public void stop();
 	
-	public Graphics getGraphics();
+	public boolean isRendering();
 
-	public void clear();
+	public Graphics getGraphics();
 	
-	public void drawGrid(int x, int y, int gw, int gh, int xc, int yc);
+	public void clear();
+
+	public void setColor(Color color);
+
+	public void drawGrid(int x, int y, int xc, int yc, int gw, int gh);
 
 	public void drawRect(int x, int y, int width, int height);
 	
 	public void fillRect(int x, int y, int width, int height);
 	
 	public void drawLine(int x0, int y0, int x1, int y1);
-	
-	public void setColor(Color color);
 
 	public void setOffsetX(int ox);
 	
@@ -35,5 +37,8 @@ public interface IRenderer2D {
 	public void translateY(int ty);
 
 	public void translate(int tx, int ty);
-
+	
+	public int getWidth();
+	
+	public int getHeight();
 }
