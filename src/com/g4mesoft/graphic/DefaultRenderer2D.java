@@ -2,6 +2,7 @@ package com.g4mesoft.graphic;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferStrategy;
 
 public class DefaultRenderer2D implements IRenderer2D {
@@ -137,6 +138,24 @@ public class DefaultRenderer2D implements IRenderer2D {
 			return;
 		
 		g.drawLine(x0, y0, x1, y1);
+	}
+	
+	@Override
+	public void drawString(String str, int x, int y) {
+		x += offsetX;
+		y += offsetY;
+		
+		g.drawString(str, x, y);
+	}
+	
+	@Override
+	public int getStringWidth(String str) {
+		return g.getFontMetrics().stringWidth(str);
+	}
+	
+	@Override
+	public Rectangle2D getStringBounds(String str) {
+		return g.getFontMetrics().getStringBounds(str, g);
 	}
 
 	@Override

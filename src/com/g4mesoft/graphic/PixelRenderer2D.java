@@ -2,6 +2,7 @@ package com.g4mesoft.graphic;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
@@ -287,6 +288,20 @@ public class PixelRenderer2D implements IRenderer2D {
 		int i = x0 + y * width;
 		for (int xp = x0; xp <= x1; xp++)
 			pixels[i++] = color;
+	}
+	
+	@Override
+	public int getStringWidth(String str) {
+		return 0;
+	}
+
+	@Override
+	public Rectangle2D getStringBounds(String str) {
+		return new Rectangle2D.Double();
+	}
+
+	@Override
+	public void drawString(String str, int x, int y) {
 	}
 
 	@Override

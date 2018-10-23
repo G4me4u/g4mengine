@@ -4,13 +4,11 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferStrategy;
 
-public interface IRenderer2D {
+public interface IRenderer2D extends IRenderingContext2D {
 
 	public boolean start(BufferStrategy bs);
 
 	public void stop();
-	
-	public boolean isRendering();
 
 	public Graphics getGraphics();
 	
@@ -26,6 +24,8 @@ public interface IRenderer2D {
 	
 	public void drawLine(int x0, int y0, int x1, int y1);
 
+	public void drawString(String str, int x, int y);
+	
 	public void setOffsetX(int ox);
 	
 	public void setOffsetY(int oy);
@@ -38,7 +38,4 @@ public interface IRenderer2D {
 
 	public void translate(int tx, int ty);
 	
-	public int getWidth();
-	
-	public int getHeight();
 }
