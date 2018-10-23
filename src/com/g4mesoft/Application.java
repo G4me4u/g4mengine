@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import com.g4mesoft.graphic.Display;
 import com.g4mesoft.graphic.IExitable;
 import com.g4mesoft.graphic.IRenderer2D;
+import com.g4mesoft.graphic.ui.Composition;
 
 public abstract class Application implements IExitable {
 
@@ -17,9 +18,19 @@ public abstract class Application implements IExitable {
 	
 	private Display display;
 	
+	private Composition composition;
+	
 	private boolean running;
 	private Timer timer;
 	private float minimumFps;
+	
+	/*
+	 * Width and height values of the renderer
+	 * in the previous frame. Used to know when
+	 * The renderer viewport has been resized. 
+	 */
+	private int oldWidth;
+	private int oldHeight;
 
 // Abstract functions //
 	
@@ -123,6 +134,8 @@ public abstract class Application implements IExitable {
 	protected void init() {
 		display = new Display(Application.class.getResourceAsStream(displayConfig), this);
 
+		composition = null;
+		
 		timer = new Timer(DEFAULT_TPS, DEFAULT_DEBUG);
 		minimumFps = DEFAULT_MIN_FPS;
 	}
@@ -170,9 +183,47 @@ public abstract class Application implements IExitable {
 	 */
 	private void draw(float dt) {
 		IRenderer2D renderer = display.startRendering();
-		if (renderer == null) return;
+		if (renderer == null) 
+			return;
+		
+		int width = renderer.getWidth();
+		int height = renderer.getHeight();
+		if (width != oldWidth || height != oldHeight) {
+			// The renderer has resized the viewport
+			displayResized(width, height);
+			
+			oldWidth = width;
+			oldHeight = height;
+		}
+
+		if (composition != null) {
+			if (!composition.isValid())
+				composition.layout(renderer);
+			composition.render(renderer, dt);
+		}
+		
 		render(renderer, dt);
 		display.stopRendering();
+	}
+	
+	/**
+	 * Invoked during rendering, if the viewport size of the current 
+	 * {@link com.g4mesoft.graphic.IRenderingContext2D IRenderingContext2D}
+	 * has changed within the last frame.
+	 * <br><br>
+	 * <b>NOTE:</b><i> any sub-classes overriding this function should
+	 * call {@code super.displayResized(int, int)} to make sure the 
+	 * application handles context resizing correctly</i>
+	 * 
+	 * @param newWidth - The new width of the context viewport
+	 * @param newHeight - The new height of the context viewport
+	 */
+	protected void displayResized(int newWidth, int newHeight) {
+		if (composition != null) {
+			// Invalidate composition. The resizing
+			// will be handled by Composition#layout()
+			composition.invalidate();
+		}
 	}
 	
 // Getter functions //
@@ -184,7 +235,26 @@ public abstract class Application implements IExitable {
 		return display;
 	}
 	
+	/**
+	 * @return The root composition of the application
+	 */
+	public Composition getRootComposition() {
+		return composition;
+	}
+	
 // Setter functions //
+	
+	/**
+	 * TODO: documentation
+	 */
+	public void setRootComposition(Composition composition) {
+		if (composition != null && (composition.getParent() != null || composition.isValid()))
+			throw new IllegalArgumentException("Composition is already bound to a parent!");
+		
+		if (this.composition != null)
+			this.composition.invalidate();
+		this.composition = composition;
+	}
 	
 	/**
 	 * Sets the tps in the timer used for ticking and
