@@ -6,25 +6,26 @@ import com.g4mesoft.math.Vec2i;
 
 public abstract class Composition {
 
-	public static final int ALIGN_CENTER = 0;
+	public static final float ALIGN_CENTER = 0.5f;
 
-	public static final int ALIGN_LEFT = 1;
-	public static final int ALIGN_RIGHT = 2;
-	public static final int ALIGN_TOP = 3;
-	public static final int ALIGN_BOTTOM = 4;
+	public static final float ALIGN_LEFT = 0.0f;
+	public static final float ALIGN_RIGHT = 1.0f;
+	public static final float ALIGN_TOP = 0.0f;
+	public static final float ALIGN_BOTTOM = 1.0f;
 	
 	protected final Vec2i pos;
 	protected final Vec2i size;
 
-	protected boolean preferredSizeInvalid;
+	private boolean preferredSizeInvalid;
+	private boolean preferredSizeSet;
 	private final Vec2i preferredSize;
 	
 	private Composition parent;
 	
 	protected boolean valid;
 
-	protected int horizontalAlignment;
-	protected int verticalAlignment;
+	protected float horizontalAlignment;
+	protected float verticalAlignment;
 	
 	public Composition() {
 		pos = new Vec2i();
@@ -82,9 +83,15 @@ public abstract class Composition {
 		return size.y;
 	}
 
+	public void setPreferredSize(Vec2i preferredSize) {
+		preferredSizeSet = true;
+		this.preferredSize.set(preferredSize);
+	}
+	
 	public Vec2i getPreferredSize(IRenderingContext2D context) {
 		if (preferredSizeInvalid) {
-			calculatePreferredSize(preferredSize, context);
+			if (!preferredSizeSet)
+				calculatePreferredSize(preferredSize, context);
 			preferredSizeInvalid = false;
 		}
 		return preferredSize;
@@ -98,20 +105,22 @@ public abstract class Composition {
 		preferredSize.set(0);
 	}
 	
+	public boolean isPreferredSizeSet() {
+		return preferredSizeSet;
+	}
+	
 	public void setParent(Composition composition) {
 		parent = composition;
 		invalidate();
 	}
 
-	public void setHorizontalAlignment(int alignment) {
-		switch (alignment) {
-		case ALIGN_LEFT:
-		case ALIGN_RIGHT:
-		case ALIGN_CENTER:
+	public void setHorizontalAlignment(float alignment) {
+		if (alignment > 1.0f) {
+			horizontalAlignment = 1.0f;
+		} else if (alignment < 0.0f) {
+			horizontalAlignment = 0.0f;
+		} else {
 			horizontalAlignment = alignment;
-			break;
-		default:
-			throw new IllegalArgumentException("Invalid alignment");
 		}
 		
 		// The parent should update
@@ -119,22 +128,28 @@ public abstract class Composition {
 		if (parent != null)
 			parent.invalidate();
 	}
+	
+	public float getHorizontalAlignment() {
+		return horizontalAlignment;
+	}
 
-	public void setVerticalAlignment(int alignment) {
-		switch (alignment) {
-		case ALIGN_TOP:
-		case ALIGN_BOTTOM:
-		case ALIGN_CENTER:
+	public void setVerticalAlignment(float alignment) {
+		if (alignment > 1.0f) {
+			verticalAlignment = 1.0f;
+		} else if (alignment < 0.0f) {
+			verticalAlignment = 0.0f;
+		} else {
 			verticalAlignment = alignment;
-			break;
-		default:
-			throw new IllegalArgumentException("Invalid alignment");
 		}
 
 		// The parent should update
 		// the layout.
 		if (parent != null)
 			parent.invalidate();
+	}
+	
+	public float getVerticalAlignment() {
+		return verticalAlignment;
 	}
 	
 	public Composition getParent() {

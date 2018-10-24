@@ -9,9 +9,9 @@ import com.g4mesoft.math.Vec2i;
 
 public class LabelComposition extends Composition {
 
-	public static final int TEXT_ALIGN_CENTER = ALIGN_CENTER;
-	public static final int TEXT_ALIGN_LEFT = ALIGN_LEFT;
-	public static final int TEXT_ALIGN_RIGHT = ALIGN_RIGHT;
+	public static final int TEXT_ALIGN_CENTER = 0;
+	public static final int TEXT_ALIGN_LEFT = 1;
+	public static final int TEXT_ALIGN_RIGHT = 2;
 	
 	private String text;
 	private Color textColor;
