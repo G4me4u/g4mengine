@@ -114,6 +114,13 @@ public class KeyInputListener implements KeyListener {
 	 * <pre>
 	 * display.registerKeyListener(KeyInputListener.getInstance());
 	 * </pre>
+	 * <b>
+	 * NOTE: unless handled elsewhere one must update the keys at
+	 * the end of each tick using the following code snippet: 
+	 * </b>
+	 * <pre>
+	 * KeyInputListener.getInstance().updateKeys();
+	 * </pre>
 	 * 
 	 * @param display  -  The display which this {@code KeyInputListener}
 	 *                    should be registered by.
@@ -126,6 +133,8 @@ public class KeyInputListener implements KeyListener {
 	 * Returns an instance of the {@code KeyInputListener}. If the
 	 * static instance is not yet defined, this function initiate a 
 	 * new instance and return it in future calls to this method.
+	 * There is only ever one instance of the KeyInputListener. Multiple
+	 * calls to this function will return the same instance.
 	 * 
 	 * @return A static instance of the {@code KeyInputListener}
 	 */
