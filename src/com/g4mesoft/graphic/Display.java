@@ -164,7 +164,11 @@ public class Display {
 			
 			bs = canvas.getBufferStrategy();
 			if (bs == null) {
-				canvas.createBufferStrategy(3);
+				// We have to make sure the canvas
+				// is displayable. It could have been
+				// disposed or removed before this call.
+				if (canvas.isDisplayable())
+					canvas.createBufferStrategy(3);
 				return null;
 			}
 			
@@ -181,7 +185,13 @@ public class Display {
 				throw new IllegalStateException("Already stopped rendering!");
 			
 			renderer.stop();
-			bs.show();
+			
+			// We have to make sure the canvas 
+			// is displayable before showing the 
+			// next frame. (The bufferstrategy
+			// could have been invalidated).
+			if (canvas.isDisplayable())
+				bs.show();
 			
 			rendering = false;
 		}
