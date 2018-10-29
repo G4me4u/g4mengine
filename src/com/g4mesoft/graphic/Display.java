@@ -26,7 +26,6 @@ public class Display {
 	private final Object renderingLock = new Object();
 	
 	private final DisplayConfig displayConfig;
-	private final IExitable exitable;
 
 	private JFrame frame;
 	private DisplayCanvas canvas;
@@ -38,11 +37,13 @@ public class Display {
 	
 	private boolean rendering;
 	
-	public Display(IExitable exitable) { 
-		this(null, exitable); 
+	private boolean closeRequested;
+	
+	public Display() { 
+		this(null); 
 	}
 	
-	public Display(InputStream configInputStream, IExitable exitable) {
+	public Display(InputStream configInputStream) {
 		DisplayConfig displayConfig = null;
 		
 		if (configInputStream != null) {
@@ -58,7 +59,6 @@ public class Display {
 			displayConfig = DisplayConfig.DEFAULT_DISPLAY_CONFIG;
 	
 		this.displayConfig = displayConfig;
-		this.exitable = exitable;
 		
 		initDisplay();
 	}
@@ -92,10 +92,11 @@ public class Display {
 		if (displayConfig.centered)
 			frame.setLocationRelativeTo(null);
 		
+		closeRequested = false;
 		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		frame.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
-				Display.this.dispose();
+				closeRequested = true;
 			}
 		});
 		
@@ -223,8 +224,12 @@ public class Display {
 	public boolean isWindowed() {
 		return (!fullscreen) || (fullscreen && windowed);
 	}
+	
+	public boolean isCloseRequested() {
+		return closeRequested;
+	}
 
-	private void dispose() {
+	public void dispose() {
 		if (frame != null) {
 			frame.setVisible(false);
 			frame.dispose();
@@ -232,9 +237,6 @@ public class Display {
 		
 		frame = null;
 		canvas = null;
-		
-		if (exitable != null)
-			exitable.exit();
 	}
 	
 	public int getWidth() {

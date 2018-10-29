@@ -48,6 +48,14 @@ public class LayoutComposition extends Composition {
 	}
 	
 	@Override
+	public void update() {
+		super.update();
+		
+		for (Composition child : children)
+			child.update();
+	}
+	
+	@Override
 	public void render(IRenderer2D renderer, float dt) {
 		super.render(renderer, dt);
 		

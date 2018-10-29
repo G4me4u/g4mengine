@@ -50,11 +50,11 @@ public abstract class Application implements IExitable {
 	 * inputs or doing other necessary calculations. 
 	 * <br>
 	 * This function should not be used for drawing, as there
-	 * is another method, {@code render(Renderer2D, float)}
+	 * is another method, {@code render(IRenderer2D, float)}
 	 * used for handling that. 
 	 * <br><br>
 	 * <b>NOTE:</b> this function will always be called with
-	 * approximately the same interval (if the system isn't 
+	 * approximately the same time-interval (if the system isn't 
 	 * overloaded). If you want to change the interval between 
 	 * each tick, call {@code setTps(float)} with the desired 
 	 * amount of ticks per second.
@@ -132,7 +132,7 @@ public abstract class Application implements IExitable {
 	 * executing properly.</i>
 	 */
 	protected void init() {
-		display = new Display(Application.class.getResourceAsStream(displayConfig), this);
+		display = new Display(Application.class.getResourceAsStream(displayConfig));
 
 		composition = null;
 		
@@ -154,10 +154,17 @@ public abstract class Application implements IExitable {
 	private void startLoop() {
 		timer.initTimer();
 		while (running) {
+			if (display.isCloseRequested()) {
+				display.dispose();
+				exit();
+				// Continue to stop loop
+				continue;
+			}
+			
 			timer.update();
 			int missingTicks = timer.getMissingTicks();
 			for (int i = 0; i < missingTicks; i++) {
-				tick();
+				update();
 				timer.tickPassed();
 			}
 
@@ -170,6 +177,15 @@ public abstract class Application implements IExitable {
 		}
 	}
 
+	/**
+	 * TODO: documentation
+	 */
+	private void update() {
+		if (composition != null && composition.isValid())
+			composition.update();
+		tick();
+	}
+	
 	/**
 	 * Sets up the drawing before calling the overridden
 	 * render function. This will start and stop rendering

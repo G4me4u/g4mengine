@@ -64,6 +64,9 @@ public abstract class Composition {
 		valid = true;
 	}
 
+	public void update() {
+	}
+	
 	public void render(IRenderer2D renderer, float dt) {
 	}
 	
