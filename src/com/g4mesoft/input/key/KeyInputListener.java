@@ -33,13 +33,19 @@ public class KeyInputListener implements KeyListener {
 	private static KeyInputListener instance;
 	
 	private List<KeyInput> keys;
+	private List<KeyTypedInput> typedKeys;
 	
 	private KeyInputListener() {
 		keys = new ArrayList<KeyInput>();
+		typedKeys = new ArrayList<KeyTypedInput>();
 	}
 	
 	@Override 
-	public void keyTyped(KeyEvent e) { }
+	public void keyTyped(KeyEvent e) {
+		char keyChar = e.getKeyChar();
+		for (KeyTypedInput typedKey : typedKeys)
+			typedKey.keyTyped(keyChar);
+	}
 
 	@Override
 	public void keyPressed(KeyEvent e) {
@@ -60,9 +66,10 @@ public class KeyInputListener implements KeyListener {
 	 * this {@code KeyInputListener}.
 	 */
 	public void updateKeys() {
-		for (KeyInput key : keys) {
+		for (KeyInput key : keys)
 			key.update();
-		}
+		for (KeyTypedInput typedKey : typedKeys)
+			typedKey.update();
 	}
 	
 	/**
@@ -70,9 +77,10 @@ public class KeyInputListener implements KeyListener {
 	 * this {@code KeyInputListener}.
 	 */
 	public void resetKeys() {
-		for (KeyInput key : keys) {
+		for (KeyInput key : keys)
 			key.reset();
-		}
+		for (KeyTypedInput typedKey : typedKeys)
+			typedKey.reset();
 	}
 	
 	/**
@@ -105,6 +113,28 @@ public class KeyInputListener implements KeyListener {
 	 */
 	public boolean removeKey(KeyInput key) {
 		return keys.remove(key);
+	}
+	
+	/**
+	 * TODO: Documentation
+	 * 
+	 * @param typedKey
+	 * @return
+	 */
+	public boolean addTypedKey(KeyTypedInput typedKey) {
+		if (typedKeys.contains(typedKey))
+			return false;
+		return typedKeys.add(typedKey);
+	}
+	
+	/**
+	 * TODO: Documentation
+	 * 
+	 * @param typedKey
+	 * @return
+	 */
+	public boolean removeTypedKey(KeyTypedInput typedKey) {
+		return typedKeys.remove(typedKey);
 	}
 	
 	/**
