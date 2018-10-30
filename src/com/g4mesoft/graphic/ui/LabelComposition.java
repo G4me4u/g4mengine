@@ -13,17 +13,17 @@ public class LabelComposition extends Composition {
 	public static final int TEXT_ALIGN_LEFT = 1;
 	public static final int TEXT_ALIGN_RIGHT = 2;
 	
-	private String text;
+	protected String text;
 	private Color textColor;
 	
 	private int textAlignment;
 
 	public LabelComposition() {
-		this("");
+		this(null);
 	}
 	
 	public LabelComposition(String text) {
-		this.text = text;
+		this.text = (text != null ? text : "");
 		
 		textColor = Color.WHITE;
 		textAlignment = TEXT_ALIGN_LEFT;
@@ -72,6 +72,10 @@ public class LabelComposition extends Composition {
 			text = "";
 		this.text = text;
 		invalidate();
+	}
+	
+	public String getText() {
+		return text;
 	}
 	
 	public void setTextAlignment(int alignment) {
