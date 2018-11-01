@@ -1,4 +1,4 @@
-package com.g4mesoft.graphic.ui;
+package com.g4mesoft.composition;
 
 import java.awt.Color;
 

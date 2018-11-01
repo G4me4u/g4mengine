@@ -1,4 +1,4 @@
-package com.g4mesoft.graphic.ui;
+package com.g4mesoft.composition;
 
 import com.g4mesoft.input.key.KeyInputListener;
 import com.g4mesoft.input.key.KeyTypedInput;

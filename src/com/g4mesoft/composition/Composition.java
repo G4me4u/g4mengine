@@ -1,4 +1,4 @@
-package com.g4mesoft.graphic.ui;
+package com.g4mesoft.composition;
 
 import com.g4mesoft.graphic.IRenderer2D;
 import com.g4mesoft.graphic.IRenderingContext2D;
