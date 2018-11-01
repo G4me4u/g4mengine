@@ -3,10 +3,10 @@ package com.g4mesoft;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
+import com.g4mesoft.composition.Composition;
 import com.g4mesoft.graphic.Display;
 import com.g4mesoft.graphic.IExitable;
 import com.g4mesoft.graphic.IRenderer2D;
-import com.g4mesoft.graphic.ui.Composition;
 
 public abstract class Application implements IExitable {
 
