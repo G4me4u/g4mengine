@@ -1,5 +1,6 @@
 package com.g4mesoft.composition.ui;
 
+import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 
 import com.g4mesoft.composition.Composition;
@@ -17,6 +18,10 @@ public class LabelCompositionUI extends CompositionUI {
 	@Override
 	public void bindUI(Composition composition) {
 		label = (LabelComposition)composition;
+
+		// Install defaults.
+		label.setTextColor(Color.WHITE);
+		label.setTextAlignment(LabelComposition.TEXT_ALIGN_LEFT);
 	}
 
 	@Override
@@ -63,6 +68,37 @@ public class LabelCompositionUI extends CompositionUI {
 		renderer.drawString(text, x, y);
 	}
 	
+	/**
+	 * Trims the given text to fit within the given available 
+	 * width. If the text does not fit in the available width, 
+	 * it will be trimmed, and an ellipsis '...' will be added 
+	 * to the end of the text.
+	 * <br><br>
+	 * For example. Trimming 'Hello my world!' as follows:
+	 * <pre>
+	 * | - avail - |
+	 * |           |
+	 * |Hello my world!
+	 * |           |
+	 * </pre>
+	 * would result in 'Hello my...'
+	 * <pre>
+	 * | - avail - |
+	 * |           |
+	 * |Hello my...|
+	 * |           |
+	 * </pre>
+	 * Trimming an empty string will result in an empty string. If
+	 * the given text does not allow for any characters within the
+	 * available width, the default ellipsis '...' will be returned.
+	 * 
+	 * @param renderer - The currently rendering context.
+	 * @param text - The text to be trimmed.
+	 * @param availableWidth - The specified available width.
+	 * 
+	 * @return A trimmed version of the text, which can be drawn within
+	 *         the specified availableWidth.
+	 */
 	protected String trimText(IRenderer2D renderer, String text, int availableWidth) {
 		int len = text.length();
 		if (len <= 0)

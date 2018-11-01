@@ -31,8 +31,8 @@ public class LabelComposition extends Composition {
 
 	public void setTextColor(Color color) {
 		if (color == null)
-			throw new NullPointerException("Color is null");
-		
+			throw new IllegalArgumentException("Color is null");
+
 		textColor = color;
 	}
 	
