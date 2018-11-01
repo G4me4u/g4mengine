@@ -35,7 +35,6 @@ public class KeyTypedInput extends Input {
 			synchronized (buffer) {
 				recording = recordNext;
 				recordNext = false;
-				bufferPos = 0;
 			}
 		}
 	}
@@ -48,14 +47,29 @@ public class KeyTypedInput extends Input {
 
 		recordNext = false;
 	}
+
+	public boolean hasTypedCharacters() {
+		synchronized (buffer) {
+			return bufferPos > 0;
+		}
+	}
 	
-	public char[] getTypedChars() {
+	public void recordNextUpdate() {
 		synchronized (buffer) {
 			recordNext = true;
-
+		}
+	}
+	
+	public char[] flushBuffer() {
+		synchronized (buffer) {
 			char[] dest = new char[bufferPos];
 			if (bufferPos > 0)
 				System.arraycopy(buffer, 0, dest, 0, bufferPos);
+			
+			// Resetting buffer position
+			// will 'flush' it.
+			bufferPos = 0;
+			
 			return dest;
 		}
 		
