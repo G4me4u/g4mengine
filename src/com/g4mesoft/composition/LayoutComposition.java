@@ -15,10 +15,14 @@ public class LayoutComposition extends Composition {
 	public void addComposition(Composition composition) {
 		if (composition == null)
 			throw new NullPointerException("Composition is null!");
+		if (composition == this)
+			throw new IllegalArgumentException("Can't add composition to itself!");
 		if (composition.getParent() != null)
 			throw new IllegalArgumentException("Composition already has a parent!");
+		
 		children.add(composition);
 		composition.setParent(this);
+		
 		invalidate();
 	}
 	

@@ -291,6 +291,11 @@ public class PixelRenderer2D implements IRenderer2D {
 	}
 	
 	@Override
+	public int getCharWidth(char c) {
+		return 0;
+	}
+
+	@Override
 	public int getStringWidth(String str) {
 		return 0;
 	}

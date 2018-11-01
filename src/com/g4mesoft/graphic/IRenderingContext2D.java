@@ -6,6 +6,8 @@ public interface IRenderingContext2D {
 
 	public boolean isRendering();
 
+	public int getCharWidth(char c);
+
 	public int getStringWidth(String str);
 	
 	public Rectangle2D getStringBounds(String str);

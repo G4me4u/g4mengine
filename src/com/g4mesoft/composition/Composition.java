@@ -1,7 +1,9 @@
 package com.g4mesoft.composition;
 
+import com.g4mesoft.composition.ui.CompositionUI;
 import com.g4mesoft.graphic.IRenderer2D;
 import com.g4mesoft.graphic.IRenderingContext2D;
+import com.g4mesoft.math.MathUtils;
 import com.g4mesoft.math.Vec2i;
 
 public abstract class Composition {
@@ -20,6 +22,7 @@ public abstract class Composition {
 	private boolean preferredSizeSet;
 	private final Vec2i preferredSize;
 	
+	private CompositionUI ui;
 	private Composition parent;
 	
 	protected boolean valid;
@@ -33,12 +36,26 @@ public abstract class Composition {
 	
 		preferredSize = new Vec2i();
 		
+		ui = null;
 		parent = null;
 		
 		horizontalAlignment = ALIGN_LEFT;
 		verticalAlignment = ALIGN_TOP;
 	}
 
+	public void setUI(CompositionUI ui) {
+		// Unbind current ui
+		CompositionUI oldUI = this.ui;
+		if (oldUI != null)
+			oldUI.unbindUI(this);
+		
+		this.ui = ui;
+		ui.bindUI(this);
+
+		// We would have to re-layout
+		invalidate();
+	}
+	
 	/**
 	 * Layouts this composition. If the parent is null, this
 	 * function will set the size and position of the composition
@@ -60,14 +77,18 @@ public abstract class Composition {
 			pos.set(0, 0);
 			size.set(context.getWidth(), context.getHeight());
 		}
-		
+
 		valid = true;
 	}
 
 	public void update() {
+		if (ui != null)
+			ui.update();
 	}
 	
 	public void render(IRenderer2D renderer, float dt) {
+		if (ui != null)
+			ui.render(renderer, dt);
 	}
 	
 	public int getX() {
@@ -105,7 +126,11 @@ public abstract class Composition {
 	}
 	
 	protected void calculatePreferredSize(Vec2i preferredSize, IRenderingContext2D context) {
-		preferredSize.set(0);
+		if (ui != null) {
+			preferredSize.set(ui.getPreferredSize(context));
+		} else {
+			preferredSize.set(0);
+		}
 	}
 	
 	public boolean isPreferredSizeSet() {
@@ -118,13 +143,8 @@ public abstract class Composition {
 	}
 
 	public void setHorizontalAlignment(float alignment) {
-		if (alignment > 1.0f) {
-			horizontalAlignment = 1.0f;
-		} else if (alignment < 0.0f) {
-			horizontalAlignment = 0.0f;
-		} else {
-			horizontalAlignment = alignment;
-		}
+		// Clamp alignment between 0 and 1
+		horizontalAlignment = MathUtils.clamp(alignment, 0.0f, 1.0f);
 		
 		// The parent should update
 		// the layout.
@@ -137,13 +157,8 @@ public abstract class Composition {
 	}
 
 	public void setVerticalAlignment(float alignment) {
-		if (alignment > 1.0f) {
-			verticalAlignment = 1.0f;
-		} else if (alignment < 0.0f) {
-			verticalAlignment = 0.0f;
-		} else {
-			verticalAlignment = alignment;
-		}
+		// Clamp alignment between 0 and 1
+		verticalAlignment = MathUtils.clamp(alignment, 0.0f, 1.0f);
 
 		// The parent should update
 		// the layout.
