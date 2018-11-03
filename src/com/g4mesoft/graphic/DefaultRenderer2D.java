@@ -152,6 +152,11 @@ public class DefaultRenderer2D implements IRenderer2D {
 	public int getCharWidth(char c) {
 		return g.getFontMetrics().charWidth(c);
 	}
+	
+	@Override
+	public int getFontHeight() {
+		return g.getFontMetrics().getHeight();
+	}
 
 	@Override
 	public int getStringWidth(String str) {
