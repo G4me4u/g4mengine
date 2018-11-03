@@ -35,6 +35,11 @@ public class KeyTypedInput extends Input {
 			synchronized (buffer) {
 				recording = recordNext;
 				recordNext = false;
+				
+				// If we're no longer recording, 
+				// reset buffer.
+				if (!recordNext)
+					bufferPos = 0;
 			}
 		}
 	}
