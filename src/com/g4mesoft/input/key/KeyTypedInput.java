@@ -4,7 +4,7 @@ import com.g4mesoft.input.Input;
 
 public class KeyTypedInput extends Input {
 
-	public static final int DEFAULT_BUFFER_SIZE = 4;
+	public static final int DEFAULT_BUFFER_SIZE = 16;
 	
 	private final char[] buffer;
 	private int bufferPos;
