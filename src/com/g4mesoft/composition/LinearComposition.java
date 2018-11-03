@@ -39,6 +39,8 @@ public class LinearComposition extends LayoutComposition {
 	
 	@Override
 	public void layout(IRenderingContext2D context) {
+		boolean layoutAll = !valid;
+		
 		super.layout(context);
 
 		int n = children.size();
@@ -49,35 +51,39 @@ public class LinearComposition extends LayoutComposition {
 			int x = pos.x;
 			int remainingWidth = size.x - gap * (n - 1);
 			for (Composition child : children) {
-				Vec2i ps = child.getPreferredSize(context);
-				child.size.set(ps);
-				
-				int width = remainingWidth / n--;
-				
-				child.pos.x = x + (int)((width - ps.x + 0.5f) * child.horizontalAlignment);
-				child.pos.y = pos.y + (int)((size.y - ps.y + 0.5f) * child.verticalAlignment);
-				
-				x += width + gap;
-				remainingWidth -= width;
-				
-				child.layout(context);
+				if (layoutAll || child.isRelayoutRequired()) {
+					Vec2i ps = child.getPreferredSize(context);
+					child.size.set(ps);
+					
+					int width = remainingWidth / n--;
+					
+					child.pos.x = x + (int)((width - ps.x + 0.5f) * child.horizontalAlignment);
+					child.pos.y = pos.y + (int)((size.y - ps.y + 0.5f) * child.verticalAlignment);
+					
+					x += width + gap;
+					remainingWidth -= width;
+					
+					child.layout(context);
+				}
 			}
 		} else {
 			int y = pos.y;
 			int remainingHeight = size.y - gap * (n - 1);
 			for (Composition child : children) {
-				Vec2i ps = child.getPreferredSize(context);
-				child.size.set(ps);
-				
-				int height = remainingHeight / n--;
-				
-				child.pos.x = pos.x + (int)((size.x - ps.x + 0.5f) * child.horizontalAlignment);
-				child.pos.y = y + (int)((height - ps.y + 0.5f) * child.verticalAlignment);
-				
-				y += height + gap;
-				remainingHeight -= height;
-				
-				child.layout(context);
+				if (layoutAll || child.isRelayoutRequired()) {
+					Vec2i ps = child.getPreferredSize(context);
+					child.size.set(ps);
+					
+					int height = remainingHeight / n--;
+					
+					child.pos.x = pos.x + (int)((size.x - ps.x + 0.5f) * child.horizontalAlignment);
+					child.pos.y = y + (int)((height - ps.y + 0.5f) * child.verticalAlignment);
+					
+					y += height + gap;
+					remainingHeight -= height;
+					
+					child.layout(context);
+				}
 			}
 		}
 	}

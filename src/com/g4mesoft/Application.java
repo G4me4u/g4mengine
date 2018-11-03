@@ -213,7 +213,7 @@ public abstract class Application implements IExitable {
 		}
 
 		if (composition != null) {
-			if (!composition.isValid())
+			if (composition.isRelayoutRequired())
 				composition.layout(renderer);
 			composition.render(renderer, dt);
 		}

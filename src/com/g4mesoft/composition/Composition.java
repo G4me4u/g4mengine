@@ -26,7 +26,8 @@ public abstract class Composition {
 	private Composition parent;
 	
 	protected boolean valid;
-
+	protected boolean layoutRequested;
+	
 	protected float horizontalAlignment;
 	protected float verticalAlignment;
 	
@@ -63,11 +64,7 @@ public abstract class Composition {
 	 * sub-implementations should override this function.
 	 * <br><br>
 	 * <b>NOTE:</b><i> If this function is overridden, the sub-class
-	 * should either call {@code super.layout(IRenderingContext2D)}
-	 * or make sure to set valid to true, as follows:</i>
-	 * <pre>
-	 *     valid = true;
-	 * </pre>
+	 * should call {@code super.layout(IRenderingContext2D)}</i>
 	 * 
 	 * @param context - The active rendering context of the application.
 	 */
@@ -77,8 +74,9 @@ public abstract class Composition {
 			pos.set(0, 0);
 			size.set(context.getWidth(), context.getHeight());
 		}
-
+		
 		valid = true;
+		layoutRequested = false;
 	}
 
 	public void update() {
@@ -138,6 +136,9 @@ public abstract class Composition {
 	}
 	
 	public void setParent(Composition composition) {
+		if (parent == this)
+			throw new IllegalArgumentException("Can not set parent to self!");
+		
 		parent = composition;
 		invalidate();
 	}
@@ -177,6 +178,20 @@ public abstract class Composition {
 	public void invalidate() {
 		valid = false;
 		invalidatePreferredSize();
+		
+		if (parent != null)
+			parent.requestRelayout();
+	}
+	
+	protected void requestRelayout() {
+		layoutRequested = true;
+		
+		if (parent != null)
+			parent.requestRelayout();
+	}
+	
+	public boolean isRelayoutRequired() {
+		return layoutRequested || !valid;
 	}
 	
 	public boolean isValid() {
