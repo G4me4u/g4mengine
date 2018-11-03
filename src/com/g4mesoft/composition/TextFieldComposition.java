@@ -14,7 +14,8 @@ public class TextFieldComposition extends Composition {
 	private Color textColor;
 
 	private int textAlignment;
-
+	private boolean editable;
+	
 	public TextFieldComposition() {
 		this(null);
 	}
@@ -25,6 +26,8 @@ public class TextFieldComposition extends Composition {
 		textColor = Color.WHITE;
 		textAlignment = TEXT_ALIGN_LEFT;
 	
+		editable = true;
+		
 		// Set UI
 		setUI(new TextFieldCompositionUI());
 	}
@@ -66,5 +69,13 @@ public class TextFieldComposition extends Composition {
 	
 	public int getTextAlignment() {
 		return textAlignment;
+	}
+	
+	public void setEditable(boolean editable) {
+		this.editable = editable;
+	}
+	
+	public boolean isEditable() {
+		return editable;
 	}
 }

@@ -54,9 +54,11 @@ public class TextFieldCompositionUI extends CompositionUI {
 
 	@Override
 	public void update() {
-		if (typedInput.hasTypedCharacters())
-			handleTypedCharacters(typedInput.flushBuffer());
-		typedInput.recordNextUpdate();
+		if (textField.isEditable()) {
+			if (typedInput.hasTypedCharacters())
+				handleTypedCharacters(typedInput.flushBuffer());
+			typedInput.recordNextUpdate();
+		}
 	}
 	
 	protected void handleTypedCharacters(char[] typedChars) {
