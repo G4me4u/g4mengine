@@ -10,6 +10,7 @@ import com.g4mesoft.graphic.IRenderer2D;
 import com.g4mesoft.graphic.IRenderingContext2D;
 import com.g4mesoft.input.key.KeyInputListener;
 import com.g4mesoft.input.key.KeyTypedInput;
+import com.g4mesoft.math.MathUtils;
 import com.g4mesoft.math.Vec2i;
 
 public class TextFieldCompositionUI extends CompositionUI {
@@ -88,43 +89,53 @@ public class TextFieldCompositionUI extends CompositionUI {
 
 	@Override
 	public void render(IRenderer2D renderer, float dt) {
+		int w = MathUtils.max(1, textField.getWidth() - 1);
+		int h = MathUtils.max(1, textField.getHeight() - 1);
+		
 		String text = textField.getText();
-		
-		if (text == null || text.isEmpty())
-			return;
-		
-		Rectangle2D textBounds = renderer.getStringBounds(text);
-
-		int textAlignment;
-		if (textBounds.getWidth() > textField.getWidth()) {
-			textAlignment = TextFieldComposition.TEXT_ALIGN_RIGHT;
-		} else {
-			textAlignment = textField.getTextAlignment();
+		if (text != null && !text.isEmpty()) {
+			Rectangle2D textBounds = renderer.getStringBounds(text);
+			
+			int x = textField.getX() + 1;
+			int y = textField.getY() + 1;
+			
+			int textAlignment;
+			if (textBounds.getWidth() > w) {
+				textAlignment = TextFieldComposition.TEXT_ALIGN_RIGHT;
+			} else {
+				textAlignment = textField.getTextAlignment();
+			}
+			
+			x -= (int)textBounds.getX();
+			if (textAlignment == LabelComposition.TEXT_ALIGN_CENTER) {
+				x += (w - (int)textBounds.getWidth()) / 2;
+			} else if (textAlignment == LabelComposition.TEXT_ALIGN_RIGHT) {
+				x += w - (int)textBounds.getWidth();
+			}
+			
+			y -= (int)textBounds.getY();
+			y += (h - (int)textBounds.getHeight()) / 2;
+			
+			renderer.setColor(textField.getTextColor());
+			renderer.drawString(text, x, y);
 		}
 		
-		int x = textField.getX() - (int)textBounds.getX();
-		if (textAlignment == LabelComposition.TEXT_ALIGN_CENTER) {
-			x += (textField.getWidth() - (int)textBounds.getWidth()) / 2;
-		} else if (textAlignment == LabelComposition.TEXT_ALIGN_RIGHT) {
-			x += textField.getWidth() - (int)textBounds.getWidth();
-		}
-		
-		int y = textField.getY() - (int)textBounds.getY();
-		y += (textField.getHeight() - (int)textBounds.getHeight()) / 2;
-		
-		renderer.setColor(textField.getTextColor());
-		renderer.drawString(text, x, y);
+		renderer.setColor(Color.GRAY);
+		renderer.drawRect(textField.getX(), textField.getY(), w, h);
 	}
 
 	@Override
 	public Vec2i getPreferredSize(IRenderingContext2D context) {
-		Vec2i preferredSize = new Vec2i(0, 0);
+		// Border width is 1
+		Vec2i preferredSize = new Vec2i(2, 2);
 
 		String text = textField.getText();
-		if (text.isEmpty())
+		if (text.isEmpty()) {
+			preferredSize.y += context.getFontHeight();
 			return preferredSize;
+		}
 		
 		Rectangle2D textBounds = context.getStringBounds(text);
-		return preferredSize.set((int)textBounds.getWidth(), (int)textBounds.getHeight());
+		return preferredSize.add((int)textBounds.getWidth(), (int)textBounds.getHeight());
 	}
 }
