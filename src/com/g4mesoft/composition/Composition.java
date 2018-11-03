@@ -8,6 +8,9 @@ import com.g4mesoft.math.Vec2i;
 
 public abstract class Composition {
 
+	public static final int FILL_PREFERRED = 0;
+	public static final int FILL_REMAINING = 1;
+	
 	public static final float ALIGN_CENTER = 0.5f;
 
 	public static final float ALIGN_LEFT = 0.0f;
@@ -31,6 +34,9 @@ public abstract class Composition {
 	protected float horizontalAlignment;
 	protected float verticalAlignment;
 	
+	protected int horizontalFill;
+	protected int verticalFill;
+	
 	public Composition() {
 		pos = new Vec2i();
 		size = new Vec2i();
@@ -42,6 +48,9 @@ public abstract class Composition {
 		
 		horizontalAlignment = ALIGN_LEFT;
 		verticalAlignment = ALIGN_TOP;
+	
+		horizontalFill = FILL_PREFERRED;
+		verticalFill = FILL_PREFERRED;
 	}
 
 	public void setUI(CompositionUI ui) {
@@ -169,6 +178,28 @@ public abstract class Composition {
 	
 	public float getVerticalAlignment() {
 		return verticalAlignment;
+	}
+	
+	public void setHorizontalFill(int fillmode) {
+		if (fillmode != FILL_PREFERRED && fillmode != FILL_REMAINING)
+			throw new IllegalArgumentException("Invalid fillmode!");
+		
+		horizontalFill = fillmode;
+	}
+
+	public int getHorizontalFill() {
+		return horizontalFill;
+	}
+	
+	public void setVerticalFill(int fillmode) {
+		if (fillmode != FILL_PREFERRED && fillmode != FILL_REMAINING)
+			throw new IllegalArgumentException("Invalid fillmode!");
+
+		verticalFill = fillmode;
+	}
+	
+	public int getVerticalFill() {
+		return verticalFill;
 	}
 	
 	public Composition getParent() {
