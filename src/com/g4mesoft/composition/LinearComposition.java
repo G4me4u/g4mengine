@@ -51,9 +51,8 @@ public class LinearComposition extends LayoutComposition {
 			int x = pos.x;
 			int remainingWidth = size.x - gap * (n - 1);
 			for (Composition child : children) {
+				int width = remainingWidth / n--;
 				if (layoutAll || child.isRelayoutRequired()) {
-					int width = remainingWidth / n--;
-
 					if (child.horizontalFill == FILL_PREFERRED || child.verticalFill == FILL_PREFERRED) {
 						Vec2i ps = child.getPreferredSize(context);
 						
@@ -66,19 +65,19 @@ public class LinearComposition extends LayoutComposition {
 					child.pos.x = x + (int)((width - child.size.x + 0.5f) * child.horizontalAlignment);
 					child.pos.y = pos.y + (int)((size.y - child.size.y + 0.5f) * child.verticalAlignment);
 					
-					x += width + gap;
-					remainingWidth -= width;
-					
 					child.layout(context);
 				}
+
+				x += width + gap;
+				remainingWidth -= width;
 			}
 		} else {
 			int y = pos.y;
 			int remainingHeight = size.y - gap * (n - 1);
 			for (Composition child : children) {
-				if (layoutAll || child.isRelayoutRequired()) {
-					int height = remainingHeight / n--;
+				int height = remainingHeight / n--;
 
+				if (layoutAll || child.isRelayoutRequired()) {
 					if (child.horizontalFill == FILL_PREFERRED || child.verticalFill == FILL_PREFERRED) {
 						Vec2i ps = child.getPreferredSize(context);
 						
@@ -91,11 +90,11 @@ public class LinearComposition extends LayoutComposition {
 					child.pos.x = pos.x + (int)((size.x - child.size.x + 0.5f) * child.horizontalAlignment);
 					child.pos.y = y + (int)((height - child.size.y + 0.5f) * child.verticalAlignment);
 					
-					y += height + gap;
-					remainingHeight -= height;
-					
 					child.layout(context);
 				}
+
+				y += height + gap;
+				remainingHeight -= height;
 			}
 		}
 	}
