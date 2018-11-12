@@ -45,7 +45,7 @@ public class LabelComposition extends Composition {
 			text = "";
 		this.text = text;
 		
-		invalidate();
+		requestRelayout();
 	}
 	
 	public String getText() {

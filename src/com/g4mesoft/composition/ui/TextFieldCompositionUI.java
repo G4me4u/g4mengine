@@ -33,6 +33,7 @@ public class TextFieldCompositionUI extends CompositionUI {
 	
 		// Install defaults
 		textField.setTextColor(Color.WHITE);
+		textField.setBackground(Color.BLACK);
 		textField.setTextAlignment(TextFieldComposition.TEXT_ALIGN_LEFT);
 
 		typedInput = new KeyTypedInput();
@@ -91,15 +92,20 @@ public class TextFieldCompositionUI extends CompositionUI {
 
 	@Override
 	public void render(IRenderer2D renderer, float dt) {
+		int x = textField.getX() + 1;
+		int y = textField.getY() + 1;
 		int w = MathUtils.max(1, textField.getWidth() - 1);
 		int h = MathUtils.max(1, textField.getHeight() - 1);
+		
+		Color background = textField.getBackground();
+		if (background != null) {
+			renderer.setColor(background);
+			renderer.fillRect(x, y, w, h);
+		}
 		
 		String text = textField.getText();
 		if (text != null && !text.isEmpty()) {
 			Rectangle2D textBounds = renderer.getStringBounds(text);
-			
-			int x = textField.getX() + 1;
-			int y = textField.getY() + 1;
 			
 			int textAlignment;
 			if (textBounds.getWidth() > w) {

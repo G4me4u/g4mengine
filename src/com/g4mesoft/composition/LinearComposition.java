@@ -52,6 +52,7 @@ public class LinearComposition extends LayoutComposition {
 			int remainingWidth = size.x - gap * (n - 1);
 			for (Composition child : children) {
 				int width = remainingWidth / n--;
+				
 				if (layoutAll || child.isRelayoutRequired()) {
 					if (child.horizontalFill == FILL_PREFERRED || child.verticalFill == FILL_PREFERRED) {
 						Vec2i ps = child.getPreferredSize(context);
@@ -65,6 +66,7 @@ public class LinearComposition extends LayoutComposition {
 					child.pos.x = x + (int)((width - child.size.x + 0.5f) * child.horizontalAlignment);
 					child.pos.y = pos.y + (int)((size.y - child.size.y + 0.5f) * child.verticalAlignment);
 					
+					child.invalidate();
 					child.layout(context);
 				}
 
@@ -97,14 +99,6 @@ public class LinearComposition extends LayoutComposition {
 				remainingHeight -= height;
 			}
 		}
-	}
-	
-	@Override
-	public void render(IRenderer2D renderer, float dt) {
-		renderer.setColor(Color.BLACK);
-		renderer.fillRect(getY(), getX(), getWidth(), getHeight());
-
-		super.render(renderer, dt);
 	}
 	
 	@Override

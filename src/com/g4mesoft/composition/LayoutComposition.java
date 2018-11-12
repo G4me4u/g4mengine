@@ -2,14 +2,19 @@ package com.g4mesoft.composition;
 
 import java.util.LinkedList;
 
+import com.g4mesoft.composition.ui.LayoutCompositionUI;
 import com.g4mesoft.graphic.IRenderer2D;
+import com.g4mesoft.graphic.IRenderingContext2D;
+import com.g4mesoft.math.Vec2i;
 
-public class LayoutComposition extends Composition {
+public abstract class LayoutComposition extends Composition {
 
 	protected final LinkedList<Composition> children;
 	
 	public LayoutComposition() {
 		children = new LinkedList<Composition>();
+		
+		setUI(new LayoutCompositionUI());
 	}
 
 	public void addComposition(Composition composition) {
@@ -66,4 +71,7 @@ public class LayoutComposition extends Composition {
 		for (Composition comp : children)
 			comp.render(renderer, dt);
 	}
+	
+	protected abstract void calculatePreferredSize(Vec2i preferredSize, IRenderingContext2D context);
+	
 }

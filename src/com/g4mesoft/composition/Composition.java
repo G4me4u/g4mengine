@@ -1,5 +1,7 @@
 package com.g4mesoft.composition;
 
+import java.awt.Color;
+
 import com.g4mesoft.composition.ui.CompositionUI;
 import com.g4mesoft.graphic.IRenderer2D;
 import com.g4mesoft.graphic.IRenderingContext2D;
@@ -37,6 +39,8 @@ public abstract class Composition {
 	protected int horizontalFill;
 	protected int verticalFill;
 	
+	protected Color background;
+	
 	public Composition() {
 		pos = new Vec2i();
 		size = new Vec2i();
@@ -51,6 +55,8 @@ public abstract class Composition {
 	
 		horizontalFill = FILL_PREFERRED;
 		verticalFill = FILL_PREFERRED;
+		
+		background = null;
 	}
 
 	public void setUI(CompositionUI ui) {
@@ -64,6 +70,7 @@ public abstract class Composition {
 
 		// We would have to re-layout
 		invalidate();
+		requestRelayout();
 	}
 	
 	/**
@@ -133,10 +140,12 @@ public abstract class Composition {
 	}
 	
 	protected void calculatePreferredSize(Vec2i preferredSize, IRenderingContext2D context) {
+		preferredSize.set(0);
+
 		if (ui != null) {
-			preferredSize.set(ui.getPreferredSize(context));
-		} else {
-			preferredSize.set(0);
+			Vec2i ps = ui.getPreferredSize(context);
+			if (ps != null)
+				preferredSize.set(ps);
 		}
 	}
 	
@@ -156,10 +165,7 @@ public abstract class Composition {
 		// Clamp alignment between 0 and 1
 		horizontalAlignment = MathUtils.clamp(alignment, 0.0f, 1.0f);
 		
-		// The parent should update
-		// the layout.
-		if (parent != null)
-			parent.invalidate();
+		requestRelayout();
 	}
 	
 	public float getHorizontalAlignment() {
@@ -170,10 +176,7 @@ public abstract class Composition {
 		// Clamp alignment between 0 and 1
 		verticalAlignment = MathUtils.clamp(alignment, 0.0f, 1.0f);
 
-		// The parent should update
-		// the layout.
-		if (parent != null)
-			parent.invalidate();
+		requestRelayout();
 	}
 	
 	public float getVerticalAlignment() {
@@ -185,6 +188,8 @@ public abstract class Composition {
 			throw new IllegalArgumentException("Invalid fillmode!");
 		
 		horizontalFill = fillmode;
+
+		requestRelayout();
 	}
 
 	public int getHorizontalFill() {
@@ -196,10 +201,25 @@ public abstract class Composition {
 			throw new IllegalArgumentException("Invalid fillmode!");
 
 		verticalFill = fillmode;
+		
+		requestRelayout();
 	}
 	
 	public int getVerticalFill() {
 		return verticalFill;
+	}
+	
+	public void setBackground(Color background) {
+		if (background == null && this.background == null)
+			return;
+		if (background != null && background.equals(this.background))
+			return;
+		
+		this.background = background;
+	}
+	
+	public Color getBackground() {
+		return background;
 	}
 	
 	public Composition getParent() {
@@ -209,9 +229,6 @@ public abstract class Composition {
 	public void invalidate() {
 		valid = false;
 		invalidatePreferredSize();
-		
-		if (parent != null)
-			parent.requestRelayout();
 	}
 	
 	protected void requestRelayout() {

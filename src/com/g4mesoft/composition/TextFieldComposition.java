@@ -48,7 +48,7 @@ public class TextFieldComposition extends Composition {
 			text = "";
 		this.text = text;
 		
-		invalidate();
+		requestRelayout();
 	}
 	
 	public void appendText(String text) {
@@ -56,7 +56,7 @@ public class TextFieldComposition extends Composition {
 			return;
 		this.text += text;
 		
-		invalidate();
+		requestRelayout();
 	}
 	
 	public String getText() {

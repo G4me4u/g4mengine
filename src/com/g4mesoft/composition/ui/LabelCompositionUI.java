@@ -17,15 +17,23 @@ public class LabelCompositionUI extends CompositionUI {
 	
 	@Override
 	public void bindUI(Composition composition) {
+		if (label != null)
+			throw new IllegalStateException("UI already bound!");
+		
 		label = (LabelComposition)composition;
 
 		// Install defaults.
 		label.setTextColor(Color.WHITE);
+		label.setBackground(null);
 		label.setTextAlignment(LabelComposition.TEXT_ALIGN_LEFT);
 	}
 
 	@Override
 	public void unbindUI(Composition composition) {
+		if (label == null)
+			throw new IllegalStateException("UI not bound!");
+		
+		label = null;
 	}
 
 	@Override
@@ -34,38 +42,43 @@ public class LabelCompositionUI extends CompositionUI {
 
 	@Override
 	public void render(IRenderer2D renderer, float dt) {
+		Color background = label.getBackground();
+		if (background != null) {
+			renderer.setColor(background);
+			renderer.fillRect(label.getX(), label.getY(), label.getWidth(), label.getHeight());
+		}
+
 		String text = label.getText();
 		
 		// We don't need to draw an
 		// empty string.
-		if (text == null || text.isEmpty())
-			return;
-		
-		text = trimText(renderer, text, label.getWidth());
-		
-		Rectangle2D textBounds = renderer.getStringBounds(text);
-
-		int textAlignment = label.getTextAlignment();
-		
-		// Default alignment is:
-		//     TEXT_ALIGN_LEFT
-		int x = label.getX() - (int)textBounds.getX();
-		if (textAlignment == LabelComposition.TEXT_ALIGN_CENTER) {
-			x += (label.getWidth() - (int)textBounds.getWidth()) / 2;
-		} else if (textAlignment == LabelComposition.TEXT_ALIGN_RIGHT) {
-			x += label.getWidth() - (int)textBounds.getWidth();
+		if (text != null && !text.isEmpty()) {
+			text = trimText(renderer, text, label.getWidth());
+			
+			Rectangle2D textBounds = renderer.getStringBounds(text);
+	
+			int textAlignment = label.getTextAlignment();
+			
+			// Default alignment is:
+			//     TEXT_ALIGN_LEFT
+			int x = label.getX() - (int)textBounds.getX();
+			if (textAlignment == LabelComposition.TEXT_ALIGN_CENTER) {
+				x += (label.getWidth() - (int)textBounds.getWidth()) / 2;
+			} else if (textAlignment == LabelComposition.TEXT_ALIGN_RIGHT) {
+				x += label.getWidth() - (int)textBounds.getWidth();
+			}
+			
+			// Calculate string baseline.
+			int y = label.getY() - (int)textBounds.getY();
+			
+			// To draw the text on the center
+			// of the vertical axis, we should
+			// offset it as follows.
+			y += (label.getHeight() - (int)textBounds.getHeight()) / 2;
+			
+			renderer.setColor(label.getTextColor());
+			renderer.drawString(text, x, y);
 		}
-		
-		// Calculate string baseline.
-		int y = label.getY() - (int)textBounds.getY();
-		
-		// To draw the text on the center
-		// of the vertical axis, we should
-		// offset it as follows.
-		y += (label.getHeight() - (int)textBounds.getHeight()) / 2;
-		
-		renderer.setColor(label.getTextColor());
-		renderer.drawString(text, x, y);
 	}
 	
 	/**
