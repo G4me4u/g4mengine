@@ -201,6 +201,8 @@ public abstract class Application implements IExitable {
 		IRenderer2D renderer = display.startRendering();
 		if (renderer == null) 
 			return;
+
+		render(renderer, dt);
 		
 		int width = renderer.getWidth();
 		int height = renderer.getHeight();
@@ -215,10 +217,11 @@ public abstract class Application implements IExitable {
 		if (composition != null) {
 			if (composition.isRelayoutRequired())
 				composition.layout(renderer);
+
+			renderer.setOffset(0, 0);
 			composition.render(renderer, dt);
 		}
 		
-		render(renderer, dt);
 		display.stopRendering();
 	}
 	
