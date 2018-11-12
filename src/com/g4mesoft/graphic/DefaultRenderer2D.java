@@ -1,12 +1,14 @@
 package com.g4mesoft.graphic;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferStrategy;
 
 public class DefaultRenderer2D implements IRenderer2D {
 
+	private static Font defaultFont = null;
+	
 	private final Display display;
 
 	private int offsetX;
@@ -15,6 +17,9 @@ public class DefaultRenderer2D implements IRenderer2D {
 	
 	public DefaultRenderer2D(Display display) {
 		this.display = display;
+	
+		if (defaultFont == null)
+			defaultFont = new Font("", Font.PLAIN, 20);
 	}
 	
 	public void clear(Color color) {
@@ -23,17 +28,17 @@ public class DefaultRenderer2D implements IRenderer2D {
 	}
 	
 	@Override
-	public boolean start(BufferStrategy bs) {
-		return (g = bs.getDrawGraphics()) != null;
+	public boolean start(Graphics g) {
+		this.g = g;
+		
+		g.setFont(defaultFont);
+		return g != null;
 	}
 
 	@Override
 	public void stop() {
-		if (g != null) {
-			g.dispose();
-			g = null;
-		}
-
+		g = null;
+		
 		offsetX = 0;
 		offsetY = 0;
 	}

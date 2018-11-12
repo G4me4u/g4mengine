@@ -43,8 +43,8 @@ public class PixelRenderer2D implements IRenderer2D {
 	}
 
 	@Override
-	public boolean start(BufferStrategy bs) {
-		return (g = bs.getDrawGraphics()) != null;
+	public boolean start(Graphics g) {
+		return (this.g = g) != null;
 	}
 
 	@Override

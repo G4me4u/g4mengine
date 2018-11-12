@@ -173,8 +173,13 @@ public class Display {
 				return null;
 			}
 			
-			if (renderer == null || !renderer.start(bs))
+			Graphics g = bs.getDrawGraphics();
+			if (g == null || renderer == null)
 				return null;
+			
+			if (!renderer.start(g))
+				return null;
+			
 			rendering = true;
 			return renderer;
 		}

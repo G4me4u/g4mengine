@@ -2,11 +2,10 @@ package com.g4mesoft.graphic;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.image.BufferStrategy;
 
 public interface IRenderer2D extends IRenderingContext2D {
 
-	public boolean start(BufferStrategy bs);
+	public boolean start(Graphics g);
 
 	public void stop();
 
