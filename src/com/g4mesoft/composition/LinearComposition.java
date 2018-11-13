@@ -1,8 +1,5 @@
 package com.g4mesoft.composition;
 
-import java.awt.Color;
-
-import com.g4mesoft.graphic.IRenderer2D;
 import com.g4mesoft.graphic.IRenderingContext2D;
 import com.g4mesoft.math.Vec2i;
 

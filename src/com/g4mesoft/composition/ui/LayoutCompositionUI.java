@@ -18,7 +18,6 @@ public class LayoutCompositionUI extends CompositionUI {
 			throw new IllegalStateException("UI already bound!");
 		
 		layout = (LayoutComposition)composition;
-		
 	}
 
 	@Override

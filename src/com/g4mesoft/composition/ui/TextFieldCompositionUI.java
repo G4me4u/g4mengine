@@ -1,11 +1,11 @@
 package com.g4mesoft.composition.ui;
 
 import java.awt.Color;
+import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 
 import com.g4mesoft.composition.Composition;
-import com.g4mesoft.composition.LabelComposition;
-import com.g4mesoft.composition.TextFieldComposition;
+import com.g4mesoft.composition.text.TextFieldComposition;
 import com.g4mesoft.graphic.IRenderer2D;
 import com.g4mesoft.graphic.IRenderingContext2D;
 import com.g4mesoft.input.key.KeyInputListener;
@@ -13,7 +13,7 @@ import com.g4mesoft.input.key.KeyTypedInput;
 import com.g4mesoft.math.MathUtils;
 import com.g4mesoft.math.Vec2i;
 
-public class TextFieldCompositionUI extends CompositionUI {
+public class TextFieldCompositionUI extends TextCompositionUI {
 
 	private static final int PRINTABLE_CHARACTERS_START = 0x20;
 	private static final int DELETE_CONTROL_CHARACTER = 0x7F;
@@ -23,6 +23,7 @@ public class TextFieldCompositionUI extends CompositionUI {
 	private TextFieldComposition textField;
 	
 	private KeyTypedInput typedInput;
+	private Rectangle fieldBounds;
 	
 	@Override
 	public void bindUI(Composition composition) {
@@ -38,6 +39,8 @@ public class TextFieldCompositionUI extends CompositionUI {
 
 		typedInput = new KeyTypedInput();
 		KeyInputListener.getInstance().addTypedKey(typedInput);
+		
+		fieldBounds = new Rectangle();
 	}
 
 	@Override
@@ -45,6 +48,8 @@ public class TextFieldCompositionUI extends CompositionUI {
 		if (textField == null)
 			throw new IllegalStateException("UI not bound!");
 
+		fieldBounds = null;
+		
 		// Remove typed input to release 
 		// resources. 
 		KeyInputListener.getInstance().removeTypedKey(typedInput);
@@ -105,27 +110,8 @@ public class TextFieldCompositionUI extends CompositionUI {
 		
 		String text = textField.getText();
 		if (text != null && !text.isEmpty()) {
-			Rectangle2D textBounds = renderer.getStringBounds(text);
-			
-			int textAlignment;
-			if (textBounds.getWidth() > w) {
-				textAlignment = TextFieldComposition.TEXT_ALIGN_RIGHT;
-			} else {
-				textAlignment = textField.getTextAlignment();
-			}
-			
-			x -= (int)textBounds.getX();
-			if (textAlignment == LabelComposition.TEXT_ALIGN_CENTER) {
-				x += (w - (int)textBounds.getWidth()) / 2;
-			} else if (textAlignment == LabelComposition.TEXT_ALIGN_RIGHT) {
-				x += w - (int)textBounds.getWidth();
-			}
-			
-			y -= (int)textBounds.getY();
-			y += (h - (int)textBounds.getHeight()) / 2;
-			
-			renderer.setColor(textField.getTextColor());
-			renderer.drawString(text, x, y);
+			fieldBounds.setBounds(x, y, w, h);
+			drawAlignedText(renderer, text, textField, fieldBounds);
 		}
 		
 		renderer.setColor(Color.GRAY);

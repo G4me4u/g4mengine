@@ -1,19 +1,15 @@
-package com.g4mesoft.composition;
-
-import java.awt.Color;
+package com.g4mesoft.composition.text;
 
 import com.g4mesoft.composition.ui.TextFieldCompositionUI;
 
-public class TextFieldComposition extends Composition {
+public class TextFieldComposition extends TextComposition {
 
 	public static final int TEXT_ALIGN_CENTER = LabelComposition.TEXT_ALIGN_CENTER;
 	public static final int TEXT_ALIGN_LEFT = LabelComposition.TEXT_ALIGN_LEFT;
 	public static final int TEXT_ALIGN_RIGHT = LabelComposition.TEXT_ALIGN_RIGHT;
 	
 	private String text;
-	private Color textColor;
-
-	private int textAlignment;
+	
 	private boolean editable;
 	
 	public TextFieldComposition() {
@@ -23,24 +19,10 @@ public class TextFieldComposition extends Composition {
 	public TextFieldComposition(String text) {
 		this.text = text != null ? text : "";
 	
-		textColor = Color.WHITE;
-		textAlignment = TEXT_ALIGN_LEFT;
-	
 		editable = true;
 		
 		// Set UI
 		setUI(new TextFieldCompositionUI());
-	}
-	
-	public void setTextColor(Color color) {
-		if (color == null)
-			throw new IllegalArgumentException("Color is null");
-
-		textColor = color;
-	}
-	
-	public Color getTextColor() {
-		return textColor;
 	}
 	
 	public void setText(String text) {
@@ -61,14 +43,6 @@ public class TextFieldComposition extends Composition {
 	
 	public String getText() {
 		return text;
-	}
-	
-	public void setTextAlignment(int alignment) {
-		textAlignment = alignment;
-	}
-	
-	public int getTextAlignment() {
-		return textAlignment;
 	}
 	
 	public void setEditable(boolean editable) {
