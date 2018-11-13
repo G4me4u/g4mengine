@@ -35,11 +35,7 @@ public class LinearComposition extends LayoutComposition {
 	}
 	
 	@Override
-	public void layout(IRenderingContext2D context) {
-		boolean layoutAll = !valid;
-		
-		super.layout(context);
-
+	public void doLayout(IRenderingContext2D context) {
 		int n = children.size();
 		if (n == 0)
 			return;
@@ -50,7 +46,7 @@ public class LinearComposition extends LayoutComposition {
 			for (Composition child : children) {
 				int width = remainingWidth / n--;
 				
-				if (layoutAll || child.isRelayoutRequired()) {
+				if (!valid || child.isRelayoutRequired()) {
 					if (child.horizontalFill == FILL_PREFERRED || child.verticalFill == FILL_PREFERRED) {
 						Vec2i ps = child.getPreferredSize(context);
 						
@@ -76,7 +72,7 @@ public class LinearComposition extends LayoutComposition {
 			for (Composition child : children) {
 				int height = remainingHeight / n--;
 
-				if (layoutAll || child.isRelayoutRequired()) {
+				if (!valid || child.isRelayoutRequired()) {
 					if (child.horizontalFill == FILL_PREFERRED || child.verticalFill == FILL_PREFERRED) {
 						Vec2i ps = child.getPreferredSize(context);
 						
@@ -89,6 +85,7 @@ public class LinearComposition extends LayoutComposition {
 					child.pos.x = pos.x + (int)((size.x - child.size.x + 0.5f) * child.horizontalAlignment);
 					child.pos.y = y + (int)((height - child.size.y + 0.5f) * child.verticalAlignment);
 					
+					child.invalidate();
 					child.layout(context);
 				}
 

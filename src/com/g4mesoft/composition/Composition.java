@@ -70,29 +70,36 @@ public abstract class Composition {
 
 		// We would have to re-layout
 		invalidate();
-		requestRelayout();
 	}
 	
 	/**
 	 * Layouts this composition. If the parent is null, this
 	 * function will set the size and position of the composition
-	 * to fill the entire viewport of the context. Almost all 
-	 * sub-implementations should override this function.
-	 * <br><br>
-	 * <b>NOTE:</b><i> If this function is overridden, the sub-class
-	 * should call {@code super.layout(IRenderingContext2D)}</i>
+	 * to fill the entire viewport of the context. 
 	 * 
 	 * @param context - The active rendering context of the application.
 	 */
-	public void layout(IRenderingContext2D context) {
+	public final void layout(IRenderingContext2D context) {
 		if (parent == null) {
 			// We're a root composition.
 			pos.set(0, 0);
 			size.set(context.getWidth(), context.getHeight());
 		}
 		
+		doLayout(context);
+		
 		valid = true;
 		layoutRequested = false;
+	}
+	
+	/**
+	 * Layouts this composition. This functions should be overriden by
+	 * most sub-implementations, and should be in charge of laying out
+	 * the different components of this composition.  
+	 * 
+	 * @param context - The active rendering context of the application.
+	 */
+	protected void doLayout(IRenderingContext2D context) {
 	}
 
 	public void update() {
@@ -229,9 +236,16 @@ public abstract class Composition {
 	public void invalidate() {
 		valid = false;
 		invalidatePreferredSize();
+		
+		requestRelayout();
 	}
 	
 	protected void requestRelayout() {
+		// We've already requested
+		// a re-layout.
+		if (layoutRequested)
+			return;
+		
 		layoutRequested = true;
 		
 		if (parent != null)
