@@ -2,6 +2,9 @@ package com.g4mesoft.math;
 
 public final class MathUtils {
 
+	public static final float EPSILON = 0.1f;
+	public static final double EPSILON_D = 0.1;
+	
 	private MathUtils() {
 	}
 	
