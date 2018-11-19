@@ -16,37 +16,9 @@ import com.g4mesoft.sound.format.AudioFile;
 import com.g4mesoft.sound.format.AudioParsingException;
 import com.g4mesoft.util.MemoryUtil;
 
-public class FastFourierTransform {
+public final class FastFourierTransform {
 
-	private final int n;
-	private final float[] buffer;
-	
-	public FastFourierTransform(int n) {
-		this.n = n;
-		
-		buffer = new float[n << 1];
-	}
-	
-	public void transformToFFT(float[] data) {
-		for (int i = n; i-- > 0; ) {
-			buffer[(i << 1) + 0] = data[i];
-			buffer[(i << 1) + 1] = 0.0f;
-		}
-		transform(buffer, -1.0f);
-		for (int i = n; i-- > 0; )
-			data[i] = buffer[(i << 1) + 0];
-	}
-
-	public void transformToSamples(float[] data) {
-		for (int i = n >> 1; i-- > 0; ) {
-			buffer[(i << 1) + 0] = data[i];
-			buffer[(i << 1) + 1] = 0.0f;
-		}
-		for (int i = n << 1; i-- > n; )
-			buffer[i] = 0.0f;
-		transform(buffer, 1.0f);
-		for (int i = n; i-- > 0; )
-			data[i] = buffer[(i << 1) + 0];
+	private FastFourierTransform() {
 	}
 	
 	public static void transform(float[] data, float sign) {
