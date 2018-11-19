@@ -1,5 +1,7 @@
 package com.g4mesoft;
 
+import com.g4mesoft.math.MathUtils;
+
 public class Timer {
 
 	private static final long MS_PER_SEC = 1000L;
@@ -75,6 +77,7 @@ public class Timer {
 		long msPassed = System.currentTimeMillis() - last;
 
 		if (tps < minFps) {
+			minFps -= MathUtils.EPSILON;
 			minFps += tps - (minFps % tps);
 		} else minFps = tps;
 
