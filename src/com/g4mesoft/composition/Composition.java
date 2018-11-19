@@ -5,10 +5,11 @@ import java.awt.Color;
 import com.g4mesoft.composition.ui.CompositionUI;
 import com.g4mesoft.graphic.IRenderer2D;
 import com.g4mesoft.graphic.IRenderingContext2D;
+import com.g4mesoft.graphic.IViewport;
 import com.g4mesoft.math.MathUtils;
 import com.g4mesoft.math.Vec2i;
 
-public abstract class Composition {
+public abstract class Composition implements IViewport {
 
 	public static final int FILL_PREFERRED = 0;
 	public static final int FILL_REMAINING = 1;
@@ -112,18 +113,22 @@ public abstract class Composition {
 			ui.render(renderer, dt);
 	}
 	
+	@Override
 	public int getX() {
 		return pos.x;
 	}
 	
+	@Override
 	public int getY() {
 		return pos.y;
 	}
 	
+	@Override
 	public int getWidth() {
 		return size.x;
 	}
 	
+	@Override
 	public int getHeight() {
 		return size.y;
 	}
