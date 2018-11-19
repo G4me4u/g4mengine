@@ -29,8 +29,15 @@ public abstract class Application implements IExitable {
 	 * in the previous frame. Used to know when
 	 * The renderer viewport has been resized. 
 	 */
-	private int oldWidth;
-	private int oldHeight;
+	private int oldRendererWidth;
+	private int oldRendererHeight;
+	
+	/*
+	 * Width and height values of the display
+	 * in the previous frame.
+	 */
+	private int oldDisplayWidth;
+	private int oldDisplayHeight;
 
 // Abstract functions //
 	
@@ -105,13 +112,15 @@ public abstract class Application implements IExitable {
 	 * executing properly. Make sure to place that line of code at the
 	 * end of the sub-implementation of this function, as this function 
 	 * will cause the execution to pause until the game has stopped.</i>
+	 * 
+	 * @deprecated Use {@link #start(String[], Class)} instead.
 	 */
 	protected void start() {
 		// Running has to be set to true
-		// before calling init. This is
+		// before calling #init(). This is
 		// done to make sure we're able
 		// to call exit or stopRunning
-		// before the during init.
+		// before or during initialization.
 		running = true;
 		
 		init();
@@ -178,7 +187,13 @@ public abstract class Application implements IExitable {
 	}
 
 	/**
-	 * TODO: documentation
+	 * Sets up the update before calling the overridden
+	 * tick function. This function is in charge of 
+	 * updating important features such as the root ui
+	 * composition. 
+	 * 
+	 * @see #tick()
+	 * @see #render(IRenderer2D, float)
 	 */
 	private void update() {
 		if (composition != null && composition.isValid())
@@ -189,7 +204,11 @@ public abstract class Application implements IExitable {
 	/**
 	 * Sets up the drawing before calling the overridden
 	 * render function. This will start and stop rendering
-	 * automatically.
+	 * automatically and check for changes in display and
+	 * renderer viewport sizes. If a viewport has changed
+	 * size, the functions {@link #displayResized(int, int)}
+	 * and {@link #rendererResized(int, int)} will be
+	 * invoked accordingly.
 	 * 
 	 * @param dt	-	A constant representing how much 
 	 * 					time has passed since previous tick.
@@ -198,6 +217,20 @@ public abstract class Application implements IExitable {
 	 * @see #tick()
 	 */
 	private void draw(float dt) {
+		// Test if display has changed size.
+		// This is useful, if the application
+		// wants to change renderer before
+		// starting the actual rendering.
+		int displayWidth = display.getWidth();
+		int displayHeight = display.getHeight();
+		if (oldDisplayWidth != displayWidth || oldDisplayHeight != displayHeight) {
+			// Display changed size
+			displayResized(displayWidth, displayHeight);
+			
+			oldDisplayWidth = displayWidth;
+			oldDisplayHeight = displayHeight;
+		}
+		
 		IRenderer2D renderer = display.startRendering();
 		if (renderer == null) 
 			return;
@@ -206,19 +239,22 @@ public abstract class Application implements IExitable {
 		
 		int width = renderer.getWidth();
 		int height = renderer.getHeight();
-		if (width != oldWidth || height != oldHeight) {
+		if (oldRendererWidth != width || oldRendererHeight != height) {
 			// The renderer has resized the viewport
-			displayResized(width, height);
+			rendererResized(width, height);
 			
-			oldWidth = width;
-			oldHeight = height;
+			oldRendererWidth = width;
+			oldRendererHeight = height;
 		}
 
 		if (composition != null) {
 			if (composition.isRelayoutRequired())
 				composition.layout(renderer);
 
-			renderer.setOffset(0, 0);
+			// Transformations may have changed
+			// when calling #render(IRenderer2D, float)
+			renderer.resetTransformations();
+			
 			composition.render(renderer, dt);
 		}
 		
@@ -231,18 +267,39 @@ public abstract class Application implements IExitable {
 	 * has changed within the last frame.
 	 * <br><br>
 	 * <b>NOTE:</b><i> any sub-classes overriding this function should
-	 * call {@code super.displayResized(int, int)} to make sure the 
-	 * application handles context resizing correctly</i>
+	 * call {@code super.rendererResized(int, int)} to make sure the 
+	 * application handles context resizing correctly. If one wants to
+	 * change the renderer of the display, override and use the method
+	 * {@link #displayResized(int, int)} instead.</i>
 	 * 
 	 * @param newWidth - The new width of the context viewport
 	 * @param newHeight - The new height of the context viewport
+	 * 
+	 * @see #displayResized(int, int)
 	 */
-	protected void displayResized(int newWidth, int newHeight) {
+	protected void rendererResized(int newWidth, int newHeight) {
 		if (composition != null) {
 			// Invalidate composition. The resizing
 			// will be handled by Composition#layout()
 			composition.invalidate();
 		}
+	}
+
+	/**
+	 * Invoked during rendering, if the display viewport size has been
+	 * changed. Such event could be caused by the user resizing the
+	 * frame or when the display size was changed by the application.
+	 * 
+	 * <b>NOTE:</b><i> This function is called before rendering has been
+	 * started, which makes it possible to change the renderer of the
+	 * current display directly from this method.</i>
+	 * 
+	 * @param newWidth - The new width of the display.
+	 * @param newHeight - The new height of the display.
+	 * 
+	 * @see #rendererResized(int, int)
+	 */
+	protected void displayResized(int newWidth, int newHeight) {
 	}
 	
 // Getter functions //
@@ -264,7 +321,23 @@ public abstract class Application implements IExitable {
 // Setter functions //
 	
 	/**
-	 * TODO: documentation
+	 * Sets the root composition of this application. The root
+	 * composition is the lowest ui element in the ui hierarchy.
+	 * It should be noted, that the root composition is drawn on
+	 * top of the application. In other words, the render function
+	 * {@link #render(IRenderer2D, float)} is invoked before the
+	 * {@link Composition#render(IRenderer2D, float)} function.
+	 * Setting the root composition to null will be the equivalent
+	 * to removing it from the application. By default, the root 
+	 * composition is null. The root composition can be changed at
+	 * any given time, and will be revalidated, when the function
+	 * {@link #draw(float)} is called. - if the renderer size changes
+	 * or the root composition was invalidated by another mean.
+	 * 
+	 * @param composition - The new root composition or null, if 
+	 *                      the root composition should be removed.
+	 * 
+	 * @see #getRootComposition()
 	 */
 	public void setRootComposition(Composition composition) {
 		if (composition != null && (composition.getParent() != null || composition.isValid()))
@@ -347,7 +420,35 @@ public abstract class Application implements IExitable {
 	
 // Static functions //
 	
-	public static void start(String[] args, Class<? extends Application> appClazz) {
+	/**
+	 * Constructs and starts the given application class. This
+	 * method is the safest way to start an application, and will
+	 * be compatible with future all versions of the engine. 
+	 * Alternatively one could initialize and start the application 
+	 * by doing the following:
+	 * <pre>
+	 * Application app = new YourApplication();
+	 * app.start();
+	 * </pre>
+	 * Although the above code snippet may work in most situations, 
+	 * it is not guaranteed to work reliably in future versions and
+	 * is therefore deprecated. It is advised that this implementation 
+	 * is to be used instead.
+	 * <br><br>
+	 * <b>NOTE:</b><i>The provided Application class implementation must
+	 * contain a public empty default constructor, for the application to 
+	 * be able to start. If the application is unable to find such 
+	 * constructor an exception is thrown.</i>
+	 * 
+	 * @param args - The JVM arguments parsed from the main method.
+	 * @param appClazz - The class of the application to be started.
+	 * 
+	 * @throws NoSuchMethodException If the default empty constructor was
+	 *                               not found or is unavailable.
+	 * @throws InstantiationException If the method was unable to construct
+	 *                                a new instance of the application.
+	 */
+	public static void start(String[] args, Class<? extends Application> appClazz) throws NoSuchMethodException, InstantiationException {
 		Constructor<?> defaultConstructor = null;
 		try {
 			defaultConstructor = appClazz.getDeclaredConstructor(new Class<?>[0]);
@@ -356,13 +457,11 @@ public abstract class Application implements IExitable {
 		}
 		
 		if (defaultConstructor == null)
-			return;
-		
+			throw new NoSuchMethodException("Unable to find default constructor");
+			
 		Application app = null;
 		try {
 			app = (Application)defaultConstructor.newInstance(new Object[0]);
-		} catch (InstantiationException e) {
-			e.printStackTrace();
 		} catch (IllegalAccessException e) {
 			e.printStackTrace();
 		} catch (IllegalArgumentException e) {
