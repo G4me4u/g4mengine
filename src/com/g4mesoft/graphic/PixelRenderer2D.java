@@ -3,13 +3,14 @@ package com.g4mesoft.graphic;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 
+import com.g4mesoft.graphic.filter.IPixelFilter;
+
 public class PixelRenderer2D implements IRenderer2D {
 
-	protected final Display display;
+	protected final IViewport viewport;
 	
 	protected final int width;
 	protected final int height;
@@ -25,8 +26,8 @@ public class PixelRenderer2D implements IRenderer2D {
 	protected int color;
 	private Color backdropColor;
 	
-	public PixelRenderer2D(Display display, int width, int height) {
-		this.display = display;
+	public PixelRenderer2D(IViewport viewport, int width, int height) {
+		this.viewport = viewport;
 		this.width = width;
 		this.height = height;
 		
@@ -49,8 +50,8 @@ public class PixelRenderer2D implements IRenderer2D {
 
 	@Override
 	public void stop() {
-		int dw = display.getWidth();
-		int dh = display.getHeight();
+		int dw = viewport.getWidth();
+		int dh = viewport.getHeight();
 		
 		int pixelDensity = Math.min(dw / width, dh / height); 
 		if (pixelDensity <= 0)
@@ -58,22 +59,18 @@ public class PixelRenderer2D implements IRenderer2D {
 		
 		int w = width * pixelDensity;
 		int h = height * pixelDensity;
-		int x = (dw - w) / 2;
-		int y = (dh - h) / 2;
+		int x = viewport.getX() + (dw - w) / 2;
+		int y = viewport.getY() + (dh - h) / 2;
 
-		if (x > 0 || y > 0) {
+		if (dw > w || dh > h) {
 			g.setColor(backdropColor);
 			g.fillRect(0, 0, dw, dh);
 		}
 		g.drawImage(screen, x, y, w, h, null);
 		
-		if (g != null) {
-			g.dispose();
-			g = null;
-		}
-		
-		offsetX = 0;
-		offsetY = 0;
+		g = null;
+
+		resetTransformations();
 	}
 	
 	@Override
@@ -84,6 +81,12 @@ public class PixelRenderer2D implements IRenderer2D {
 	@Override
 	public Graphics getGraphics() {
 		return g;
+	}
+	
+	@Override
+	public void resetTransformations() {
+		offsetX = 0;
+		offsetY = 0;
 	}
 
 	@Override
@@ -292,28 +295,33 @@ public class PixelRenderer2D implements IRenderer2D {
 	
 	@Override
 	public int getCharWidth(char c) {
-		return 0;
+		return g.getFontMetrics().charWidth(c);
 	}
 
 	@Override
 	public int getFontHeight() {
-		return 0;
+		return g.getFontMetrics().getHeight();
 	}
 	
 	@Override
 	public int getStringWidth(String str) {
-		return 0;
+		return g.getFontMetrics().stringWidth(str);
 	}
 
 	@Override
 	public Rectangle2D getStringBounds(String str) {
-		return new Rectangle2D.Double();
+		return g.getFontMetrics().getStringBounds(str, g);
 	}
 
 	@Override
 	public void drawString(String str, int x, int y) {
+		Graphics g = screen.createGraphics();
+		g.setFont(g.getFont());
+		g.setColor(new Color(color));
+		g.drawString(str, x, y);
+		g.dispose();
 	}
-
+	
 	@Override
 	public void setColor(Color color) {
 		this.color = color.getRGB();
@@ -355,6 +363,16 @@ public class PixelRenderer2D implements IRenderer2D {
 		offsetY += ty;
 	}
 
+	@Override
+	public int getX() {
+		return 0;
+	}
+
+	@Override
+	public int getY() {
+		return 0;
+	}
+	
 	@Override
 	public int getWidth() {
 		return width;

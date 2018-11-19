@@ -11,6 +11,8 @@ public interface IRenderer2D extends IRenderingContext2D {
 
 	public Graphics getGraphics();
 	
+	public void resetTransformations();
+	
 	public void clear();
 
 	public void setColor(Color color);

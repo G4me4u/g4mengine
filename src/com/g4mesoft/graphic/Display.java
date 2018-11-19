@@ -21,7 +21,7 @@ import javax.swing.JFrame;
 
 import com.g4mesoft.graphic.DisplayConfig.DisplayMode;
 
-public class Display {
+public class Display implements IViewport {
 
 	private final Object renderingLock = new Object();
 	
@@ -34,6 +34,13 @@ public class Display {
 	private boolean windowed;
 	private IRenderer2D renderer;
 	private BufferStrategy bs;
+	
+	/*
+	 * The currently active graphics object.
+	 * If the display is not currently rendering
+	 * the graphics object is null.
+	 */
+	private Graphics g;
 	
 	private boolean rendering;
 	
@@ -173,7 +180,7 @@ public class Display {
 				return null;
 			}
 			
-			Graphics g = bs.getDrawGraphics();
+			g = bs.getDrawGraphics();
 			if (g == null || renderer == null)
 				return null;
 			
@@ -191,6 +198,9 @@ public class Display {
 				throw new IllegalStateException("Already stopped rendering!");
 			
 			renderer.stop();
+			
+			g.dispose();
+			g = null;
 			
 			// We have to make sure the canvas 
 			// is displayable before showing the 
@@ -244,10 +254,22 @@ public class Display {
 		canvas = null;
 	}
 	
+	@Override
+	public int getX() {
+		return 0;
+	}
+
+	@Override
+	public int getY() {
+		return 0;
+	}
+	
+	@Override
 	public int getWidth() {
 		return canvas == null ? 0 : canvas.getWidth();
 	}
 	
+	@Override
 	public int getHeight() {
 		return canvas == null ? 0 : canvas.getHeight();
 	}

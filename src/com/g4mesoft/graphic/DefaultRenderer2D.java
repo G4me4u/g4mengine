@@ -9,14 +9,14 @@ public class DefaultRenderer2D implements IRenderer2D {
 
 	private static Font defaultFont = null;
 	
-	private final Display display;
+	private final IViewport viewport;
 
 	private int offsetX;
 	private int offsetY;
 	private Graphics g;
 	
-	public DefaultRenderer2D(Display display) {
-		this.display = display;
+	public DefaultRenderer2D(IViewport viewport) {
+		this.viewport = viewport;
 	
 		if (defaultFont == null)
 			defaultFont = new Font("", Font.PLAIN, 20);
@@ -38,9 +38,8 @@ public class DefaultRenderer2D implements IRenderer2D {
 	@Override
 	public void stop() {
 		g = null;
-		
-		offsetX = 0;
-		offsetY = 0;
+
+		resetTransformations();
 	}
 	
 	@Override
@@ -53,6 +52,12 @@ public class DefaultRenderer2D implements IRenderer2D {
 		return g;
 	}
 
+	@Override
+	public void resetTransformations() {
+		offsetX = 0;
+		offsetY = 0;
+	}
+	
 	@Override
 	public void clear() {
 		g.fillRect(0, 0, getWidth(), getHeight());
@@ -205,12 +210,22 @@ public class DefaultRenderer2D implements IRenderer2D {
 	}
 	
 	@Override
+	public int getX() {
+		return viewport.getX();
+	}
+
+	@Override
+	public int getY() {
+		return viewport.getY();
+	}
+	
+	@Override
 	public int getWidth() {
-		return display.getWidth();
+		return viewport.getWidth();
 	}
 	
 	@Override
 	public int getHeight() {
-		return display.getHeight();
+		return viewport.getHeight();
 	}
 }
