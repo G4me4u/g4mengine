@@ -322,6 +322,10 @@ public class PixelRenderer2D implements IRenderer2D {
 		g.dispose();
 	}
 	
+	public void applyFilter(IPixelFilter filter) {
+		filter.filterPixels(pixels, width, height);
+	}
+	
 	@Override
 	public void setColor(Color color) {
 		this.color = color.getRGB();
