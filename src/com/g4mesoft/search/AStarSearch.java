@@ -61,10 +61,10 @@ public class AStarSearch {
 		return index + (long)dir.getOffset().x + ((long)dir.getOffset().y << SCAN_SIZE_BIT_SHIFT);
 	}
 	
-	private void visitNextNode(PositionFilter filter, Node parent, CardinalDirection dir) {
+	private void visitNextNode(IPositionFilter filter, Node parent, CardinalDirection dir) {
 		if (!searchList.containsKey(offsetIndex(parent.index, dir))) {
 			Vec2f pos = dir.offset(new Vec2f(parent.pos), stepSize);
-			if (filter.isValidPos(pos, parent.step + 1)) {
+			if (filter.isValidPos(pos, dir, parent.step + 1)) {
 				Node node = new Node(parent, pos, dir);
 				openList.insert(node.movecost + getDistance(pos), node);
 				searchList.insert(node.index, node);
@@ -72,7 +72,7 @@ public class AStarSearch {
 		}
 	}
 	
-	public List<Node> findPath(Vec2f start, PositionFilter filter) {
+	public List<Node> findPath(Vec2f start, IPositionFilter filter) {
 		openList.clear();
 		searchList.clear();
 
@@ -122,9 +122,9 @@ public class AStarSearch {
 		return true;
 	}
 
-	public static interface PositionFilter {
+	public static interface IPositionFilter {
 		
-		public boolean isValidPos(Vec2f pos, int step);
+		public boolean isValidPos(Vec2f pos, CardinalDirection dir, int step);
 		
 	}
 	
