@@ -75,9 +75,9 @@ public class Timer {
 		long msPassed = System.currentTimeMillis() - last;
 
 		if (tps < minFps) {
-			minFps -= (minFps % tps);
+			minFps += tps - (minFps % tps);
 		} else minFps = tps;
-		
+
 		long msToSleep = (long)((float)MS_PER_SEC / minFps) - msPassed;
 		if (msToSleep > 0) {
 			try {
