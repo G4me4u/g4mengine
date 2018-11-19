@@ -400,6 +400,19 @@ public class Vec2f {
 		return (float)Math.sqrt(distSqr(other));
 	}
 	
+	public boolean equals(float x, float y) {
+		return x == this.x &&
+		       y == this.y;
+	}
+
+	public boolean equals(Vec2f other) {
+		if (other == null)
+			return false;
+		
+		return other.x == x &&
+		       other.y == y;
+	}
+	
 	@Override
 	public boolean equals(Object other) {
 		if (!(other instanceof Vec2f))

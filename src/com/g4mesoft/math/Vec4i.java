@@ -491,6 +491,23 @@ public class Vec4i {
 		return (int)Math.sqrt(distSqr(other));
 	}
 	
+	public boolean equals(int x, int y, int z, int w) {
+		return x == this.x &&
+		       y == this.y &&
+		       z == this.z &&
+		       w == this.w;
+	}
+
+	public boolean equals(Vec4i other) {
+		if (other == null)
+			return false;
+		
+		return other.x == x &&
+		       other.y == y &&
+		       other.z == z &&
+		       other.w == w;
+	}
+	
 	@Override
 	public boolean equals(Object other) {
 		if (!(other instanceof Vec4i))

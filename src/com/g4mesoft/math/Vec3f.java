@@ -456,6 +456,21 @@ public class Vec3f {
 		return (int)Math.sqrt(distSqr(other));
 	}
 	
+	public boolean equals(float x, float y, float z) {
+		return x == this.x &&
+		       y == this.y &&
+		       z == this.z;
+	}
+
+	public boolean equals(Vec3f other) {
+		if (other == null)
+			return false;
+		
+		return other.x == x &&
+		       other.y == y &&
+		       other.z == z;
+	}
+	
 	@Override
 	public boolean equals(Object other) {
 		if (!(other instanceof Vec3f))
