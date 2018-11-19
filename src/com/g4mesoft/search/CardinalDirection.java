@@ -62,6 +62,10 @@ public enum CardinalDirection {
 		return DIRECTIONS[ccw45];
 	}
 	
+	public CardinalDirection getOpposite() {
+		return rotCW90().rotCW90();
+	}
+	
 	public Vec2i offset(Vec2i vector, int amount) {
 		return vector.add(offset.x * amount, offset.y * amount);
 	}
