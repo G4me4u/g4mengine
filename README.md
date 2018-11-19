@@ -21,13 +21,13 @@ is still advised that the following is to be installed:
   be [installed](https://www.eclipse.org/downloads/).
 
 It is possible to use the project without the use of any IDE, but as there are
-resource files and many class files, it it advised to use an IDE. The project is
+resource files and many class files, it is advised to use an IDE. The project is
 originally written utilizing features in the Eclipse IDE, but other IDE's such as
 IntelliJ may also work if the project is imported as an Eclipse project.
 
 ### Download project
 G4mEngine is a very lightweight implementation, and is therefore very easy to add
-to any new or ongoing java project without adding too much complexity. First you'll
+to any new or ongoing java project without adding too much complexity. Firstly you'll
 need to download the project on [GitHub](https://github.com/G4me4u/g4mengine). The
 entire master zip should be downloaded. Alternatively, you can fork the project and
 pull it to your computer using git. Just make sure you have the entire repository on
@@ -189,7 +189,7 @@ icon=none
 
 There are also other options such as *minimumWidth* and *minimumHeight*. If a value is not
 specified in the *config/display.txt* file then the default value for that property will be
-used. And example of all the parameters, what they do and what their default values are can
+used. An example of all the parameters, what they do and what their default values are can
 be found in the [config/display-default.txt](res/config/display-default.txt) file. It should
-be noted, that the display config file has to be a resource, which gets added to the jar
+be noted that the display config file has to be a resource which gets added to the jar
 itself.
