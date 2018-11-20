@@ -284,6 +284,8 @@ public abstract class Composition implements IViewport {
 			throw new IllegalArgumentException("Border width must be > 0.");
 		
 		this.borderWidth = borderWidth;
+
+		requestRelayout();
 	}
 	
 	public int getBorderWidth() {
@@ -297,8 +299,6 @@ public abstract class Composition implements IViewport {
 			return;
 		
 		this.borderColor = borderColor;
-	
-		requestRelayout();
 	}
 	
 	public Color getBorderColor() {
