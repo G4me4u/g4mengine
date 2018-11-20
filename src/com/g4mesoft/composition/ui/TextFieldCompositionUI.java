@@ -2,7 +2,6 @@ package com.g4mesoft.composition.ui;
 
 import java.awt.Color;
 import java.awt.Rectangle;
-import java.awt.geom.Rectangle2D;
 
 import com.g4mesoft.composition.Composition;
 import com.g4mesoft.composition.text.TextFieldComposition;
@@ -10,7 +9,6 @@ import com.g4mesoft.graphic.IRenderer2D;
 import com.g4mesoft.graphic.IRenderingContext2D;
 import com.g4mesoft.input.key.KeyInputListener;
 import com.g4mesoft.input.key.KeyTypedInput;
-import com.g4mesoft.math.MathUtils;
 import com.g4mesoft.math.Vec2i;
 
 public class TextFieldCompositionUI extends TextCompositionUI {
@@ -37,6 +35,10 @@ public class TextFieldCompositionUI extends TextCompositionUI {
 		textField.setBackground(Color.BLACK);
 		textField.setTextAlignment(TextFieldComposition.TEXT_ALIGN_LEFT);
 
+		textField.setBorderWidth(1);
+		textField.setBorder(Composition.BORDER_ALL);
+		textField.setBorderColor(Color.WHITE);
+		
 		typedInput = new KeyTypedInput();
 		KeyInputListener.getInstance().addTypedKey(typedInput);
 		
@@ -97,10 +99,11 @@ public class TextFieldCompositionUI extends TextCompositionUI {
 
 	@Override
 	public void render(IRenderer2D renderer, float dt) {
-		int x = textField.getX() + 1;
-		int y = textField.getY() + 1;
-		int w = MathUtils.max(1, textField.getWidth() - 1);
-		int h = MathUtils.max(1, textField.getHeight() - 1);
+		int x = textField.getX();
+		int y = textField.getY();
+		
+		int w = textField.getWidth();
+		int h = textField.getHeight();
 		
 		Color background = textField.getBackground();
 		if (background != null) {
@@ -113,23 +116,12 @@ public class TextFieldCompositionUI extends TextCompositionUI {
 			fieldBounds.setBounds(x, y, w, h);
 			drawAlignedText(renderer, text, textField, fieldBounds);
 		}
-		
-		renderer.setColor(Color.GRAY);
-		renderer.drawRect(textField.getX(), textField.getY(), w, h);
+
+		drawBorder(renderer, textField);
 	}
 
 	@Override
 	public Vec2i getPreferredSize(IRenderingContext2D context) {
-		// Border width is 1
-		Vec2i preferredSize = new Vec2i(2, 2);
-
-		String text = textField.getText();
-		if (text.isEmpty()) {
-			preferredSize.y += context.getFontHeight();
-			return preferredSize;
-		}
-		
-		Rectangle2D textBounds = context.getStringBounds(text);
-		return preferredSize.add((int)textBounds.getWidth(), (int)textBounds.getHeight());
+		return getPreferredSize(context, textField.getText());
 	}
 }

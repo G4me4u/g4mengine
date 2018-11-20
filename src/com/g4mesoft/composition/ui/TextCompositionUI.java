@@ -6,6 +6,8 @@ import java.awt.geom.Rectangle2D;
 import com.g4mesoft.composition.text.LabelComposition;
 import com.g4mesoft.composition.text.TextComposition;
 import com.g4mesoft.graphic.IRenderer2D;
+import com.g4mesoft.graphic.IRenderingContext2D;
+import com.g4mesoft.math.Vec2i;
 
 public abstract class TextCompositionUI extends CompositionUI {
 
@@ -65,23 +67,23 @@ public abstract class TextCompositionUI extends CompositionUI {
 	 * the given text does not allow for any characters within the
 	 * available width, the default ellipsis '...' will be returned.
 	 * 
-	 * @param renderer - The currently rendering context.
+	 * @param context - The current rendering-context.
 	 * @param text - The text to be trimmed.
 	 * @param availableWidth - The specified available width.
 	 * 
 	 * @return A trimmed version of the text, which can be drawn within
 	 *         the specified availableWidth.
 	 */
-	protected String trimText(IRenderer2D renderer, String text, int availableWidth) {
+	protected String trimText(IRenderingContext2D context, String text, int availableWidth) {
 		int len = text.length();
 		if (len <= 0)
 			return text;
 
 		// Text fits inside bounds.
-		if (renderer.getStringWidth(text) <= availableWidth)
+		if (context.getStringWidth(text) <= availableWidth)
 			return text;
 		
-		availableWidth -= renderer.getStringWidth(TRIMMED_TEXT_ELLIPSIS);
+		availableWidth -= context.getStringWidth(TRIMMED_TEXT_ELLIPSIS);
 		
 		// No space for any other
 		// characters. 
@@ -93,7 +95,7 @@ public abstract class TextCompositionUI extends CompositionUI {
 			// Should probably use getStringWidth
 			// and substring instead, but for 
 			// optimization we use getCharWidth.
-			availableWidth -= renderer.getCharWidth(c);
+			availableWidth -= context.getCharWidth(c);
 			
 			if (availableWidth < 0)
 				return text.substring(0, i) + TRIMMED_TEXT_ELLIPSIS;
@@ -101,5 +103,15 @@ public abstract class TextCompositionUI extends CompositionUI {
 		
 		// This should never happen.
 		return text;
+	}
+	
+	public Vec2i getPreferredSize(IRenderingContext2D context, String text) {
+		Vec2i preferredSize = new Vec2i(0, 0);
+
+		if (text.isEmpty())
+			return preferredSize;
+		
+		Rectangle2D textBounds = context.getStringBounds(text);
+		return preferredSize.set((int)textBounds.getWidth(), (int)textBounds.getHeight());
 	}
 }

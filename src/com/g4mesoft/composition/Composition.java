@@ -21,6 +21,16 @@ public abstract class Composition implements IViewport {
 	public static final float ALIGN_TOP = 0.0f;
 	public static final float ALIGN_BOTTOM = 1.0f;
 	
+	public static final int BORDER_LEFT = 0x01;
+	public static final int BORDER_RIGHT = 0x02;
+	public static final int BORDER_TOP = 0x04;
+	public static final int BORDER_BOTTOM = 0x08;
+
+	public static final int BORDER_NONE = 0x00;
+	public static final int BORDER_HORIZONTAL = BORDER_LEFT | BORDER_RIGHT;
+	public static final int BORDER_VERTICAL = BORDER_TOP | BORDER_BOTTOM;
+	public static final int BORDER_ALL = BORDER_HORIZONTAL | BORDER_VERTICAL;
+	
 	protected final Vec2i pos;
 	protected final Vec2i size;
 
@@ -39,8 +49,13 @@ public abstract class Composition implements IViewport {
 	
 	protected int horizontalFill;
 	protected int verticalFill;
-	
+
 	protected Color background;
+	
+	protected int borderFlags;
+	protected int borderWidth;
+	
+	protected Color borderColor;
 	
 	public Composition() {
 		pos = new Vec2i();
@@ -58,6 +73,11 @@ public abstract class Composition implements IViewport {
 		verticalFill = FILL_PREFERRED;
 		
 		background = null;
+
+		borderFlags = BORDER_NONE;
+		borderWidth = 1;
+		
+		borderColor = null;
 	}
 
 	public void setUI(CompositionUI ui) {
@@ -87,6 +107,8 @@ public abstract class Composition implements IViewport {
 			size.set(context.getWidth(), context.getHeight());
 		}
 		
+		if (ui != null)
+			ui.layoutChanged(context);
 		doLayout(context);
 		
 		valid = true;
@@ -194,6 +216,11 @@ public abstract class Composition implements IViewport {
 	public float getVerticalAlignment() {
 		return verticalAlignment;
 	}
+
+	public void setAlignment(float alignment) {
+		setVerticalAlignment(alignment);
+		setHorizontalAlignment(alignment);
+	}
 	
 	public void setHorizontalFill(int fillmode) {
 		if (fillmode != FILL_PREFERRED && fillmode != FILL_REMAINING)
@@ -203,7 +230,7 @@ public abstract class Composition implements IViewport {
 
 		requestRelayout();
 	}
-
+	
 	public int getHorizontalFill() {
 		return horizontalFill;
 	}
@@ -221,6 +248,11 @@ public abstract class Composition implements IViewport {
 		return verticalFill;
 	}
 	
+	public void setFill(int fillmode) {
+		setHorizontalFill(fillmode);
+		setVerticalFill(fillmode);
+	}
+	
 	public void setBackground(Color background) {
 		if (background == null && this.background == null)
 			return;
@@ -232,6 +264,45 @@ public abstract class Composition implements IViewport {
 	
 	public Color getBackground() {
 		return background;
+	}
+
+	public void setBorder(int borderFlags) {
+		if ((borderFlags & (~BORDER_ALL)) != 0)
+			throw new IllegalArgumentException("Invalid border flags.");
+	
+		this.borderFlags = borderFlags;
+	
+		requestRelayout();
+	}
+
+	public int getBorderFlags() {
+		return borderFlags;
+	}
+	
+	public void setBorderWidth(int borderWidth) {
+		if (borderWidth <= 0)
+			throw new IllegalArgumentException("Border width must be > 0.");
+		
+		this.borderWidth = borderWidth;
+	}
+	
+	public int getBorderWidth() {
+		return borderWidth;
+	}
+	
+	public void setBorderColor(Color borderColor) {
+		if (borderColor == null && this.borderColor == null)
+			return;
+		if (borderColor != null && borderColor.equals(this.borderColor))
+			return;
+		
+		this.borderColor = borderColor;
+	
+		requestRelayout();
+	}
+	
+	public Color getBorderColor() {
+		return borderColor;
 	}
 	
 	public Composition getParent() {
