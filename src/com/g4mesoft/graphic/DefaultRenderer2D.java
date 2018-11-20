@@ -3,6 +3,8 @@ package com.g4mesoft.graphic;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
 
 public class DefaultRenderer2D implements IRenderer2D {
@@ -19,7 +21,7 @@ public class DefaultRenderer2D implements IRenderer2D {
 		this.viewport = viewport;
 	
 		if (defaultFont == null)
-			defaultFont = new Font("", Font.PLAIN, 20);
+			defaultFont = new Font("Segoe UI Light", Font.PLAIN, 28);
 	}
 	
 	public void clear(Color color) {
@@ -32,6 +34,9 @@ public class DefaultRenderer2D implements IRenderer2D {
 		this.g = g;
 		
 		g.setFont(defaultFont);
+		((Graphics2D)g).setRenderingHint(
+				RenderingHints.KEY_TEXT_ANTIALIASING,
+				RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
 		return g != null;
 	}
 
