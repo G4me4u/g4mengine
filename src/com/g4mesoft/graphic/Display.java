@@ -7,6 +7,8 @@ import java.awt.Graphics;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferStrategy;
@@ -286,6 +288,34 @@ public class Display implements IViewport {
 		}
 		
 		canvas.addKeyListener(keyListener);
+	}
+
+	public void registerMouseListener(MouseListener mouseListener) {
+		if (canvas == null) return;
+		
+		// Make sure the mouseListener doesn't exist
+		for (MouseListener listener : canvas.getMouseListeners()) {
+			if (listener.equals(mouseListener)) {
+				canvas.removeMouseListener(listener);
+				break;
+			}
+		}
+		
+		canvas.addMouseListener(mouseListener);
+	}
+
+	public void registerMouseMotionListener(MouseMotionListener mouseMotionListener) {
+		if (canvas == null) return;
+		
+		// Make sure the mouseMotionListener doesn't exist
+		for (MouseMotionListener listener : canvas.getMouseMotionListeners()) {
+			if (listener.equals(mouseMotionListener)) {
+				canvas.removeMouseMotionListener(listener);
+				break;
+			}
+		}
+		
+		canvas.addMouseMotionListener(mouseMotionListener);
 	}
 	
 	public Canvas getCanvas() {
