@@ -4,7 +4,6 @@ import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 
 import com.g4mesoft.composition.text.LabelComposition;
-import com.g4mesoft.composition.text.TextComposition;
 import com.g4mesoft.graphic.IRenderer2D;
 import com.g4mesoft.graphic.IRenderingContext2D;
 import com.g4mesoft.math.Vec2i;
@@ -13,14 +12,12 @@ public abstract class TextCompositionUI extends CompositionUI {
 
 	private static final String TRIMMED_TEXT_ELLIPSIS = "...";
 	
-	public void drawAlignedText(IRenderer2D renderer, String text, TextComposition comp, Rectangle bounds) {
+	public void drawAlignedText(IRenderer2D renderer, String text, int textAlignment, Rectangle bounds) {
 		// No need to draw an empty string
 		if (text == null || text.isEmpty())
 			return;
 		
 		Rectangle2D textBounds = renderer.getStringBounds(text);
-		
-		int textAlignment = comp.getTextAlignment();
 		
 		// Default alignment is:
 		//     TEXT_ALIGN_LEFT
@@ -39,7 +36,6 @@ public abstract class TextCompositionUI extends CompositionUI {
 		// offset it as follows.
 		y += (bounds.height - (int)textBounds.getHeight()) / 2;
 		
-		renderer.setColor(comp.getTextColor());
 		renderer.drawString(text, x, y);
 	}
 	

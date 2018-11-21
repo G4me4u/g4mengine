@@ -113,10 +113,10 @@ public class LinearComposition extends LayoutComposition {
 			Vec2i ps = child.getPreferredSize(context);
 			if (direction == HORIZONTAL_DIRECTION) {
 				preferredSize.x += ps.x;
-				if (ps.y > preferredSize.y)
+				if (ps.y > preferredSize.y && child.getVerticalFill() != FILL_REMAINING)
 					preferredSize.y = ps.y;
 			} else {
-				if (ps.x > preferredSize.x)
+				if (ps.x > preferredSize.x && child.getHorizontalFill() != FILL_REMAINING)
 					preferredSize.x = ps.x;
 				preferredSize.y += ps.y;
 			}

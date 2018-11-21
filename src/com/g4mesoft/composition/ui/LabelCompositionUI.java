@@ -71,8 +71,10 @@ public class LabelCompositionUI extends TextCompositionUI {
 			renderer.fillRect(label.getX(), label.getY(), label.getWidth(), label.getHeight());
 		}
 		
-		if (trimmedText != null)
-			drawAlignedText(renderer, trimmedText, label, labelBounds);
+		if (trimmedText != null) {
+			renderer.setColor(label.getTextColor());
+			drawAlignedText(renderer, trimmedText, label.getTextAlignment(), labelBounds);
+		}
 
 		drawBorder(renderer, label);
 	}

@@ -114,7 +114,14 @@ public class TextFieldCompositionUI extends TextCompositionUI {
 		String text = textField.getText();
 		if (text != null && !text.isEmpty()) {
 			fieldBounds.setBounds(x, y, w, h);
-			drawAlignedText(renderer, text, textField, fieldBounds);
+			
+			int textAlignment = textField.getTextAlignment();
+			int textWidth = renderer.getStringWidth(text);
+			if (textWidth >= w)
+				textAlignment = TextFieldComposition.TEXT_ALIGN_RIGHT;
+			
+			renderer.setColor(textField.getTextColor());
+			drawAlignedText(renderer, text, textAlignment, fieldBounds);
 		}
 
 		drawBorder(renderer, textField);
@@ -122,6 +129,8 @@ public class TextFieldCompositionUI extends TextCompositionUI {
 
 	@Override
 	public Vec2i getPreferredSize(IRenderingContext2D context) {
+		if (textField.getText().isEmpty())
+			return new Vec2i(0, context.getFontHeight());
 		return getPreferredSize(context, textField.getText());
 	}
 }
