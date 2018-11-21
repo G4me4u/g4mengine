@@ -135,6 +135,14 @@ public abstract class Composition implements IViewport {
 			ui.render(renderer, dt);
 	}
 	
+	public boolean isInBounds(int x, int y) {
+		if (x < pos.x || x > pos.x + size.x)
+			return false;
+		if (y < pos.y || y > pos.y + size.y)
+			return false;
+		return true;
+	}
+	
 	@Override
 	public int getX() {
 		return pos.x;

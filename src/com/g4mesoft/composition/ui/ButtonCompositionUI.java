@@ -8,6 +8,8 @@ import com.g4mesoft.composition.text.ButtonComposition;
 import com.g4mesoft.composition.text.LabelComposition;
 import com.g4mesoft.graphic.IRenderer2D;
 import com.g4mesoft.graphic.IRenderingContext2D;
+import com.g4mesoft.input.mouse.MouseButtonInput;
+import com.g4mesoft.input.mouse.MouseInputListener;
 import com.g4mesoft.math.Vec2i;
 
 public class ButtonCompositionUI extends TextCompositionUI {
@@ -27,12 +29,16 @@ public class ButtonCompositionUI extends TextCompositionUI {
 		// Install defaults.
 		button.setTextColor(Color.WHITE);
 		button.setBackground(Color.BLACK);
+		button.setHoveredBackground(Color.DARK_GRAY);
+		button.setPressedBackground(Color.GRAY);
 		
 		button.setBorderWidth(1);
 		button.setBorder(Composition.BORDER_ALL);
 		button.setBorderColor(Color.WHITE);
 		
 		button.setTextAlignment(LabelComposition.TEXT_ALIGN_CENTER);
+		
+		button.setMouseInput(MouseInputListener.MOUSE_LEFT);
 		
 		buttonBounds = new Rectangle();
 	}
@@ -67,12 +73,44 @@ public class ButtonCompositionUI extends TextCompositionUI {
 
 	@Override
 	public void update() {
+		MouseInputListener mouse = MouseInputListener.getInstance();
+		MouseButtonInput mouseInput = button.getMouseInput();
+
+		int mx = mouse.getX();
+		int my = mouse.getY();
+	
+		boolean hovered = button.isInBounds(mx, my);
+		
+		// Make sure the original press was
+		// in bounds.
+		int cx = mouseInput.getClickX();
+		int cy = mouseInput.getClickY();
+		
+		boolean leftPressed = mouseInput.isPressed();
+		if (leftPressed && !button.isInBounds(cx, cy))
+			hovered = false;
+		
+		button.setHovered(hovered);
+
+		boolean wasPressed = button.isPressed();
+		button.setPressed(hovered && leftPressed);
+		
+		if (hovered && wasPressed && !leftPressed)
+			button.invokeButtonClickedEvent();
 	}
 
 	@Override
 	public void render(IRenderer2D renderer, float dt) {
-		Color background = button.getBackground();
+		Color background = null;
 		
+		if (button.isPressed()) {
+			background = button.getPressedBackground();
+		} else if (button.isHovered()) {
+			background = button.getHoveredBackground();
+		} else {
+			background = button.getBackground();
+		}
+
 		if (background != null) {
 			renderer.setColor(background);
 			renderer.fillRect(button.getX(), button.getY(), button.getWidth(), button.getHeight());

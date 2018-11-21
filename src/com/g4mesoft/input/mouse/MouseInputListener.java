@@ -69,6 +69,9 @@ public final class MouseInputListener implements MouseListener, MouseMotionListe
 		
 		for (MouseButtonInput mouseButton : mouseButtons)
 			mouseButton.mouseDragged(button, x, y);
+
+		mouseX = x;
+		mouseY = y;
 	}
 
 	@Override
