@@ -67,7 +67,7 @@ public class FastGaussianBlurPixelFilter implements IPixelFilter {
 			PixelNode tmpNode;
 			
 			int x;
-			for (x = 1; x < rad; x++) {
+			for (x = 1; x < rad && x < width; x++) {
 				rgb = pixels[index + x];
 				
 				int r = (rgb >>> 16) & 0xFF;
@@ -86,7 +86,7 @@ public class FastGaussianBlurPixelFilter implements IPixelFilter {
 			// Perform blur on first part of row 
 			// (where some of the box is out of 
 			// bounds to the left of image).
-			for (x = 0; x <= rad; x++) {
+			for (x = 0; x <= rad && x + rad < width; x++) {
 				rgb = pixels[rightIndex++];
 				
 				int r = (rgb >>> 16) & 0xFF;
@@ -180,7 +180,7 @@ public class FastGaussianBlurPixelFilter implements IPixelFilter {
 			PixelNode tmpNode;
 			
 			int y;
-			for (y = 1; y < rad; y++) {
+			for (y = 1; y < rad && y < height; y++) {
 				rgb = pixels[index + y * width];
 				
 				int r = (rgb >>> 16) & 0xFF;
@@ -199,7 +199,7 @@ public class FastGaussianBlurPixelFilter implements IPixelFilter {
 			// Perform blur on first part of column 
 			// (where some of the box is out of 
 			// bounds to the top of image).
-			for (y = 0; y <= rad; y++) {
+			for (y = 0; y <= rad && y + rad < height; y++) {
 				rgb = pixels[bottomIndex];
 				
 				int r = (rgb >>> 16) & 0xFF;
