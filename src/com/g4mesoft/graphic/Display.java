@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.Point;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -32,8 +33,10 @@ public class Display implements IViewport {
 	private JFrame frame;
 	private DisplayCanvas canvas;
 	
-	private boolean fullscreen;
-	private boolean windowed;
+	private DisplayMode displayMode;
+	private Point oldFrameLocation;
+	private Dimension oldFrameSize;
+	
 	private IRenderer2D renderer;
 	private BufferStrategy bs;
 	
@@ -124,41 +127,82 @@ public class Display implements IViewport {
 		
 		frame.setVisible(true);
 		
-		fullscreen = false;
-		if (displayConfig.displayMode != DisplayMode.NORMAL) {
-			toggleFullscreen(displayConfig.displayMode == DisplayMode.FULLSCREEN_WINDOWED);
-		}
+		displayMode = DisplayMode.NORMAL;
+		setDisplayMode(displayConfig.displayMode);
 
 		renderer = new DefaultRenderer2D(this);
 		
 		canvas.requestFocus();
 	}
 	
-	private void toggleFullscreen(boolean windowed) {
-		if (frame == null) return;
-		
-		fullscreen = !fullscreen;
+	public void setDisplayMode(DisplayMode displayMode) {
+		if (frame == null || this.displayMode == displayMode) 
+			return;
 
-		if (fullscreen) {
-			this.windowed = windowed;
-			if (this.windowed) {
-				frame.setResizable(false);
-				frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-			} else {
+		// Disable fullscreen
+		if (this.displayMode == DisplayMode.FULLSCREEN) {
+			GraphicsDevice device = getGraphicsDevice();
+			if (device != null)
+				device.setFullScreenWindow(null);
+		}
+		
+		boolean disableExtended = false;
+		
+		// Disable borderless
+		if (this.displayMode == DisplayMode.FULLSCREEN_BORDERLESS) {
+			frame.dispose();
+			frame.setUndecorated(false);
+			frame.setVisible(true);
+
+			if (displayMode == DisplayMode.FULLSCREEN_WINDOWED) {
+				// We're already in the correct
+				// display state.
+				this.displayMode = displayMode;
+				return;
+			}
+			
+			disableExtended = true;
+		}
+		
+		// Disable fullscreen windowed
+		if (this.displayMode == DisplayMode.FULLSCREEN_WINDOWED || disableExtended) {
+			frame.setExtendedState(JFrame.NORMAL);
+			frame.setResizable(displayConfig.resizable);
+			
+			if (oldFrameSize != null)
+				frame.setSize(oldFrameSize);
+			if (oldFrameLocation != null)
+				frame.setLocation(oldFrameLocation);
+		}
+		
+		if (displayMode != DisplayMode.NORMAL) {
+			oldFrameLocation = frame.getLocation();
+			oldFrameSize = frame.getSize();
+
+			if (displayMode == DisplayMode.FULLSCREEN) {
 				GraphicsDevice device = getGraphicsDevice();
 				if (device != null)
 					device.setFullScreenWindow(frame);
-			}
-		} else {
-			if (this.windowed) {
-				frame.setExtendedState(JFrame.NORMAL);
-				frame.setResizable(displayConfig.resizable);
 			} else {
-				GraphicsDevice device = getGraphicsDevice();
-				if (device != null)
-					device.setFullScreenWindow(null);
+				frame.setResizable(false);
+				frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+
+				if (displayMode == DisplayMode.FULLSCREEN_BORDERLESS) {
+					frame.dispose();
+					frame.setUndecorated(true);
+					frame.setVisible(true);
+				}
 			}
 		}
+		
+		this.displayMode = displayMode;
+		
+		if (canvas != null)
+			canvas.requestFocus();
+	}
+	
+	public DisplayMode getDisplayMode() {
+		return displayMode;
 	}
 	
 	private GraphicsDevice getGraphicsDevice() {
@@ -235,11 +279,18 @@ public class Display implements IViewport {
 	}
 	
 	public boolean isFullscreen() {
-		return fullscreen;
+		return displayMode != DisplayMode.NORMAL;
 	}
 	
 	public boolean isWindowed() {
-		return (!fullscreen) || (fullscreen && windowed);
+		if (!isFullscreen())
+			return true;
+		
+		return displayMode == DisplayMode.FULLSCREEN_WINDOWED;
+	}
+
+	public boolean isBorderless() {
+		return displayMode == DisplayMode.FULLSCREEN_BORDERLESS;
 	}
 	
 	public boolean isCloseRequested() {

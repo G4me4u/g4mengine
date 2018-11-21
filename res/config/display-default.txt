@@ -9,8 +9,8 @@ title=My Title
 
 # The preferred size of the canvas. The frame will be slightly
 # bigger if it has decoration enabled. - The width and height
-# will not matter, if the displayMode is set to fullscreen or
-# fullscreen_windowed.
+# will not matter, if the displayMode is set to fullscreen,
+# fullscreen_windowed or fullscreen_borderless.
 # Default value: 400, 400
 preferredWidth=400
 preferredHeight=400
@@ -22,26 +22,26 @@ preferredHeight=400
 minimumWidth=100
 minimumHeight=100
 
-# Wether or not the frame should be resizable. - if false, 
+# Whether or not the frame should be resizable. - if false, 
 # the size of the frame will always be preferred size, if not 
 # otherwise specified (displayMode)
 # Default value: true
 resizable=true
 
-# Wether or not the frame should be positioned in the center of
+# Whether or not the frame should be positioned in the center of
 # the monitor at startup.
 # Default value: true
 centered=true
 
 # The displayMode describes what state the window should be in
 # at startup. The displayMode can be one of the following:
-# normal, fullscreen, fullscreen_windowed. If the displayMode
-# is fullscreen_windowed, the frame will still be decorated and
-# be the size of the primary monitor.
+# normal, fullscreen, fullscreen_windowed, fullscreen_borderless. 
+# If the displayMode is fullscreen_windowed, the frame will still 
+# be decorated and be the size of the primary monitor.
 # Default value: normal
 displayMode=normal
 
-# Wether or not the display is actually visible. If the app-
+# Whether or not the display is actually visible. If the app-
 # lication is running on a server, you'd set this to false.
 # If this boolean is false, all parameters above this are 
 # ignored.

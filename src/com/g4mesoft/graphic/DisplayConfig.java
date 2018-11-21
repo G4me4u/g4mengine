@@ -128,7 +128,8 @@ public final class DisplayConfig {
 	public enum DisplayMode {
 		NORMAL(0, "normal"),
 		FULLSCREEN(1, "fullscreen"),
-		FULLSCREEN_WINDOWED(2, "fullscreen_windowed");
+		FULLSCREEN_WINDOWED(2, "fullscreen_windowed"),
+		FULLSCREEN_BORDERLESS(3, "fullscreen_borderless");
 		
 		private final int index;
 		private final String name;
