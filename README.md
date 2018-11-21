@@ -11,40 +11,39 @@ through the simplest way to add Java to your project.
 
 ### Before installation
 Before you install the engine you should make sure that you have the following
-software installed on your computer. G4mEngine is a lightweight java project and
+software installed on your computer. G4mEngine is a lightweight Java project and
 does not need any third party (except for Java JRE) software to work, however it
 is still advised that the following is to be installed:
 
-* Java JDK and JRE version 1.8 or above should be
+* Java SDK and JRE version 1.8 or above should be
   [installed](https://www.oracle.com/technetwork/java/javase/downloads/index.html).
 * Eclipse IDE or any other integrated development environment for Java should
   be [installed](https://www.eclipse.org/downloads/).
 
-It is possible to use the project without the use of any IDE, but as there are
+It is possible to use the project without the use of an IDE, but as there are
 resource files and many class files, it is advised to use an IDE. The project is
 originally written utilizing features in the Eclipse IDE, but other IDE's such as
 IntelliJ may also work if the project is imported as an Eclipse project.
 
 ### Download project
 G4mEngine is a very lightweight implementation, and is therefore very easy to add
-to any new or ongoing java project without adding too much complexity. Firstly you'll
+to any new or ongoing Java project without adding too much complexity. Firstly you'll
 need to download the project on [GitHub](https://github.com/G4me4u/g4mengine). The
 entire master zip should be downloaded. Alternatively, you can fork the project and
 pull it to your computer using git. Just make sure you have the entire repository on
-your computer. If you downloaded the Zip, you should un-zip the project into a new
+your computer. If you downloaded the ZIP, you should un-zip the project into a new
 folder.
 
 ### Import and compile
-Once you've downloaded the project you have to compile the Java files. Because the
+Once you've downloaded the project you have to compile the Java src-files. Because the
 engine is so lightweight, it is not pre-compiled like many other projects, but that
-shouldn't be an issue. If you're using Eclipse all you have to do is import an existing
-project. This can be done by selecting *File->Import...->General->Existing Projects
-into Workspace*, browsing the root directory of the newly created folder with the
-project files and clicking *Finish*. The Eclipse project wizard will automatically set
-up the project with the necessary resources. Any other IDE should be nearly the same.
-In IntelliJ you should select the *Import Eclipse project* option. And that's it!
-You can now compile and use the project as a dependency to any of your own Java
-projects!
+shouldn't be an issue. If you're using Eclipse all you have to do is import G4mEngine
+as an existing project. This can be done by selecting *File->Import...->General->Existing
+Projects into Workspace*, browsing the root directory of the newly created folder with
+the project files and clicking *Finish*. The Eclipse project wizard will automatically
+set up the project with the necessary resources. Any other IDE should be nearly the same.
+In IntelliJ you should select the *Import Eclipse project* option. And that's it! You can
+now compile and use the project as a dependency to any of your own Java projects!
 
 If you want to use G4mEngine as a library jar file (and not a project dependency) you
 can do so by compiling the G4mEngine source files into a single jar file. This is done
@@ -70,8 +69,9 @@ strictly necessary (I promise I wont mention it again).
 The first thing we'll need to do is create a new class, which extends the Application
 class in the G4mEngine. The Application class can be seen as the main class of the
 program. It is here where the main loop will be managed and functions like *tick* and
-*render* will be called. It should be noted, that the Application class is abstract and
-has to be sub-classed by your own implementation.
+*render* will be called - but you don't have to worry about that too much. It should be
+noted, that the Application class is abstract and has to be sub-classed by your own
+implementation.
 
 ```java
 package com.mydomain.firstapp;
