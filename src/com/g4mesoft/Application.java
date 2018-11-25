@@ -7,6 +7,8 @@ import com.g4mesoft.composition.Composition;
 import com.g4mesoft.graphic.Display;
 import com.g4mesoft.graphic.IExitable;
 import com.g4mesoft.graphic.IRenderer2D;
+import com.g4mesoft.input.key.KeyInputListener;
+import com.g4mesoft.input.mouse.MouseInputListener;
 
 public abstract class Application implements IExitable {
 
@@ -24,6 +26,8 @@ public abstract class Application implements IExitable {
 	private Timer timer;
 	private float minimumFps;
 	
+	private long ticksPassed;
+	
 	/*
 	 * Width and height values of the renderer
 	 * in the previous frame. Used to know when
@@ -38,9 +42,10 @@ public abstract class Application implements IExitable {
 	 */
 	private int oldDisplayWidth;
 	private int oldDisplayHeight;
-
-// Abstract functions //
 	
+	private KeyInputListener keyListener;
+	private MouseInputListener mouseListener;
+
 	private final String displayConfig;
 	
 	protected Application(String displayConfig) {
@@ -50,6 +55,8 @@ public abstract class Application implements IExitable {
 	protected Application() {
 		this(DISPLAY_CONFIG_LOCATION);
 	}
+
+// Abstract functions //
 
 	/**
 	 * When this function is overridden, it should be in
@@ -134,7 +141,11 @@ public abstract class Application implements IExitable {
 	 * This function should be overridden by sub-classes and
 	 * used for general initialization. This implementation of
 	 * the function will intialize the main display, the timer
-	 * etc. 
+	 * etc. If one wishes to enable or disable user input, this
+	 * can be achieved by invoking the methods {@link #enableKeyInput()}
+	 * or {@link #enableMouseInput()}. User input will be enabled
+	 * by default and can be disabled using {@link #disableKeyInput()}
+	 * or {@link #disableMouseInput()}.
 	 * <br><br>
 	 * <b>NOTE:</b><i> any sub-classes overriding this function should
 	 * call {@code super.init()} to make sure the application starts 
@@ -147,6 +158,20 @@ public abstract class Application implements IExitable {
 		
 		timer = new Timer(DEFAULT_TPS, DEFAULT_DEBUG);
 		minimumFps = DEFAULT_MIN_FPS;
+		
+		ticksPassed = 0;
+	
+		oldRendererWidth = 0;
+		oldRendererHeight = 0;
+	
+		oldDisplayWidth = 0;
+		oldDisplayHeight = 0;
+
+		keyListener = null;
+		mouseListener = null;
+
+		enableKeyInput();
+		enableMouseInput();
 	}
 	
 	protected void stop() { }
@@ -198,7 +223,17 @@ public abstract class Application implements IExitable {
 	private void update() {
 		if (composition != null && composition.isValid())
 			composition.update();
+		
 		tick();
+		
+		// The key- and mouse-input should
+		// be updated after every tick.
+		if (keyListener != null)
+			keyListener.updateKeys();
+		if (mouseListener != null)
+			mouseListener.updateMouseButtons();
+		
+		ticksPassed++;
 	}
 	
 	/**
@@ -302,6 +337,84 @@ public abstract class Application implements IExitable {
 	protected void displayResized(int newWidth, int newHeight) {
 	}
 	
+	/**
+	 * Enables the KeyInputListener to listen for key events on the 
+	 * current display. Calling this function will replace the manual 
+	 * work having to update the keys in the static class called
+	 * {@link com.g4mesoft.input.key.KeyInputListener KeyInputListener}.
+	 * The following code snippet could replace a call to this function:
+	 * <pre>
+	 * // Somewhere during initialization:
+	 * KeyInputListener.getInstance().registerDisplay(getDisplay());
+	 * ...
+	 * // After every tick
+	 * KeyInputListener.getInstance().updateKeys();
+	 * </pre>
+	 * The above code snippet can seem confusing at first, but is actually
+	 * quite simple. Firstly, the KeyInputListener is registered to the
+	 * display owned by this application. Since the KeyInputListener
+	 * supports various key-input features (such as key-clicked events)
+	 * the keys have to be updated after every tick has passed. This small 
+	 * detail is very important for the functionality of the key-listener. 
+	 * <br><br>
+	 * <b>NOTE: </b><i>To simplify programs, it is advised that this 
+	 * function is to be used instead of the above code snippet.<i>
+	 * 
+	 * @see #disableKeyInput()
+	 * @see com.g4mesoft.input.key.KeyInputListener
+	 */
+	public void enableKeyInput() {
+		keyListener = KeyInputListener.getInstance();
+		keyListener.registerDisplay(display);
+	}
+	
+	/**
+	 * Disables the {@code KeyInputListener}. If the listener was not 
+	 * enabled prior to calling this function, no action will occur. 
+	 * If one wishes to re-enable to key-listener after disabling it, 
+	 * it can be done by using the {@link #enableKeyInput()} function.
+	 * 
+	 * @see #enableKeyInput()
+	 */
+	public void disableKeyInput() {
+		if (keyListener != null) {
+			keyListener.unregisterDisplay(display);
+			keyListener = null;
+		}
+	}
+
+	/**
+	 * Enables the {@link com.g4mesoft.input.mouse.MouseInputListener
+	 * MouseInputListener} by registering it to the display owned by
+	 * this application. Enabling the mouse input listener using this
+	 * function will replace the manual work of having to call the
+	 * {@link MouseInputListener#updateMouseButtons()} function after 
+	 * every update in the {@link #tick()} method. For the sake of 
+	 * simplicity it is adviced to use this function instead of calling 
+	 * {@code MouseInputListener.registerDisplay(getDisplay())} manually.
+	 * 
+	 * @see #disableMouseInput()
+	 */
+	public void enableMouseInput() {
+		mouseListener = MouseInputListener.getInstance();
+		mouseListener.registerDisplay(display);
+	}
+	
+	/**
+	 * Disables the {@code MouseInputListener}. If the listener was not
+	 * enabled prior to calling this function, no action will occur.
+	 * If one wishes to re-enable the mouse-listener after disabling it,
+	 * it can be achieved by using the {@link #enableMouseInput()} function.
+	 * 
+	 * @see #enableMouseInput()
+	 */
+	public void disableMouseInput() {
+		if (mouseListener != null) {
+			mouseListener.unregisterDisplay(display);
+			mouseListener = null;
+		}
+	}
+	
 // Getter functions //
 	
 	/**
@@ -316,6 +429,14 @@ public abstract class Application implements IExitable {
 	 */
 	public Composition getRootComposition() {
 		return composition;
+	}
+	
+	/**
+	 * @return The amount of ticks passed since
+	 *         the application was initialized.
+	 */
+	public long getTicksPassed() {
+		return ticksPassed;
 	}
 	
 // Setter functions //
