@@ -51,7 +51,7 @@ public abstract class KeyInput extends Input {
 	 * 
 	 * @see java.awt.event.KeyEvent KeyEvent
 	 */
-	public abstract void keyPressed(int keyCode);
+	protected abstract void keyPressed(int keyCode);
 	
 	/**
 	 * Should be called whenever a key with the given {@code keyCode}
@@ -64,7 +64,7 @@ public abstract class KeyInput extends Input {
 	 * 
 	 * @see java.awt.event.KeyEvent KeyEvent
 	 */
-	public abstract void keyReleased(int keyCode);
+	protected abstract void keyReleased(int keyCode);
 	
 	/**
 	 * Returns true, for as long as the key(s) this key input 
