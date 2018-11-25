@@ -53,7 +53,7 @@ in the Eclipse IDE by selecting the *File->Export...->Java->JAR file* option.
 that the /res folder is selected as a resource folder, and the contents are added to the
 root of the jar output file.*
 
-## Usage
+## Usage & Examples
 Once G4mEngine is added to your project, you should be able to access all the nice
 features of the engine. If you're unable to access the features repeat the Installation
 guide.
@@ -66,6 +66,7 @@ process should take around 5-10 minutes (no time at all) to complete depending o
 Again, I advice using the Eclipse IDE for doing projects with the engine, but it is not
 strictly necessary (I promise I wont mention it again).
 
+#### Creating our Application class
 The first thing we'll need to do is create a new class, which extends the Application
 class in the G4mEngine. The Application class can be seen as the main class of the
 program. It is here where the main loop will be managed and functions like *tick* and
@@ -133,27 +134,28 @@ should be handled by a rendering-context, and it is therefore only adviced to dr
 onto the display in the render method, or in other cases when the application supplies
 an *IRenderer2D*.
 
+#### Drawing to the canvas
 As mentioned earlier we want to make a *Hello world* program, which draws a pink square
 onto a white background. This can be done using the *render(IRenderer2D, float)*
 function. The following code snippet will draw a 100x100 square onto the center of the
 canvas.
 
 ```java
-	public void render(IRenderer2D renderer, float dt) {
-		// Clear viewport to white.
-		renderer.setColor(Color.WHITE);
-		renderer.clear();
+public void render(IRenderer2D renderer, float dt) {
+	// Clear viewport to white.
+	renderer.setColor(Color.WHITE);
+	renderer.clear();
 
-		// Get dimensions of viewport.
-		int w = renderer.getWidth();
-		int h = renderer.getHeight();
+	// Get dimensions of viewport.
+	int w = renderer.getWidth();
+	int h = renderer.getHeight();
 
-		renderer.setColor(Color.PINK);
+	renderer.setColor(Color.PINK);
 
-		// Fill 100x100 square at the
-		// center of the viewport.
-		renderer.fillRect((w - 100) / 2, (h - 100) / 2, 100, 100);
-	}
+	// Fill 100x100 square at the
+	// center of the viewport.
+	renderer.fillRect((w - 100) / 2, (h - 100) / 2, 100, 100);
+}
 ```
 
 **NOTE:** *For the abovewritten code to work, you will have to import
@@ -162,15 +164,17 @@ java.awt.Color at the top of the class.*
 ```java
 import java.awt.Color;
 ```
-
 And that's how simple it is to get a program to run! But it's not the end of our little
-example. There's one small, but important, step that we've skipped. Where did we ever set
-the size and title of the display? Well - we didn't. The Application didn't find any
-configuration for the display, and it therefore chose the default values. Hence you'll see
-"My Title" as the title of the 400x400 window. These are all default values. You can change
-them by creating a *display.txt* file inside of a folder called *config* or simply by
-supplying the *Application* constructor with a path to the display configuration. A display
-config file could look as follows:
+example.
+
+#### Display configuration
+There's one small, but important, step that we've skipped. Where did we ever set the size
+and title of the display? Well - we didn't. The Application didn't find any configuration
+for the display, and it therefore chose the default values. Hence you'll see "My Title" as
+the title of the 400x400 window. These are all default values. You can change them by
+creating a *display.txt* file inside of a folder called *config* or simply by supplying the
+*Application* constructor with a path to the display configuration. A display config file
+could look as follows:
 
 ```
 title=Hello World
@@ -187,9 +191,213 @@ displayVisible=true
 icon=none
 ```
 
-There are also other options such as *minimumWidth* and *minimumHeight*. If a value is not
-specified in the *config/display.txt* file then the default value for that property will be
-used. An example of all the parameters, what they do and what their default values are can
-be found in the [config/display-default.txt](res/config/display-default.txt) file. It should
-be noted that the display config file has to be a resource which gets added to the jar
-itself.
+There are also other options such as *minimumWidth* and *minimumHeight*. If a value is
+not specified in the *config/display.txt* file then the default value for that property
+will be used. An example of all the parameters, what they do and what their default values
+are can be found in the [config/display-default.txt](res/config/display-default.txt) file.
+It should be noted that the display config file has to be a resource which gets added to
+the jar itself.
+
+##### Altering display after startup
+If one wishes to change the display-mode or other properties of the display after the app
+has started, it is possible to do so using the display class. Any instance of *Application*
+will have the getter method *getDisplay()* which will return an instance of the display.
+The following code snippet will change the display-mode of the display to a borderless
+fullscreen window:
+
+```java
+getDisplay().setDisplayMode(DisplayMode.FULLSCREEN_BORDERLESS);
+```
+
+Other useful functions related to the display can be found in the source code located in
+[Display.java](src/com/g4mesoft/graphic/Display.java).
+
+### Capturing user input
+There are several ways to capture input from the user in G4mEngine. The currently supported
+ways of capturing input is via. the *KeyInputListener* and *MouseInputListener*, which as
+their names suggest capture key-input and mouse-input respectively. Other ways to capture
+input (such as from a joystick or others) may be added in the future. All user input is
+enabled by default and can be disabled using an instance of the application class.
+
+#### Keyboard input
+Keyboard input comes in multiple form factors. In fact there are three different ways to
+capture key-input.
+
+* KeySingleInput - activated by a single key press.
+* KeyComboInput - activated by a combination of keys pressed.
+* KeyTypedInput - a way of recording the typed unicode key-inputs.
+
+It is important to note that key input should only be captured during the tick method call.
+If the keys are captured during rendering it could lead to unexpected behaviour.
+
+##### Simple key detection
+The first and simplest way to capture key-input is using the *KeySingleInput*. The source code
+can be found in [KeySingleInput.java](src/com/g4mesoft/input/key/KeySingleInput.java).
+This class is used to detect when either of a set of provided keys is pressed. For example a
+key that detects when the 'A' or 'D' key is pressed can be initialized as follows:
+
+```java
+KeyInput key = new KeySingleInput("A or D", KeyEvent.VK_A, KeyEvent.VK_D);
+```
+
+Constructing a *KeyInput* which tracks only the 'A' key can be done by simply discluding
+the *KeyEvent.VK_D* part of the constructor.
+
+When a *KeyInput* has been constructed, it can be added to the *KeyInputListener* where
+the key will be ready to listen for key-events sent by the display (if the key inputs
+are enabled in the *Application*). The following code snippet will add the key to the
+*KeyInputListener*:
+
+```java
+KeyInputListener.getInstance().addKey(key);
+```
+
+Likewise a key can also be removed from the *KeyInputListener* by calling the member function
+*removeKey(KeyInput)*.
+
+##### Key combinations
+There are also other types of key inputs. In some cases it can be useful to have a key that
+is only activated when the user presses multiple keys at once. For this purpose we have the
+[KeyComboInput](src/com/g4mesoft/input/key/KeyComboInput.java) implementation. The
+*KeyComboInput* is in many ways like the *KeySingleInput* but instead of tracking a single
+key it will track multiple combinations of keys. For example making a key-combination
+which tracks either 'SHIFT+A' or 'CTRL+D' can be initialized as follows:
+
+```java
+KeyInput key = new KeyComboInput("SHIFT+A or CTRL+D",
+        new int[] { KeyEvent.VK_SHIFT, KeyEvent.VK_A },
+        new int[] { KeyEvent.VK_CTRL,  KeyEvent.VK_D });
+```
+
+The *KeyComboInput* can be added and removed from the *KeyInputListener* in the same manner
+as the *KeySingleInput*.
+
+##### Example of registering keys
+From my own experience, I've found that having all keys in a single class can be a good idea.
+For example if you want a game where you have the UP, LEFT, DOWN and RIGHT keys as either
+'WASD' or the arrow keys could be achieved as follows:
+
+```java
+import java.awt.event.KeyEvent;
+
+import com.g4mesoft.input.key.KeyInput;
+import com.g4mesoft.input.key.KeyInputListener;
+import com.g4mesoft.input.key.KeySingleInput;
+
+/**
+ * We use the 'final' keyword, so
+ * this class can't be sub-classed.
+ */
+public final class Keyboard {
+
+	/*
+	 * Initialize movement keys.
+	 */
+
+	public static final KeyInput UP    = regKey("up",    KeyEvent.VK_UP,    KeyEvent.VK_W);
+	public static final KeyInput LEFT  = regKey("left",  KeyEvent.VK_LEFT,  KeyEvent.VK_A);
+	public static final KeyInput DOWN  = regKey("down",  KeyEvent.VK_DOWN,  KeyEvent.VK_S);
+	public static final KeyInput RIGHT = regKey("right", KeyEvent.VK_RIGHT, KeyEvent.VK_D);
+
+	private Keyboard() {
+		// Private constructor. We want no
+		// instances of this class.
+	}
+
+	/**
+	 * A simple wrapper to register keys statically.
+	 */
+	private static KeyInput regKey(String name, int... keyCodes) {
+		KeyInput key = new KeySingleInput(name, keyCodes);
+		KeyInputListener.getInstance().addKey(key);
+		return key;
+	}
+}
+```
+
+Using the above way of registering keys makes it possible to easily use the keys in any other
+class by simply using the static *KeyInput* fields as follows:
+
+```java
+public void tick() {
+	if (Keyboard.UP.isClicked()) {
+		System.out.println("Up has been clicked!");
+	}
+
+	if (Keyboard.LEFT.isPressed()) {
+		System.out.println("Left is pressed / held!");
+	}
+
+	if (Keyboard.DOWN.isReleased()) {
+		System.out.println("Down was released. Nice!");
+	}
+}
+```
+
+More information about the *KeyInput* methods (like *isClicked()* etc.) can be found in the
+source code documentation. See [KeyInput.java](src/com/g4mesoft/input/key/KeyInput.java).
+
+##### Typed key input
+The last way of capturing user input is by recording the typed input of the users keyboard.
+This is done using the [KeyTypedInput.java](src/com/g4mesoft/input/key/KeyTypedInput.java)
+class. Typed input can be understood as all the keys on the keyboard, which can be translated
+into a unicode character. For example this implementation of key-listening is used by the
+*TextFieldComposition* in order to record what the user types in the text field. It is
+important to note that ASCII code characters are also included in this implementation. This
+means that characters such as DELETE and BACKSPACE are also part of the typed keys. These
+keys will have to be handled properly as there are no graphical characters associated with
+these keys. For more information look at the source code documentation. A typed key can be
+added to the *KeyInputListener* using the *addTypedKey(KeyTypedInput)* function. The following
+code can be used to record the typed input over several ticks.
+
+```java
+@Override
+public void init() {
+	...
+
+	// Initialize our typed key input.
+	typedKey = new KeyTypedInput();
+
+	KeyInputListener.getInstance().addTypedKey(typedKey);
+}
+
+...
+
+@Override
+public void tick() {
+	...
+
+	if (typedKey.hasTypedCharacters()) {
+		char[] buffer = typedKey.flushBuffer();
+		// Handle buffer of chars
+		handleTypedInput(buffer);
+	}
+
+	// Make sure we record the
+	// user input in the next tick.
+	typedKey.recordNextUpdate();
+}
+```
+
+It is important to note that the above code is very close to the engine core. It is not
+recommended using the code unless you know what they're doing. It can quickly become a
+mess if the typed characters are not handled correctly, as there can be edge cases where
+unexpected control-characters could lead to unexpected bugs.
+
+##### Disabling key input
+As mentioned earlier, key input is enabled by default. If one wishes to disable the
+*KeyInputListener* they should call the *disableKeyInput()* function in the *Application*
+class. For example in the *init()* function as follows:
+
+```java
+public void init() {
+	super.init();
+
+	...
+
+	disableKeyInput();
+}
+```
+
+If one wishes to disable a single key input they should instead of the abovewritten code
+simply remove the key from the *KeyInputListener*. This can be done during runtime.
