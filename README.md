@@ -95,12 +95,14 @@ public class MyApplication extends Application {
 		// you should use the #init() instead.
 	}
 
+	@Override
 	public void init() {
 		super.init();
 
 		// Put some initialization code here.
 	}
 
+	@Override
 	public void tick() {
 		// This should be in charge of all
 		// movement and updates made to the
@@ -110,6 +112,7 @@ public class MyApplication extends Application {
 		// changed using #setTps(float).
 	}
 
+	@Override
 	public void render(IRenderer2D renderer, float dt) {
 		// This should be in charge of most
 		// if not all drawing to the display.
@@ -141,6 +144,7 @@ function. The following code snippet will draw a 100x100 square onto the center 
 canvas.
 
 ```java
+@Override
 public void render(IRenderer2D renderer, float dt) {
 	// Clear viewport to white.
 	renderer.setColor(Color.WHITE);
@@ -278,6 +282,8 @@ For example if you want a game where you have the UP, LEFT, DOWN and RIGHT keys 
 'WASD' or the arrow keys could be achieved as follows:
 
 ```java
+package com.mydomain.input;
+
 import java.awt.event.KeyEvent;
 
 import com.g4mesoft.input.key.KeyInput;
@@ -380,8 +386,8 @@ public void tick() {
 ```
 
 It is important to note that the above code is very close to the engine core. It is not
-recommended using the code unless you know what they're doing. It can quickly become a
-mess if the typed characters are not handled correctly, as there can be edge cases where
+recommended using the code unless you know what you're doing. It can quickly become a
+mess if the typed characters are not handled correctly as there can be edge cases where
 unexpected control-characters could lead to unexpected bugs.
 
 ##### Disabling key input
@@ -390,6 +396,7 @@ As mentioned earlier, key input is enabled by default. If one wishes to disable 
 class. For example in the *init()* function as follows:
 
 ```java
+@Override
 public void init() {
 	super.init();
 
