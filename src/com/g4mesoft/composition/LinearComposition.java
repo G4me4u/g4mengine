@@ -1,8 +1,5 @@
 package com.g4mesoft.composition;
 
-import java.awt.Color;
-import java.util.Random;
-
 import com.g4mesoft.graphic.IRenderingContext2D;
 import com.g4mesoft.math.Vec2i;
 
@@ -25,8 +22,6 @@ public class LinearComposition extends LayoutComposition {
 	public LinearComposition(int direction, int gap) {
 		this.direction = getLayoutDirection(direction);
 		this.gap = gap;
-	
-		setBackground(new Color(new Random().nextInt(0xFFFFFF)));
 	}
 
 	private static int getLayoutDirection(int direction) {
