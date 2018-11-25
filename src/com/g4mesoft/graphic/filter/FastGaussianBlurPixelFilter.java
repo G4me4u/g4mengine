@@ -6,12 +6,12 @@ public class FastGaussianBlurPixelFilter implements IPixelFilter {
 	
 	private final int[] boxSizes;
 	
-	public FastGaussianBlurPixelFilter(float sigma) {
-		boxSizes = calculateSizesForGaussian(sigma, DEFAULT_NUM_BOXES);
+	public FastGaussianBlurPixelFilter(float radius) {
+		boxSizes = calculateSizesForGaussian(radius, DEFAULT_NUM_BOXES);
 	}
 	
-	private static int[] calculateSizesForGaussian(float sigma, int n) {
-		float ss = 12.0f * sigma * sigma;
+	private static int[] calculateSizesForGaussian(float radius, int n) {
+		float ss = 12.0f * radius * radius;
 		float wIdeal = (float)Math.sqrt(ss / n + 1);
 		
 		int wl = (int)wIdeal;
