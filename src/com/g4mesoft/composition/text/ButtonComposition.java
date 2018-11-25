@@ -37,7 +37,7 @@ public class ButtonComposition extends TextComposition {
 			text = "";
 		this.text = text;
 		
-		requestRelayout();
+		requestRelayout(true);
 	}
 	
 	public String getText() {
@@ -49,8 +49,6 @@ public class ButtonComposition extends TextComposition {
 			return;
 		
 		this.hovered = hovered;
-
-		invokeButtonHoveredEvent();
 	}
 	
 	public boolean isHovered() {
@@ -62,8 +60,6 @@ public class ButtonComposition extends TextComposition {
 			return;
 		
 		this.pressed = pressed;
-
-		invokeButtonPressedEvent();
 	}
 	
 	public boolean isPressed() {
@@ -115,16 +111,6 @@ public class ButtonComposition extends TextComposition {
 		return buttonListener;
 	}
 
-	public void invokeButtonHoveredEvent() {
-		if (buttonListener != null)
-			buttonListener.buttonHovered(this);
-	}
-
-	public void invokeButtonPressedEvent() {
-		if (buttonListener != null)
-			buttonListener.buttonPressed(this);
-	}
-	
 	public void invokeButtonClickedEvent() {
 		if (buttonListener != null)
 			buttonListener.buttonClicked(this);

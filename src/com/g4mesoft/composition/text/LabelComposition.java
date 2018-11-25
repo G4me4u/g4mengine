@@ -22,7 +22,7 @@ public class LabelComposition extends TextComposition {
 			text = "";
 		this.text = text;
 		
-		requestRelayout();
+		requestRelayout(true);
 	}
 	
 	public String getText() {

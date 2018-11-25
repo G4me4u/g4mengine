@@ -1,5 +1,8 @@
 package com.g4mesoft.composition;
 
+import java.awt.Color;
+import java.util.Random;
+
 import com.g4mesoft.graphic.IRenderingContext2D;
 import com.g4mesoft.math.Vec2i;
 
@@ -22,6 +25,8 @@ public class LinearComposition extends LayoutComposition {
 	public LinearComposition(int direction, int gap) {
 		this.direction = getLayoutDirection(direction);
 		this.gap = gap;
+	
+		setBackground(new Color(new Random().nextInt(0xFFFFFF)));
 	}
 
 	private static int getLayoutDirection(int direction) {
@@ -36,61 +41,185 @@ public class LinearComposition extends LayoutComposition {
 	
 	@Override
 	public void doLayout(IRenderingContext2D context) {
-		int n = children.size();
-		if (n == 0)
+		int numChildren = children.size();
+		if (numChildren == 0)
 			return;
 		
+		// Number of children that have
+		// to fill the remaining width and
+		// height.
+		int nw = numChildren;
+		int nh = numChildren;
+		
+		Vec2i remainingSize = new Vec2i(size);
+		remainingSize.sub(gap * (numChildren - 1));
+		
+		for (Composition child : children) {
+			Vec2i ps = child.getPreferredSize(context);
+
+			if (child.horizontalFill == FILL_PREFERRED) {
+				remainingSize.x -= ps.x;
+				nw--;
+			}
+			
+			if (child.verticalFill == FILL_PREFERRED) {
+				remainingSize.y -= ps.y;
+				nh--;
+			}
+			
+			BorderInsets insets = child.getBorderInsets();
+			remainingSize.x -= insets.getHorizontalInsets();
+			remainingSize.y -= insets.getVerticalInsets();
+		}
+
+		// The number of children that
+		// have we have to lay out.
+		int n = numChildren;
+		
 		if (direction == HORIZONTAL_DIRECTION) {
-			int x = pos.x;
-			int remainingWidth = size.x - gap * (n - 1);
+			// The remaining width for the compositions 
+			// that have to fill the remaining part of
+			// the layout. Or the amount of width that 
+			// has to be taken away from the other 
+			// children (if negative).
+			int remainingWidth = remainingSize.x;
+			
+			int xa = pos.x;
 			for (Composition child : children) {
-				int width = remainingWidth / n--;
+				Vec2i ps = child.getPreferredSize(context);
+				BorderInsets insets = child.getBorderInsets();
 				
-				if (!valid || child.isRelayoutRequired()) {
-					if (child.horizontalFill == FILL_PREFERRED || child.verticalFill == FILL_PREFERRED) {
-						Vec2i ps = child.getPreferredSize(context);
-						
-						child.size.x = child.horizontalFill == FILL_PREFERRED ? ps.x : width;
-						child.size.y = child.verticalFill == FILL_PREFERRED ? ps.y : size.y;
-					} else {
-						child.size.set(width, size.y);
+				int x = xa;
+				int width = 0;
+				
+				if (child.horizontalFill != FILL_PREFERRED) {
+					// If the remaining width is negative
+					// (or there is no remaining width),
+					// the width of the child is zero.
+					if (remainingWidth > 0) {
+						width = remainingWidth / nw--;
+						remainingWidth -= width;
 					}
+				} else {
+					width = ps.x;
 					
-					child.pos.x = x + (int)((width - child.size.x + 0.5f) * child.horizontalAlignment);
-					child.pos.y = pos.y + (int)((size.y - child.size.y + 0.5f) * child.verticalAlignment);
-					
-					child.invalidate();
-					child.layout(context);
+					if (remainingWidth < 0) {
+						// Remaining width is negative.
+						// we have to take the width from
+						// the preferred sized children.
+						int rw = remainingWidth / (numChildren - nw);
+						remainingWidth -= rw;
+						width += rw;
+						
+						// The number of children with a
+						// non-preferred size has changed.
+						nw++;
+					} else if (nw == 0) {
+						// There are no children to take
+						// up the remaining width. We should
+						// therefore align the preferred sized
+						// children horizontally.
+						int rw = remainingWidth / n;
+						remainingWidth -= rw;
+
+						x += (int)(rw * child.horizontalAlignment);
+						xa += rw;
+					}
 				}
 
-				x += width + gap;
-				remainingWidth -= width;
+				int y = pos.y;
+				int height = size.y - insets.getVerticalInsets();
+
+				// We should only use the preferred
+				// height, if it's actually available
+				// in the height of the layout.
+				if (child.verticalFill == FILL_PREFERRED && ps.y < height) {
+					height = ps.y;
+
+					// Only in the vertical axis
+					// do we need to align the
+					// composition.
+					y += (int)((size.y - ps.y) * child.verticalAlignment);
+				}
+
+				x += insets.left;
+				y += insets.top;
+				
+				xa += insets.getHorizontalInsets();
+				
+				// Only invalidate and layout the
+				// child, if the size or position
+				// changed. This is important for
+				// optimization.
+				if (!child.pos.equals(x, y) || !child.size.equals(width, height)) {
+					child.pos.set(x, y);
+					child.size.set(width, height);
+					
+					child.invalidate();
+				}
+
+				child.layout(context);
+				
+				xa += width + gap;
+				n--;
 			}
 		} else {
-			int y = pos.y;
-			int remainingHeight = size.y - gap * (n - 1);
-			for (Composition child : children) {
-				int height = remainingHeight / n--;
+			int remainingHeight = remainingSize.y;
 
-				if (!valid || child.isRelayoutRequired()) {
-					if (child.horizontalFill == FILL_PREFERRED || child.verticalFill == FILL_PREFERRED) {
-						Vec2i ps = child.getPreferredSize(context);
-						
-						child.size.x = child.horizontalFill == FILL_PREFERRED ? ps.x : size.x;
-						child.size.y = child.verticalFill == FILL_PREFERRED ? ps.y : height;
-					} else {
-						child.size.set(size.x, height);
+			int ya = pos.y;
+			for (Composition child : children) {
+				Vec2i ps = child.getPreferredSize(context);
+				BorderInsets insets = child.getBorderInsets();
+
+				int x = pos.x;
+				int width = size.x - insets.getHorizontalInsets();
+
+				if (child.horizontalFill == FILL_PREFERRED && ps.x < width) {
+					width = ps.x;
+					x += (int)((size.x - ps.x) * child.horizontalAlignment);
+				}
+				
+				int y = ya;
+				int height = 0;
+				
+				if (child.verticalFill != FILL_PREFERRED) {
+					if (remainingHeight > 0) {
+						height = remainingHeight / nh--;
+						remainingHeight -= height;
 					}
+				} else {
+					height = ps.y;
 					
-					child.pos.x = pos.x + (int)((size.x - child.size.x + 0.5f) * child.horizontalAlignment);
-					child.pos.y = y + (int)((height - child.size.y + 0.5f) * child.verticalAlignment);
+					if (remainingHeight < 0) {
+						int rh = remainingHeight / (numChildren - nh);
+						remainingHeight -= rh;
+						height += rh;
+						nh++;
+					} else if (nh == 0) {
+						int rh = remainingHeight / n;
+						remainingHeight -= rh;
+
+						y += (int)(rh * child.verticalAlignment);
+						ya += rh;
+					}
+				}
+				
+				x += insets.left;
+				y += insets.top;
+
+				ya += insets.getVerticalInsets();
+				
+				if (!child.pos.equals(x, y) || !child.size.equals(width, height)) {
+					child.pos.set(x, y);
+					child.size.set(width, height);
 					
 					child.invalidate();
-					child.layout(context);
 				}
+				
+				child.layout(context);
 
-				y += height + gap;
-				remainingHeight -= height;
+				ya += height + gap;
+				n--;
 			}
 		}
 	}
@@ -111,14 +240,19 @@ public class LinearComposition extends LayoutComposition {
 		
 		for (Composition child : children) {
 			Vec2i ps = child.getPreferredSize(context);
+			BorderInsets insets = child.getBorderInsets();
+			
+			int px = ps.x + insets.getHorizontalInsets();
+			int py = ps.y + insets.getVerticalInsets();
+			
 			if (direction == HORIZONTAL_DIRECTION) {
-				preferredSize.x += ps.x;
-				if (ps.y > preferredSize.y && child.getVerticalFill() != FILL_REMAINING)
-					preferredSize.y = ps.y;
+				preferredSize.x += px;
+				if (py > preferredSize.y && child.getVerticalFill() != FILL_REMAINING)
+					preferredSize.y = py;
 			} else {
-				if (ps.x > preferredSize.x && child.getHorizontalFill() != FILL_REMAINING)
-					preferredSize.x = ps.x;
-				preferredSize.y += ps.y;
+				if (px > preferredSize.x && child.getHorizontalFill() != FILL_REMAINING)
+					preferredSize.x = px;
+				preferredSize.y += py;
 			}
 		}
 	}

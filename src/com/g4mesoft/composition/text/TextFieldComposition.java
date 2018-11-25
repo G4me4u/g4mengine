@@ -30,7 +30,7 @@ public class TextFieldComposition extends TextComposition {
 			text = "";
 		this.text = text;
 		
-		requestRelayout();
+		requestRelayout(true);
 	}
 	
 	public void appendText(String text) {
@@ -38,7 +38,7 @@ public class TextFieldComposition extends TextComposition {
 			return;
 		this.text += text;
 		
-		requestRelayout();
+		requestRelayout(true);
 	}
 	
 	public String getText() {
