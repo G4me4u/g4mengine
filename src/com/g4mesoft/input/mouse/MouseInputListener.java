@@ -113,6 +113,11 @@ public final class MouseInputListener implements MouseListener, MouseMotionListe
 		display.registerMouseMotionListener(this);
 	}
 	
+	public void unregisterDisplay(Display display) {
+		display.unregisterMouseListener(this);
+		display.unregisterMouseMotionListener(this);
+	}
+	
 	public static MouseInputListener getInstance() {
 		if (instance == null)
 			instance = new MouseInputListener();

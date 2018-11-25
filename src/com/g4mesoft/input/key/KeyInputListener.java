@@ -116,10 +116,17 @@ public class KeyInputListener implements KeyListener {
 	}
 	
 	/**
-	 * TODO: Documentation
+	 * Adds a typed key input to this {@code KeyInputListener}.
+	 * If the key already exists in the registry, the function
+	 * will return false, and the registry will remain unchanged.
 	 * 
-	 * @param typedKey
-	 * @return
+	 * @param typedKey  -  The typed key input to be added to
+	 *                     the registry.
+	 * 
+	 * @return True, if the key registry changed, false 
+	 *         otherwise.
+	 * 
+	 * @see com.g4mesoft.input.key.KeyTypedInput KeyTypedInput
 	 */
 	public boolean addTypedKey(KeyTypedInput typedKey) {
 		if (typedKeys.contains(typedKey))
@@ -128,10 +135,15 @@ public class KeyInputListener implements KeyListener {
 	}
 	
 	/**
-	 * TODO: Documentation
+	 * Removes an existing typed key input from this 
+	 * {@code KeyInputListener}. If the key doesn't exist in the
+	 * registry, the function will return false, and the registry
+	 * will remain unchanged.
 	 * 
-	 * @param typedKey
-	 * @return
+	 * @param typedKey  -  The existing typed key input to be
+	 *                     removed from the key registry.
+	 * 
+	 * @return True, if the key-registry changed, false otherwise.
 	 */
 	public boolean removeTypedKey(KeyTypedInput typedKey) {
 		return typedKeys.remove(typedKey);
@@ -154,18 +166,38 @@ public class KeyInputListener implements KeyListener {
 	 * 
 	 * @param display  -  The display which this {@code KeyInputListener}
 	 *                    should be registered by.
+	 *
+	 * @see #unregisterDisplay(Display)
 	 */
 	public void registerDisplay(Display display) {
 		display.registerKeyListener(this);
 	}
+
+	/**
+	 * Unregisters this {@code KeyInputListener} from the given Display.
+	 * If this {@code KeyInputListener} was never registered to the
+	 * display no further action will be performed. This function is a
+	 * simple wrapper for the following code-snippet:
+	 * <pre>
+	 * display.unregisterKeyListener(KeyInputListener.getInstance());
+	 * </pre>
+	 *
+	 * @param display  -  The display where this key-listener has been
+	 *                    registered prior to calling this function.
+	 *
+	 * @see #registerDisplay(Display)
+	 */
+	public void unregisterDisplay(Display display) {
+		display.unregisterKeyListener(this);
+	}
 	
 	/**
 	 * Returns an instance of the {@code KeyInputListener}. If the
-	 * static instance is not yet defined, this function initiate a 
+	 * static instance is not yet defined, this function initiate a
 	 * new instance and return it in future calls to this method.
 	 * There is only ever one instance of the KeyInputListener. Multiple
 	 * calls to this function will return the same instance.
-	 * 
+	 *
 	 * @return A static instance of the {@code KeyInputListener}
 	 */
 	public static KeyInputListener getInstance() {

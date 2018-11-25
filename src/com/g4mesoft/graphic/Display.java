@@ -341,6 +341,10 @@ public class Display implements IViewport {
 		canvas.addKeyListener(keyListener);
 	}
 
+	public void unregisterKeyListener(KeyListener keyListener) {
+		canvas.removeKeyListener(keyListener);
+	}
+
 	public void registerMouseListener(MouseListener mouseListener) {
 		if (canvas == null) return;
 		
@@ -353,6 +357,10 @@ public class Display implements IViewport {
 		}
 		
 		canvas.addMouseListener(mouseListener);
+	}
+
+	public void unregisterMouseListener(MouseListener mouseListener) {
+		canvas.removeMouseListener(mouseListener);
 	}
 
 	public void registerMouseMotionListener(MouseMotionListener mouseMotionListener) {
@@ -369,6 +377,10 @@ public class Display implements IViewport {
 		canvas.addMouseMotionListener(mouseMotionListener);
 	}
 	
+	public void unregisterMouseMotionListener(MouseMotionListener mouseMotionListener) {
+		canvas.removeMouseMotionListener(mouseMotionListener);
+	}
+
 	public Canvas getCanvas() {
 		return canvas;
 	}
