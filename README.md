@@ -3,6 +3,17 @@
 A lightweight general purpose 2D game engine for practice and simple game
 implementations in Java. Using no external libraries.
 
+## Table of content
+
+[Installation](#installation)
+* [Before installation](#before-installation)
+* [Download project](#download-project)
+* [Import and compile](#import-and-compile)
+
+[Usage and examples](#usage-and-examples)
+* [Simple program example](#simple-program-example)
+* [Capturing user input](#capturing-user-input)
+
 ## Installation
 
 There are several ways you can add G4mEngine to your project. But before we get
@@ -53,7 +64,7 @@ in the Eclipse IDE by selecting the *File->Export...->Java->JAR file* option.
 that the /res folder is selected as a resource folder, and the contents are added to the
 root of the jar output file.*
 
-## Usage & Examples
+## Usage and examples
 Once G4mEngine is added to your project, you should be able to access all the nice
 features of the engine. If you're unable to access the features repeat the Installation
 guide.
@@ -65,6 +76,10 @@ let us try to get a pink square to be drawn on a display with a white background
 process should take around 5-10 minutes (no time at all) to complete depending on skill.
 Again, I advice using the Eclipse IDE for doing projects with the engine, but it is not
 strictly necessary (I promise I wont mention it again).
+
+* [Creating our Application class](#creating-our-application-class)
+* [Drawing to the canvas](#drawing-to-the-canvas)
+* [Display configuration](#display-configuration)
 
 #### Creating our Application class
 The first thing we'll need to do is create a new class, which extends the Application
@@ -222,6 +237,8 @@ ways of capturing input is via. the *KeyInputListener* and *MouseInputListener*,
 their names suggest capture key-input and mouse-input respectively. Other ways to capture
 input (such as from a joystick or others) may be added in the future. All user input is
 enabled by default and can be disabled using an instance of the application class.
+
+* [Keyboard input](#keyboard-input)
 
 #### Keyboard input
 Keyboard input comes in multiple form factors. In fact there are three different ways to
