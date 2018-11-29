@@ -86,16 +86,16 @@ public class ButtonCompositionUI extends TextCompositionUI {
 		int cx = mouseInput.getClickX();
 		int cy = mouseInput.getClickY();
 		
-		boolean leftPressed = mouseInput.isPressed();
-		if (leftPressed && !button.isInBounds(cx, cy))
+		boolean mousePressed = mouseInput.isPressed();
+		if (mousePressed && !button.isInBounds(cx, cy))
 			hovered = false;
 		
 		button.setHovered(hovered);
 
 		boolean wasPressed = button.isPressed();
-		button.setPressed(hovered && leftPressed);
+		button.setPressed(hovered && mousePressed);
 		
-		if (hovered && wasPressed && !leftPressed)
+		if (hovered && wasPressed && !mousePressed)
 			button.invokeButtonClickedEvent();
 	}
 

@@ -402,8 +402,6 @@ public abstract class Composition implements IViewport {
 	}
 
 	public Composition getCompositionAt(int x, int y) {
-		if (x < pos.x || y < pos.y || x >= pos.x + size.x || y >= pos.y + size.y)
-			return null;
-		return this;
+		return isInBounds(x, y) ? this : null;
 	}
 }
