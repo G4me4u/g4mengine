@@ -17,7 +17,7 @@ public class ButtonComposition extends TextComposition {
 	private Color pressedBackground;
 	
 	private MouseButtonInput mouseButton;
-	private ButtonCompositionListener buttonListener;
+	private IButtonCompositionListener buttonListener;
 	
 	public ButtonComposition() {
 		this(null);
@@ -103,11 +103,11 @@ public class ButtonComposition extends TextComposition {
 		return hoveredBackground;
 	}
 	
-	public void setButtonListener(ButtonCompositionListener listener) {
+	public void setButtonListener(IButtonCompositionListener listener) {
 		buttonListener = listener;
 	}
 	
-	public ButtonCompositionListener getButtonListener() {
+	public IButtonCompositionListener getButtonListener() {
 		return buttonListener;
 	}
 
