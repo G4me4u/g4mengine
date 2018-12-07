@@ -39,6 +39,8 @@ public class LayoutCompositionUI extends CompositionUI {
 			renderer.setColor(background);
 			renderer.fillRect(layout.getX(), layout.getY(), layout.getWidth(), layout.getHeight());
 		}
+		
+		drawBorder(renderer, layout);
 	}
 
 	@Override

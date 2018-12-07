@@ -107,11 +107,19 @@ public abstract class Composition implements IViewport {
 	 */
 	public final void layout(IRenderingContext2D context) {
 		if (parent == null) {
-			// We're a root composition.
-			pos.set(0, 0);
-			size.set(context.getWidth(), context.getHeight());
-		
-			invalidate();
+			// We're a root composition. We
+			// have to fill the entire viewport.
+			BorderInsets insets = getBorderInsets();
+			
+			int w = context.getWidth() - insets.left - insets.right;
+			int h = context.getHeight() - insets.top - insets.bottom;
+			if (!pos.equals(insets.left, insets.right) || !size.equals(w, h)) {
+				pos.set(insets.left, insets.top);
+				size.set(w, h);
+				
+				// Viewport has changed.
+				invalidate();
+			}
 		}
 
 		if (isRelayoutRequired()) {
