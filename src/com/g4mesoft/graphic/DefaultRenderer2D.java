@@ -1,6 +1,5 @@
 package com.g4mesoft.graphic;
 
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -24,8 +23,8 @@ public class DefaultRenderer2D implements IRenderer2D {
 			defaultFont = new Font("Segoe UI Light", Font.PLAIN, 28);
 	}
 	
-	public void clear(Color color) {
-		g.setColor(color);
+	public void clear(GColor color) {
+		g.setColor(color.toAWTColor());
 		g.fillRect(0, 0, getWidth(), getHeight());
 	}
 	
@@ -69,8 +68,8 @@ public class DefaultRenderer2D implements IRenderer2D {
 	}
 
 	@Override
-	public void setColor(Color color) {
-		g.setColor(color);
+	public void setColor(GColor color) {
+		g.setColor(color.toAWTColor());
 	}
 	
 	@Override

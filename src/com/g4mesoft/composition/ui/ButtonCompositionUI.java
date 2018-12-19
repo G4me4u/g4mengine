@@ -1,11 +1,11 @@
 package com.g4mesoft.composition.ui;
 
-import java.awt.Color;
 import java.awt.Rectangle;
 
 import com.g4mesoft.composition.Composition;
 import com.g4mesoft.composition.text.ButtonComposition;
 import com.g4mesoft.composition.text.LabelComposition;
+import com.g4mesoft.graphic.GColor;
 import com.g4mesoft.graphic.IRenderer2D;
 import com.g4mesoft.graphic.IRenderingContext2D;
 import com.g4mesoft.input.mouse.MouseButtonInput;
@@ -27,14 +27,14 @@ public class ButtonCompositionUI extends TextCompositionUI {
 		button = (ButtonComposition)composition;
 
 		// Install defaults.
-		button.setTextColor(Color.WHITE);
-		button.setBackground(Color.BLACK);
-		button.setHoveredBackground(Color.DARK_GRAY);
-		button.setPressedBackground(Color.GRAY);
+		button.setTextColor(GColor.WHITE);
+		button.setBackground(GColor.BLACK);
+		button.setHoveredBackground(GColor.DARK_GRAY);
+		button.setPressedBackground(GColor.GRAY);
 		
 		button.setBorderWidth(1);
 		button.setBorder(Composition.BORDER_ALL);
-		button.setBorderColor(Color.WHITE);
+		button.setBorderColor(GColor.WHITE);
 		
 		button.setTextAlignment(LabelComposition.TEXT_ALIGN_CENTER);
 		
@@ -101,7 +101,7 @@ public class ButtonCompositionUI extends TextCompositionUI {
 
 	@Override
 	public void render(IRenderer2D renderer, float dt) {
-		Color background = null;
+		GColor background;
 		
 		if (button.isPressed()) {
 			background = button.getPressedBackground();

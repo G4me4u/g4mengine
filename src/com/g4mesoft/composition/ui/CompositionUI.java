@@ -1,8 +1,7 @@
 package com.g4mesoft.composition.ui;
 
-import java.awt.Color;
-
 import com.g4mesoft.composition.Composition;
+import com.g4mesoft.graphic.GColor;
 import com.g4mesoft.graphic.IRenderer2D;
 import com.g4mesoft.graphic.IRenderingContext2D;
 import com.g4mesoft.math.Vec2i;
@@ -26,7 +25,7 @@ public abstract class CompositionUI {
 		if (borderFlags == Composition.BORDER_NONE)
 			return;
 		
-		Color borderColor = composition.getBorderColor();
+		GColor borderColor = composition.getBorderColor();
 		if (borderColor == null)
 			return;
 		renderer.setColor(borderColor);

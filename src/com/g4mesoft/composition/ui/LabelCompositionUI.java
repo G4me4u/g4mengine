@@ -1,10 +1,10 @@
 package com.g4mesoft.composition.ui;
 
-import java.awt.Color;
 import java.awt.Rectangle;
 
 import com.g4mesoft.composition.Composition;
 import com.g4mesoft.composition.text.LabelComposition;
+import com.g4mesoft.graphic.GColor;
 import com.g4mesoft.graphic.IRenderer2D;
 import com.g4mesoft.graphic.IRenderingContext2D;
 import com.g4mesoft.math.Vec2i;
@@ -24,7 +24,7 @@ public class LabelCompositionUI extends TextCompositionUI {
 		label = (LabelComposition)composition;
 
 		// Install defaults.
-		label.setTextColor(Color.WHITE);
+		label.setTextColor(GColor.WHITE);
 		label.setBackground(null);
 		label.setTextAlignment(LabelComposition.TEXT_ALIGN_LEFT);
 		
@@ -65,7 +65,7 @@ public class LabelCompositionUI extends TextCompositionUI {
 
 	@Override
 	public void render(IRenderer2D renderer, float dt) {
-		Color background = label.getBackground();
+		GColor background = label.getBackground();
 		if (background != null) {
 			renderer.setColor(background);
 			renderer.fillRect(label.getX(), label.getY(), label.getWidth(), label.getHeight());

@@ -1,10 +1,10 @@
 package com.g4mesoft.composition.ui;
 
-import java.awt.Color;
 import java.awt.Rectangle;
 
 import com.g4mesoft.composition.Composition;
 import com.g4mesoft.composition.text.TextFieldComposition;
+import com.g4mesoft.graphic.GColor;
 import com.g4mesoft.graphic.IRenderer2D;
 import com.g4mesoft.graphic.IRenderingContext2D;
 import com.g4mesoft.input.key.KeyInputListener;
@@ -31,13 +31,13 @@ public class TextFieldCompositionUI extends TextCompositionUI {
 		textField = (TextFieldComposition)composition;
 	
 		// Install defaults
-		textField.setTextColor(Color.WHITE);
-		textField.setBackground(Color.BLACK);
+		textField.setTextColor(GColor.WHITE);
+		textField.setBackground(GColor.BLACK);
 		textField.setTextAlignment(TextFieldComposition.TEXT_ALIGN_LEFT);
 
 		textField.setBorderWidth(1);
 		textField.setBorder(Composition.BORDER_ALL);
-		textField.setBorderColor(Color.WHITE);
+		textField.setBorderColor(GColor.WHITE);
 		
 		typedInput = new KeyTypedInput();
 		KeyInputListener.getInstance().addTypedKey(typedInput);
@@ -105,7 +105,7 @@ public class TextFieldCompositionUI extends TextCompositionUI {
 		int w = textField.getWidth();
 		int h = textField.getHeight();
 		
-		Color background = textField.getBackground();
+		GColor background = textField.getBackground();
 		if (background != null) {
 			renderer.setColor(background);
 			renderer.fillRect(x, y, w, h);

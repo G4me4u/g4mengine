@@ -1,6 +1,5 @@
 package com.g4mesoft.graphic;
 
-import java.awt.Color;
 import java.awt.Graphics;
 
 public interface IRenderer2D extends IRenderingContext2D {
@@ -15,7 +14,7 @@ public interface IRenderer2D extends IRenderingContext2D {
 	
 	public void clear();
 
-	public void setColor(Color color);
+	public void setColor(GColor color);
 
 	public void drawGrid(int x, int y, int xc, int yc, int gw, int gh);
 

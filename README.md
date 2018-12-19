@@ -162,14 +162,14 @@ canvas.
 @Override
 public void render(IRenderer2D renderer, float dt) {
 	// Clear viewport to white.
-	renderer.setColor(Color.WHITE);
+	renderer.setColor(GColor.WHITE);
 	renderer.clear();
 
 	// Get dimensions of viewport.
 	int w = renderer.getWidth();
 	int h = renderer.getHeight();
 
-	renderer.setColor(Color.PINK);
+	renderer.setColor(GColor.PINK);
 
 	// Fill 100x100 square at the
 	// center of the viewport.
@@ -178,10 +178,10 @@ public void render(IRenderer2D renderer, float dt) {
 ```
 
 **NOTE:** *For the abovewritten code to work, you will have to import
-java.awt.Color at the top of the class.*
+com.g4mesoft.graphic.GColor at the top of the class.*
 
 ```java
-import java.awt.Color;
+import com.g4mesoft.graphic.GColor;
 ```
 And that's how simple it is to get a program to run! But it's not the end of our little
 example.

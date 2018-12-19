@@ -24,7 +24,7 @@ public class PixelRenderer2D implements IRenderer2D {
 	protected int offsetY;
 
 	protected int color;
-	private Color backdropColor;
+	private GColor backdropColor;
 	
 	public PixelRenderer2D(IViewport viewport, int width, int height) {
 		this.viewport = viewport;
@@ -40,7 +40,7 @@ public class PixelRenderer2D implements IRenderer2D {
 		offsetY = 0;
 		
 		color = 0;
-		backdropColor = Color.BLACK;
+		backdropColor = GColor.BLACK;
 	}
 
 	@Override
@@ -63,7 +63,7 @@ public class PixelRenderer2D implements IRenderer2D {
 		int y = viewport.getY() + (dh - h) / 2;
 
 		if (dw > w || dh > h) {
-			g.setColor(backdropColor);
+			g.setColor(backdropColor.toAWTColor());
 			g.fillRect(0, 0, dw, dh);
 		}
 		g.drawImage(screen, x, y, w, h, null);
@@ -327,11 +327,11 @@ public class PixelRenderer2D implements IRenderer2D {
 	}
 	
 	@Override
-	public void setColor(Color color) {
+	public void setColor(GColor color) {
 		this.color = color.getRGB();
 	}
 	
-	public void setBackdropColor(Color backdropColor) {
+	public void setBackdropColor(GColor backdropColor) {
 		this.backdropColor = backdropColor;
 	}
 

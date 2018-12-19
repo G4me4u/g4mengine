@@ -1,8 +1,7 @@
 package com.g4mesoft.composition.text;
 
-import java.awt.Color;
-
 import com.g4mesoft.composition.ui.ButtonCompositionUI;
+import com.g4mesoft.graphic.GColor;
 import com.g4mesoft.input.mouse.MouseButtonInput;
 import com.g4mesoft.input.mouse.MouseInputListener;
 
@@ -13,8 +12,8 @@ public class ButtonComposition extends TextComposition {
 	private boolean hovered;
 	private boolean pressed;
 	
-	private Color hoveredBackground;
-	private Color pressedBackground;
+	private GColor hoveredBackground;
+	private GColor pressedBackground;
 	
 	private MouseButtonInput mouseButton;
 	private IButtonCompositionListener buttonListener;
@@ -77,7 +76,7 @@ public class ButtonComposition extends TextComposition {
 		return mouseButton;
 	}
 
-	public void setPressedBackground(Color pb) {
+	public void setPressedBackground(GColor pb) {
 		if (pb == null && pressedBackground == null)
 			return;
 		if (pb != null && pb.equals(pressedBackground))
@@ -86,11 +85,11 @@ public class ButtonComposition extends TextComposition {
 		pressedBackground = pb;
 	}
 
-	public Color getPressedBackground() {
+	public GColor getPressedBackground() {
 		return pressedBackground;
 	}
 
-	public void setHoveredBackground(Color hb) {
+	public void setHoveredBackground(GColor hb) {
 		if (hb == null && hoveredBackground == null)
 			return;
 		if (hb != null && hb.equals(hoveredBackground))
@@ -99,7 +98,7 @@ public class ButtonComposition extends TextComposition {
 		hoveredBackground = hb;
 	}
 	
-	public Color getHoveredBackground() {
+	public GColor getHoveredBackground() {
 		return hoveredBackground;
 	}
 	

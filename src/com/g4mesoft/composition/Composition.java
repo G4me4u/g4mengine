@@ -1,8 +1,7 @@
 package com.g4mesoft.composition;
 
-import java.awt.Color;
-
 import com.g4mesoft.composition.ui.CompositionUI;
+import com.g4mesoft.graphic.GColor;
 import com.g4mesoft.graphic.IRenderer2D;
 import com.g4mesoft.graphic.IRenderingContext2D;
 import com.g4mesoft.graphic.IViewport;
@@ -50,11 +49,11 @@ public abstract class Composition implements IViewport {
 	protected int horizontalFill;
 	protected int verticalFill;
 
-	protected Color background;
+	protected GColor background;
 
 	protected int borderFlags;
 	protected int borderWidth;
-	protected Color borderColor;
+	protected GColor borderColor;
 
 	private boolean borderInsetsInvalid;
 	private BorderInsets borderInsets;
@@ -279,7 +278,7 @@ public abstract class Composition implements IViewport {
 		setVerticalFill(fillmode);
 	}
 
-	public void setBackground(Color background) {
+	public void setBackground(GColor background) {
 		if (background == null && this.background == null)
 			return;
 		if (background != null && background.equals(this.background))
@@ -288,7 +287,7 @@ public abstract class Composition implements IViewport {
 		this.background = background;
 	}
 
-	public Color getBackground() {
+	public GColor getBackground() {
 		return background;
 	}
 
@@ -326,7 +325,7 @@ public abstract class Composition implements IViewport {
 		return borderWidth;
 	}
 
-	public void setBorderColor(Color borderColor) {
+	public void setBorderColor(GColor borderColor) {
 		if (borderColor == null && this.borderColor == null)
 			return;
 		if (borderColor != null && borderColor.equals(this.borderColor))
@@ -335,7 +334,7 @@ public abstract class Composition implements IViewport {
 		this.borderColor = borderColor;
 	}
 
-	public Color getBorderColor() {
+	public GColor getBorderColor() {
 		return borderColor;
 	}
 
