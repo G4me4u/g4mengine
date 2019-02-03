@@ -11,6 +11,7 @@ import java.util.Arrays;
 import javax.swing.JFrame;
 
 import com.g4mesoft.Timer;
+import com.g4mesoft.math.MathUtils;
 import com.g4mesoft.sound.SoundManager;
 import com.g4mesoft.sound.format.AudioFile;
 import com.g4mesoft.sound.format.AudioParsingException;
@@ -161,7 +162,7 @@ public final class FastFourierTransform {
 			for (int i = 0; i < n; i++) {
 				float re = fft[i * 2];
 				float im = fft[i * 2 + 1];
-				fft[i] = (float)Math.sqrt(re * re + im * im) * weight + oldfft[i] * (1.0f - weight);
+				fft[i] = MathUtils.sqrt(re * re + im * im) * weight + oldfft[i] * (1.0f - weight);
 			}
 			
 			oldfft = Arrays.copyOf(fft, fft.length);

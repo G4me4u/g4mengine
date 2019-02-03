@@ -1,5 +1,7 @@
 package com.g4mesoft.graphic.filter;
 
+import com.g4mesoft.math.MathUtils;
+
 public class FastGaussianBlurPixelFilter implements IPixelFilter {
 
 	private static final int DEFAULT_NUM_BOXES = 3;
@@ -12,14 +14,14 @@ public class FastGaussianBlurPixelFilter implements IPixelFilter {
 	
 	private static int[] calculateSizesForGaussian(float radius, int n) {
 		float ss = 12.0f * radius * radius;
-		float wIdeal = (float)Math.sqrt(ss / n + 1);
+		float wIdeal = MathUtils.sqrt(ss / n + 1);
 		
 		int wl = (int)wIdeal;
 		if ((wl & 0x01) == 0) wl--;
 		int wu = wl + 2;
 		
 		float mIdeal = (ss - n * wl * wl - 4 * n * wl - 3 * n) / (-4 * wl - 4);
-		float m = Math.round(mIdeal);
+		int m = MathUtils.round(mIdeal);
 		
 		int[] sizes = new int[n];
 		for (int i = 0; i < n; i++)
