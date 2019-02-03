@@ -16,8 +16,11 @@ public class MouseButtonInput extends Input {
 	
 	private boolean dragged;
 	private boolean wasDragged;
+	
 	private int dragX;
 	private int dragY;
+	private int prevX;
+	private int prevY;
 	
 	public MouseButtonInput(int button) {
 		this.button = button;
@@ -46,7 +49,10 @@ public class MouseButtonInput extends Input {
 			
 			clickX = x;
 			clickY = y;
-		
+
+			dragX = 0;
+			dragY = 0;
+			
 			activationTime = System.currentTimeMillis();
 		}
 	}
@@ -57,6 +63,9 @@ public class MouseButtonInput extends Input {
 		
 		pressed = false;
 		dragged = false;
+
+		dragX = 0;
+		dragY = 0;
 	}
 
 	public void mouseDragged(int button, int x, int y) {
@@ -67,9 +76,16 @@ public class MouseButtonInput extends Input {
 			wasDragged = false;
 			dragged = true;
 		}
-		
-		dragX = x - clickX;
-		dragY = y - clickY;
+
+		dragX += x - prevX;
+		dragY += y - prevY;
+		prevX = x;
+		prevY = y;
+	}
+
+	public void mouseGrapMoved(int x, int y) {
+		prevX = x;
+		prevY = y;
 	}
 	
 	public int getButton() {

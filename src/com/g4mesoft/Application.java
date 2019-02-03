@@ -415,6 +415,20 @@ public abstract class Application implements IExitable {
 		}
 	}
 	
+	/**
+	 * Sets the grabbed state of the {@code MouseInputListener} to the
+	 * state specified in the parameters. If the listener was not
+	 * enabled prior to calling this function, no action will occur.
+	 * 
+	 * @param grabbed - The new grabbed state of the {@code MouseInputListener}
+	 * 
+	 * @see #enableMouseInput()
+	 */
+	public void setMouseGrabbed(boolean grabbed) {
+		if (mouseListener != null)
+			mouseListener.setGrabbed(grabbed);
+	}
+	
 // Getter functions //
 	
 	/**

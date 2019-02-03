@@ -2,11 +2,14 @@ package com.g4mesoft.graphic;
 
 import java.awt.BorderLayout;
 import java.awt.Canvas;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -37,6 +40,8 @@ public class Display implements IViewport {
 	private Point oldFrameLocation;
 	private Dimension oldFrameSize;
 	
+	private boolean focused;
+	
 	private IRenderer2D renderer;
 	private BufferStrategy bs;
 	
@@ -50,6 +55,9 @@ public class Display implements IViewport {
 	private boolean rendering;
 	
 	private boolean closeRequested;
+	
+	private Cursor emptyCursor;
+	private Cursor prevCursor;
 	
 	public Display() { 
 		this(null); 
@@ -109,6 +117,18 @@ public class Display implements IViewport {
 		frame.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 				closeRequested = true;
+			}
+		});
+		
+		canvas.addFocusListener(new FocusListener() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				focused = false;
+			}
+			
+			@Override
+			public void focusGained(FocusEvent e) {
+				focused = true;
 			}
 		});
 		
@@ -328,7 +348,8 @@ public class Display implements IViewport {
 	}
 
 	public void registerKeyListener(KeyListener keyListener) {
-		if (canvas == null) return;
+		if (canvas == null || keyListener == null)
+			return;
 			
 		// Make sure the keyListener doesn't exist
 		for (KeyListener listener : canvas.getKeyListeners()) {
@@ -346,7 +367,8 @@ public class Display implements IViewport {
 	}
 
 	public void registerMouseListener(MouseListener mouseListener) {
-		if (canvas == null) return;
+		if (canvas == null || mouseListener == null) 
+			return;
 		
 		// Make sure the mouseListener doesn't exist
 		for (MouseListener listener : canvas.getMouseListeners()) {
@@ -364,7 +386,8 @@ public class Display implements IViewport {
 	}
 
 	public void registerMouseMotionListener(MouseMotionListener mouseMotionListener) {
-		if (canvas == null) return;
+		if (canvas == null || mouseMotionListener == null)
+			return;
 		
 		// Make sure the mouseMotionListener doesn't exist
 		for (MouseMotionListener listener : canvas.getMouseMotionListeners()) {
@@ -390,9 +413,32 @@ public class Display implements IViewport {
 			return frame.isVisible();
 		return displayConfig.displayVisible;
 	}
+
+	public boolean isFocused() {
+		return focused;
+	}
+
+	public void enableCursor() {
+		if (prevCursor != null) {
+			canvas.setActualCursor(prevCursor);
+			prevCursor = null;
+		}
+	}
+
+	public void disableCursor() {
+		if (emptyCursor == null) {
+			BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+			emptyCursor = frame.getToolkit().createCustomCursor(img, new Point(), null);
+		}
+
+		if (prevCursor == null) {
+			prevCursor = canvas.getCursor();
+			canvas.setActualCursor(emptyCursor);
+		}
+	}
 	
 	@SuppressWarnings("serial")
-	private static class DisplayCanvas extends Canvas {
+	private class DisplayCanvas extends Canvas {
 
 		/*
 		 * The super implementation of the following
@@ -408,5 +454,19 @@ public class Display implements IViewport {
 		
 		@Override
 		public void repaint(long tm, int x, int y, int width, int height) { }
+	
+		@Override
+		public void setCursor(Cursor cursor) {
+			if (Display.this.prevCursor == null) {
+				setActualCursor(cursor);
+				return;
+			}
+			
+			Display.this.prevCursor = cursor;
+		}
+		
+		private void setActualCursor(Cursor cursor) {
+			super.setCursor(cursor);
+		}
 	}
 }
