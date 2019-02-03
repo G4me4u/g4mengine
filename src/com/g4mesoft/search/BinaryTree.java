@@ -1,13 +1,19 @@
 package com.g4mesoft.search;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Stack;
 
-public class BinaryTree<K extends Comparable<K>, V> {
+import com.g4mesoft.search.BinaryTree.Entry;
+
+public class BinaryTree<K extends Comparable<K>, V> implements Iterable<Entry<K, V>> {
 
 	private Node root;
+	private int modCount;
 	
 	public void insert(Map<K, V> entries) {
 		Iterator<Map.Entry<K, V>> entryItr = entries.entrySet().iterator();
@@ -18,6 +24,8 @@ public class BinaryTree<K extends Comparable<K>, V> {
 	}
 	
 	public void insert(K key, V value) {
+		modCount++;
+		
 		if(root == null) {
 			root = new Node(key, value);
 			return;
@@ -71,6 +79,8 @@ public class BinaryTree<K extends Comparable<K>, V> {
 		if (filter.compareTo(root) == 0) {
 			Node oldRoot = root;
 			
+			modCount++;
+			
 			if (root.left != null) {
 				if (root.right != null)
 					insertInto(root.left, root.right);
@@ -92,6 +102,8 @@ public class BinaryTree<K extends Comparable<K>, V> {
 			
 			if (next != null) {
 				if (filter.compareTo(next) == 0) {
+					modCount++;
+					
 					if (next == previous.left) {
 						previous.left = null;
 					} else previous.right = null;
@@ -120,6 +132,8 @@ public class BinaryTree<K extends Comparable<K>, V> {
 		if (filter.compareTo(root) == 0) {
 			Node oldRoot = root;
 			
+			modCount++;
+
 			if (root.left != null) {
 				if (root.right != null)
 					insertInto(root.left, root.right);
@@ -145,6 +159,8 @@ public class BinaryTree<K extends Comparable<K>, V> {
 
 			if (current != null) {
 				if (filter.compareTo(current) == 0) {
+					modCount++;
+					
 					if (current == previous.left) {
 						previous.left = null;
 					} else previous.right = null;
@@ -243,6 +259,8 @@ public class BinaryTree<K extends Comparable<K>, V> {
 	}
 	
 	public void clear() {
+		modCount++;
+
 		root = null; // Let gc do it's work
 	}
 	
@@ -299,5 +317,53 @@ public class BinaryTree<K extends Comparable<K>, V> {
 		public String toString() {
 			return String.format("(%s, %s)", key, value);
 		}
+	}
+
+	@Override
+	public Iterator<Entry<K, V>> iterator() {
+		return new TreeIterator(root);
+	}
+	
+	private class TreeIterator implements Iterator<Entry<K, V>> {
+
+		private Stack<Node> nodes;
+		private long expectedModCount;
+		
+		public TreeIterator(Node root) {
+			nodes = new Stack<Node>();
+			while (root != null) {
+				nodes.push(root);
+				root = root.left;
+			}
+			
+			expectedModCount = modCount;
+		}
+		
+		@Override
+		public boolean hasNext() {
+			return !nodes.isEmpty();
+		}
+		
+		@Override
+		public Entry<K, V> next() {
+			checkForComodification();
+			
+			Node result = nodes.pop();
+			if (result == null)
+				throw new NoSuchElementException();
+
+			Node node = result.right;
+			while (node != null) {
+				nodes.push(node);
+				node = node.left;
+			}
+			
+			return result;
+		}
+		
+        final void checkForComodification() {
+            if (modCount != expectedModCount)
+                throw new ConcurrentModificationException();
+        }
 	}
 }

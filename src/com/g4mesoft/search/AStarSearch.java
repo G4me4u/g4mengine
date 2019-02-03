@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.g4mesoft.math.MathUtils;
 import com.g4mesoft.math.Vec2f;
 
 public class AStarSearch {
@@ -20,7 +21,7 @@ public class AStarSearch {
 	private static final long SCAN_SIZE_BIT_SHIFT = 32;
 	
 	private static final float MOVE_COST = 10.0f;
-	private static final float MOVE_COST_DIAG = (float)Math.sqrt(MOVE_COST * MOVE_COST);
+	private static final float MOVE_COST_DIAG = MathUtils.sqrt(MOVE_COST * MOVE_COST);
 	
 	private final BinaryTree<Float, Node> openList;
 	private final BinaryTree<Long, Node> searchList;
