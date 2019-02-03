@@ -39,7 +39,7 @@ public class GaussianBlurPixelFilter implements IPixelFilter {
 		float[] kernel = new float[kernelSize];
 		
 		// Calculate kernel values
-		float a = 1.0f / ((float)Math.sqrt(2.0f * Math.PI) * sigma);
+		float a = 1.0f / (MathUtils.sqrt(2.0f * MathUtils.PI) * sigma);
 		float b = -0.5f / (sigma * sigma);
 		
 		// The gaussian blur kernel function is
@@ -51,7 +51,7 @@ public class GaussianBlurPixelFilter implements IPixelFilter {
 		float sum = 0.0f;
 		for (int i = 0; i < halfKernelSize; i++) {
 			float x = i - halfKernelSize;
-			float c = a * (float)Math.exp(b * x * x);
+			float c = a * MathUtils.exp(b * x * x);
 			
 			// Kernel is symmetrical.
 			kernel[i] = kernel[kernelSize - 1 - i] = c;
@@ -85,20 +85,25 @@ public class GaussianBlurPixelFilter implements IPixelFilter {
 		int halfKernelSize = kernelSize >>> 1;
 		int kernelSizeMO = kernelSize - 1;
 		
+		// Make sure we don't crash
+		// during kernel setup
+		int kernelSetupStart = Math.max(halfKernelSize, kernelSize - width);
+		
 		int pixel;
 		int index = 0;
 		for (int y = 0; y < height; y++) {
 			// Setup temp pixels for next row
 			// with leading zeroes.
-			for (int i = 0; i < halfKernelSize; i++) {
-				tmpPixelsR[kernelSizeMO] = 0;
-				tmpPixelsG[kernelSizeMO] = 0;
-				tmpPixelsB[kernelSizeMO] = 0;
+			int i;
+			for (i = 0; i < kernelSetupStart; i++) {
+				tmpPixelsR[i] = 0;
+				tmpPixelsG[i] = 0;
+				tmpPixelsB[i] = 0;
 			}
 
 			// Gather temp pixels
-			for (int i = halfKernelSize; i < kernelSize; i++) {
-				pixel = pixels[index + i - halfKernelSize];
+			for ( ; i < kernelSize; i++) {
+				pixel = pixels[index + i - kernelSetupStart];
 				
 				tmpPixelsR[i] = (pixel >>> 16) & 0xFF;
 				tmpPixelsG[i] = (pixel >>>  8) & 0xFF;
@@ -113,7 +118,7 @@ public class GaussianBlurPixelFilter implements IPixelFilter {
 				b = c * tmpPixelsB[0];
 				
 				// Calculate new pixel values
-				for (int i = 1; i < kernelSize; i++) {
+				for (i = 1; i < kernelSize; i++) {
 					c = kernel[i];
 					
 					// Shift temp pixels to
@@ -153,22 +158,26 @@ public class GaussianBlurPixelFilter implements IPixelFilter {
 		int halfKernelSize = kernelSize >>> 1;
 		int kernelSizeMO = kernelSize - 1;
 		
+		// Make sure we don't crash
+		// during kernel setup
+		int kernelSetupStart = Math.max(halfKernelSize, kernelSize - height);
+		
 		int pixel;
 		for (int x = 0; x < width; x++) {
 			int index = x;
-
+			
 			// Setup temp pixels for next column
 			// with leading zeroes.
 			int i;
-			for (i = 0; i < halfKernelSize; i++) {
-				tmpPixelsR[kernelSizeMO] = 0;
-				tmpPixelsG[kernelSizeMO] = 0;
-				tmpPixelsB[kernelSizeMO] = 0;
+			for (i = 0; i < kernelSetupStart; i++) {
+				tmpPixelsR[i] = 0;
+				tmpPixelsG[i] = 0;
+				tmpPixelsB[i] = 0;
 			}
 
 			// Gather temp pixels
 			for ( ; i < kernelSize; i++) {
-				pixel = pixels[index + (i - halfKernelSize) * width];
+				pixel = pixels[index + (i - kernelSetupStart) * width];
 				
 				tmpPixelsR[i] = (pixel >>> 16) & 0xFF;
 				tmpPixelsG[i] = (pixel >>>  8) & 0xFF;
