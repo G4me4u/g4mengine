@@ -417,7 +417,7 @@ public class Vec4f {
 	 * @see #lengthSqr()
 	 */
 	public float length() {
-		return (float)Math.sqrt(lengthSqr());
+		return MathUtils.sqrt(lengthSqr());
 	}
 	
 	/**
@@ -451,10 +451,10 @@ public class Vec4f {
 	 * @see #dist(Vec4f)
 	 */
 	public float distManhattan(Vec4f other) {
-		return	Math.abs(other.x - x) + 
-				Math.abs(other.y - y) +
-				Math.abs(other.z - z) +
-				Math.abs(other.w - w);
+		return MathUtils.abs(other.x - x) + 
+		       MathUtils.abs(other.y - y) +
+		       MathUtils.abs(other.z - z) +
+		       MathUtils.abs(other.w - w);
 	}
 	
 	/**
@@ -470,10 +470,10 @@ public class Vec4f {
 	 * @see #distManhattan(Vec4f)
 	 */
 	public float distSqr(Vec4f other) {
-		return	(other.x - x) * (other.x - x) + 
-				(other.y - y) * (other.y - y) +
-				(other.z - z) * (other.z - z) +
-				(other.w - w) * (other.w - w);
+		return (other.x - x) * (other.x - x) + 
+		       (other.y - y) * (other.y - y) +
+		       (other.z - z) * (other.z - z) +
+		       (other.w - w) * (other.w - w);
 	}
 	
 	/**
@@ -488,7 +488,7 @@ public class Vec4f {
 	 * @see #distManhattan(Vec4f)
 	 */
 	public float dist(Vec4f other) {
-		return (int)Math.sqrt(distSqr(other));
+		return MathUtils.sqrt(distSqr(other));
 	}
 	
 	public boolean equals(float x, float y, float z, float w) {

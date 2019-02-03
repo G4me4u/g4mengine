@@ -368,7 +368,7 @@ public class Vec3i {
 	 * @see #lengthSqr()
 	 */
 	public int length() {
-		return (int)Math.sqrt(lengthSqr());
+		return (int)MathUtils.sqrt(lengthSqr());
 	}
 	
 	/**
@@ -385,6 +385,24 @@ public class Vec3i {
 			z * other.x - other.z * x,
 			x * other.y - other.x * y
 		);
+	}
+	
+	/**
+	 * Calculates the cross product between this vector (left)
+	 * and {@code other} (right). The result of the product is
+	 * stored in the {@code dst} parameter. The dst parameter
+	 * can safely be set to either this vector or {@code other}.
+	 * 
+	 * @param other - The vector to cross with this vector.
+	 * @param dst - The destination of the cross product result.
+	 */
+	public void cross(Vec3i other, Vec3i dst) {
+		int cx = y * other.z - other.y * z;
+		int cy = z * other.x - other.z * x;
+		
+		dst.z = x * other.y - other.x * y;
+		dst.x = cx;
+		dst.y = cy;
 	}
 	
 	/**
@@ -418,9 +436,9 @@ public class Vec3i {
 	 * @see #dist(Vec3i)
 	 */
 	public int distManhattan(Vec3i other) {
-		return	Math.abs(other.x - x) + 
-				Math.abs(other.y - y) +
-				Math.abs(other.z - z);
+		return MathUtils.abs(other.x - x) + 
+		       MathUtils.abs(other.y - y) +
+		       MathUtils.abs(other.z - z);
 	}
 	
 	/**
@@ -436,9 +454,9 @@ public class Vec3i {
 	 * @see #distManhattan(Vec3i)
 	 */
 	public int distSqr(Vec3i other) {
-		return	(other.x - x) * (other.x - x) + 
-				(other.y - y) * (other.y - y) +
-				(other.z - z) * (other.z - z);
+		return (other.x - x) * (other.x - x) + 
+		       (other.y - y) * (other.y - y) +
+		       (other.z - z) * (other.z - z);
 	}
 	
 	/**
@@ -453,7 +471,7 @@ public class Vec3i {
 	 * @see #distManhattan(Vec3i)
 	 */
 	public int dist(Vec3i other) {
-		return (int)Math.sqrt(distSqr(other));
+		return (int)MathUtils.sqrt(distSqr(other));
 	}
 	
 	public boolean equals(int x, int y, int z) {

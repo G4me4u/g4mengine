@@ -330,7 +330,7 @@ public class Vec2f {
 	 * @see #lengthSqr()
 	 */
 	public float length() {
-		return (float)Math.sqrt(lengthSqr());
+		return MathUtils.sqrt(lengthSqr());
 	}
 	
 	/**
@@ -364,8 +364,8 @@ public class Vec2f {
 	 * @see #dist(Vec2f)
 	 */
 	public float distManhattan(Vec2f other) {
-		return	Math.abs(other.x - x) + 
-				Math.abs(other.y - y);
+		return MathUtils.abs(other.x - x) + 
+		       MathUtils.abs(other.y - y);
 	}
 	
 	/**
@@ -381,8 +381,8 @@ public class Vec2f {
 	 * @see #distManhattan(Vec2f)
 	 */
 	public float distSqr(Vec2f other) {
-		return	(other.x - x) * (other.x - x) + 
-				(other.y - y) * (other.y - y);
+		return (other.x - x) * (other.x - x) + 
+		       (other.y - y) * (other.y - y);
 	}
 	
 	/**
@@ -397,7 +397,7 @@ public class Vec2f {
 	 * @see #distManhattan(Vec2f)
 	 */
 	public float dist(Vec2f other) {
-		return (float)Math.sqrt(distSqr(other));
+		return MathUtils.sqrt(distSqr(other));
 	}
 	
 	public boolean equals(float x, float y) {

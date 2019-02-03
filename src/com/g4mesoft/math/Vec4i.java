@@ -417,7 +417,7 @@ public class Vec4i {
 	 * @see #lengthSqr()
 	 */
 	public int length() {
-		return (int)Math.sqrt(lengthSqr());
+		return (int)MathUtils.sqrt(lengthSqr());
 	}
 	
 	/**
@@ -451,10 +451,10 @@ public class Vec4i {
 	 * @see #dist(Vec4i)
 	 */
 	public int distManhattan(Vec4i other) {
-		return	Math.abs(other.x - x) + 
-				Math.abs(other.y - y) +
-				Math.abs(other.z - z) +
-				Math.abs(other.w - w);
+		return MathUtils.abs(other.x - x) + 
+		       MathUtils.abs(other.y - y) +
+		       MathUtils.abs(other.z - z) +
+		       MathUtils.abs(other.w - w);
 	}
 	
 	/**
@@ -470,10 +470,10 @@ public class Vec4i {
 	 * @see #distManhattan(Vec4i)
 	 */
 	public int distSqr(Vec4i other) {
-		return	(other.x - x) * (other.x - x) + 
-				(other.y - y) * (other.y - y) +
-				(other.z - z) * (other.z - z) +
-				(other.w - w) * (other.w - w);
+		return (other.x - x) * (other.x - x) + 
+		       (other.y - y) * (other.y - y) +
+		       (other.z - z) * (other.z - z) +
+		       (other.w - w) * (other.w - w);
 	}
 	
 	/**
@@ -488,7 +488,7 @@ public class Vec4i {
 	 * @see #distManhattan(Vec4i)
 	 */
 	public int dist(Vec4i other) {
-		return (int)Math.sqrt(distSqr(other));
+		return (int)MathUtils.sqrt(distSqr(other));
 	}
 	
 	public boolean equals(int x, int y, int z, int w) {
