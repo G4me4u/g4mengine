@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 
 import com.g4mesoft.graphic.filter.IPixelFilter;
+import com.g4mesoft.math.MathUtils;
 
 public class PixelRenderer2D implements IRenderer2D {
 
@@ -53,7 +54,7 @@ public class PixelRenderer2D implements IRenderer2D {
 		int dw = viewport.getWidth();
 		int dh = viewport.getHeight();
 		
-		int pixelDensity = Math.min(dw / width, dh / height); 
+		int pixelDensity = MathUtils.min(dw / width, dh / height); 
 		if (pixelDensity <= 0)
 			pixelDensity = 1;
 		
@@ -91,7 +92,8 @@ public class PixelRenderer2D implements IRenderer2D {
 
 	@Override
 	public void clear() {
-		for (int i = 0; i < pixels.length; i++)
+		int i = pixels.length;
+		while (i-- != 0)
 			pixels[i] = color;
 	}
 	
@@ -329,6 +331,10 @@ public class PixelRenderer2D implements IRenderer2D {
 	@Override
 	public void setColor(GColor color) {
 		this.color = color.getRGB();
+	}
+	
+	public void setColor(int color) {
+		this.color = color;
 	}
 	
 	public void setBackdropColor(GColor backdropColor) {
