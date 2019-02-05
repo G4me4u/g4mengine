@@ -54,9 +54,11 @@ public class PixelRenderer3D extends PixelRenderer2D {
 
 	@Override
 	public void clear() {
-		super.clear();
-
-		clearDepth();
+		int i = pixels.length;
+		while (i-- != 0) {
+			pixels[i] = color;
+			depthBuffer[i] = 1.0f;
+		}
 	}
 	
 	public void clearDepth() {
@@ -66,8 +68,16 @@ public class PixelRenderer3D extends PixelRenderer2D {
 	}
 	
 	public void drawVertices(Vertex3D[] vertices) {
-		if (vertices.length % 3 != 0)
+		drawVertices(vertices, 0, vertices.length);
+	}
+	
+	public void drawVertices(Vertex3D[] vertices, int offset, int length) {
+		if (length % 3 != 0)
 			throw new IllegalArgumentException("Number of vertices is not a multiple of 3");
+		
+		int end = length + offset;
+		if (end > vertices.length)
+			throw new ArrayIndexOutOfBoundsException(vertices.length);
 		
 		shader.prepareShader();
 		
@@ -77,8 +87,8 @@ public class PixelRenderer3D extends PixelRenderer2D {
 		renderVertex1 = new Vertex3D(triangleCache.vertexNumData);
 		renderVertex2 = new Vertex3D(triangleCache.vertexNumData);
 		
-		int i = 0;
-		while (i < vertices.length) {
+		int i = offset;
+		while (i < end) {
 			Vertex3D v0 = vertices[i++];
 			Vertex3D v1 = vertices[i++];
 			Vertex3D v2 = vertices[i++];
