@@ -24,12 +24,17 @@ public class Texture3D {
 		pixels = image.getRGB(0, 0, width, height, null, 0, width);
 	}
 	
+
 	public int samplePixel(Vec2f uv) {
-		// Note that the y-coordinate is inverted.
-		// To make the origin located at (0, height).
-		return samplePixel((int)(uv.x * width), (int)(-uv.y * height));
+		return samplePixel(uv.x, uv.y);
 	}
 	
+	public int samplePixel(float u, float v) {
+		// Note that the y-coordinate is inverted.
+		// To make the origin located at (0, height).
+		return samplePixel((int)(u * width), (int)(-v * height));
+	}
+
 	public int samplePixel(int x, int y) {
 		x %= width;
 		y %= height;
