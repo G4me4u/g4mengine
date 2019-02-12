@@ -13,11 +13,11 @@ public class PixelRenderer2D implements IRenderer2D {
 
 	protected final IViewport viewport;
 	
-	protected final int width;
-	protected final int height;
+	protected int width;
+	protected int height;
 
-	private final BufferedImage screen;
-	protected final int[] pixels;
+	private BufferedImage screen;
+	protected int[] pixels;
 
 	private Graphics g;
 
@@ -29,12 +29,9 @@ public class PixelRenderer2D implements IRenderer2D {
 	
 	public PixelRenderer2D(IViewport viewport, int width, int height) {
 		this.viewport = viewport;
-		this.width = width;
-		this.height = height;
 		
-		screen = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-		pixels = ((DataBufferInt)screen.getRaster().getDataBuffer()).getData();
-
+		setSize(width, height);
+		
 		g = null;
 		
 		offsetX = 0;
@@ -44,6 +41,14 @@ public class PixelRenderer2D implements IRenderer2D {
 		backdropColor = GColor.BLACK;
 	}
 
+	public void setSize(int width, int height) {
+		this.width = width;
+		this.height = height;
+		
+		screen = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		pixels = ((DataBufferInt)screen.getRaster().getDataBuffer()).getData();
+	}
+	
 	@Override
 	public boolean start(Graphics g) {
 		return (this.g = g) != null;
@@ -391,5 +396,13 @@ public class PixelRenderer2D implements IRenderer2D {
 	@Override
 	public int getHeight() {
 		return height;
+	}
+
+	@Override
+	public void dispose() {
+		screen = null;
+		pixels = null;
+		
+		g = null;
 	}
 }

@@ -232,4 +232,9 @@ public class DefaultRenderer2D implements IRenderer2D {
 	public int getHeight() {
 		return viewport.getHeight();
 	}
+
+	@Override
+	public void dispose() {
+		g = null;
+	}
 }

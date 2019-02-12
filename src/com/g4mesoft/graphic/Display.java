@@ -285,17 +285,21 @@ public class Display implements IViewport {
 	
 	public void setRenderer(IRenderer2D renderer) {
 		if (renderer == null)
-			throw new IllegalArgumentException("Renderer is null!");
+			throw new NullPointerException("Renderer is null!");
 	
 		synchronized (renderingLock) {
 			if (rendering)
 				throw new IllegalStateException("Cannot change renderer if display is already rendering!");
+			
+			if (this.renderer != null)
+				this.renderer.dispose();
+			
 			this.renderer = renderer;
 		}
 	}
 	
 	public IRenderer2D getRenderer() {
-		return rendering ? renderer : null;
+		return renderer;
 	}
 	
 	public boolean isFullscreen() {
@@ -325,6 +329,11 @@ public class Display implements IViewport {
 		
 		frame = null;
 		canvas = null;
+		
+		if (renderer != null) {
+			renderer.dispose();
+			renderer = null;
+		}
 	}
 	
 	@Override

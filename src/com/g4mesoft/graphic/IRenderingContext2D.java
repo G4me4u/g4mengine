@@ -14,4 +14,6 @@ public interface IRenderingContext2D extends IViewport {
 	
 	public Rectangle2D getStringBounds(String str);
 	
+	public void dispose();
+	
 }

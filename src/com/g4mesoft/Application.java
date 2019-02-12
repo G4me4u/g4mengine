@@ -191,8 +191,7 @@ public abstract class Application implements IExitable {
 			if (display.isCloseRequested()) {
 				display.dispose();
 				exit();
-				// Continue to stop loop
-				continue;
+				break;
 			}
 			
 			timer.update();
