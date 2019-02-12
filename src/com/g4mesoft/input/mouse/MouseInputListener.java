@@ -16,6 +16,8 @@ import com.g4mesoft.graphic.Display;
 
 public final class MouseInputListener {
 
+	private static final int MAX_GRAB_DISTANCE = 100;
+	
 	public static final MouseButtonInput MOUSE_LEFT = new MouseButtonInput(MouseEvent.BUTTON1);
 	public static final MouseButtonInput MOUSE_MIDDLE = new MouseButtonInput(MouseEvent.BUTTON2);
 	public static final MouseButtonInput MOUSE_RIGHT = new MouseButtonInput(MouseEvent.BUTTON3);
@@ -86,7 +88,10 @@ public final class MouseInputListener {
 			// values may not be accurate. Instead we
 			// get them from the MouseInfo class.
 			Point currentLocation = MouseInfo.getPointerInfo().getLocation();
-			if (sx != currentLocation.x || sy != currentLocation.y) {
+			
+			int dx = sx - currentLocation.x;
+			int dy = sy - currentLocation.y;
+			if (Math.abs(dx) >= MAX_GRAB_DISTANCE || Math.abs(dy) >= MAX_GRAB_DISTANCE) {
 				// Ensure the mouse moved event from the
 				// robot wont change the deltaX / deltaY
 				// values.
@@ -201,6 +206,13 @@ public final class MouseInputListener {
 			if (grabbed) {
 				focused = display.isFocused();
 				display.disableCursor();
+				
+				// Make sure to set the cursors position
+				// when grabbing. This simply ensures that 
+				// the grabbing will stay active when the 
+				// window opens (cause it may not be focused
+				// at this point in time).
+				ensureCursorIsInCenter();
 			} else {
 				display.enableCursor();
 			}
