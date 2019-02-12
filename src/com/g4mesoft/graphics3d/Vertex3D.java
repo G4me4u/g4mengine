@@ -14,6 +14,15 @@ public class Vertex3D {
 		this.data = new float[numData];
 	}
 
+	public Vertex3D(Vec4f pos) {
+		this(pos, 0);
+	}
+
+	public Vertex3D(Vec4f pos, int numData) {
+		this.pos = pos;
+		this.data = new float[numData];
+	}
+
 	public void storeFloat(int location, float input) {
 		data[location] = input;
 	}
