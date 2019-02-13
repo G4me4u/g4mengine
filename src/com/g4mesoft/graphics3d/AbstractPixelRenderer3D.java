@@ -387,18 +387,16 @@ public abstract class AbstractPixelRenderer3D extends PixelRenderer2D {
 
 			float dt2 = (xs == xe) ? 0.0f : 1.0f / (xe - xs);
 			for (int x = xs; x <= xe; x++) {
-				if (isInBounds(x, y)) {
-					interpolateVertex(i0, i1, dt2 * (x - xs), i2);
+				interpolateVertex(i0, i1, dt2 * (x - xs), i2);
 
-					int index = x + y * width;
-					if (depthBuffer[index] > i2.pos.z) {
-						depthBuffer[index] = i2.pos.z;
-						
-						// Perspective correction of vertex data
-						for (int i = 0; i < i2.data.length; i++)
-							i2.data[i] /= i2.pos.w;
-						pixels[index] = shader.fragment(i2);
-					}
+				int index = x + y * width;
+				if (depthBuffer[index] > i2.pos.z) {
+					depthBuffer[index] = i2.pos.z;
+					
+					// Perspective correction of vertex data
+					for (int i = 0; i < i2.data.length; i++)
+						i2.data[i] /= i2.pos.w;
+					pixels[index] = shader.fragment(i2);
 				}
 			}
 		}
