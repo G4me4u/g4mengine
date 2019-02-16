@@ -52,11 +52,12 @@ public final class SoundManager {
 	}
 
 	private Mixer getOpenDefaultMixer() {
-		Mixer.Info[] mixerInfos = AudioSystem.getMixerInfo();
-		if (mixerInfos.length > 0)
-			return AudioSystem.getMixer(AudioSystem.getMixerInfo()[0]);
-
-		throw new RuntimeException("No mixers available");
+		Mixer mixer = AudioSystem.getMixer(null);
+		
+		if (mixer == null)
+			throw new RuntimeException("Default mixer not available");
+	
+		return mixer;
 	}
 	
 	private void initProviders() {
@@ -154,23 +155,18 @@ public final class SoundManager {
 		return null;
 	}
 	
-	public AudioSource playSound(int id) {
+	public AudioSource playSound(int id) throws LineUnavailableException {
 		return playSound(id, true);
 	}
 
-	public AudioSource playSound(int id, boolean daemon) {
+	public AudioSource playSound(int id, boolean daemon) throws LineUnavailableException {
 		AudioFile audioFile = getAudioFile(id);
 		if (audioFile == null)
 			return null;
 		
 		AudioSource source = new AudioSource(audioFile, new Vec3f());
 		
-		AudioThread audioThread;
-		try {
-			audioThread = new AudioThread(source);
-		} catch(LineUnavailableException lue) {
-			return null;
-		}
+		AudioThread audioThread = new AudioThread(source);
 		
 		audioThread.setDaemon(daemon);
 		audioThread.start();
@@ -261,15 +257,24 @@ public final class SoundManager {
 			
 			sdl.start();
 			
+			int frameSize = formatOut.getFrameSize();
+			int bytesToRead = framesToRead * frameSize;
 			while (audioSource.isPlaying()) {
-				int fr = audioSource.readRawFrames(blockIn, framesToRead);
-				if (fr <= 0) 
-					break;
-				
-				processChannel(blockIn, blockOut, samples, fr, monoIn, AudioChannel.LEFT);
-				processChannel(blockIn, blockOut, samples, fr, monoIn, AudioChannel.RIGHT);
-				
-				sdl.write(blockOut, 0, fr * formatOut.getFrameSize());
+				if (sdl.getBufferSize() - sdl.available() < bytesToRead) {
+					int fr = audioSource.readRawFrames(blockIn, framesToRead);
+					if (fr <= 0) 
+						break;
+					
+					processChannel(blockIn, blockOut, samples, fr, monoIn, AudioChannel.LEFT);
+					processChannel(blockIn, blockOut, samples, fr, monoIn, AudioChannel.RIGHT);
+					
+					sdl.write(blockOut, 0, fr * frameSize);
+				} else {
+					try {
+						Thread.sleep(1L);
+					} catch (InterruptedException e) {
+					}
+				}
 			}
 			
 			try {
