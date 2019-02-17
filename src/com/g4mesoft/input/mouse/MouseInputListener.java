@@ -16,7 +16,7 @@ import com.g4mesoft.graphic.Display;
 
 public final class MouseInputListener {
 
-	private static final int MAX_GRAB_DISTANCE = 100;
+	private static final int MAX_GRAB_DISTANCE = 10;
 	
 	public static final MouseButtonInput MOUSE_LEFT = new MouseButtonInput(MouseEvent.BUTTON1);
 	public static final MouseButtonInput MOUSE_MIDDLE = new MouseButtonInput(MouseEvent.BUTTON2);
@@ -73,6 +73,13 @@ public final class MouseInputListener {
 	private void ensureCursorIsInCenter() {
 		if (display != null) {
 			Canvas canvas = display.getCanvas();
+			
+			// The canvas could be closing at the
+			// time of receiving this event. That
+			// would cause an illegal component state
+			// when retrieving the canvas location.
+			if (!canvas.isShowing())
+				return;
 			
 			Point screenLocation = canvas.getLocationOnScreen();
 			
