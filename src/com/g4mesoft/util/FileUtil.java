@@ -30,11 +30,23 @@ public final class FileUtil {
 	private FileUtil() {
 	}
 
-	public static Map<String, String> readConfigFile(File file, String splitter) throws IOException {
+	private static void checkExistingFile(File file) throws IOException {
 		if (file == null)
 			throw new NullPointerException("file is null!");
 		if (!file.isFile())
 			throw new IOException("file either doesn't exist or is a directory!");
+	}
+
+	private static void checkNotDirectory(File file) throws IOException {
+		if (file == null)
+			throw new NullPointerException("file is null!");
+		if (file.isDirectory())
+			throw new IOException("file is a directory!");
+	}
+	
+	public static Map<String, String> readConfigFile(File file, String splitter) throws IOException {
+		checkExistingFile(file);
+		
 		return readConfigFile(new FileReader(file), splitter);
 	}
 
@@ -52,9 +64,12 @@ public final class FileUtil {
 		int lineCount = 0;
 		while ((line = br.readLine()) != null) {
 			lineCount++;
-			if (line.startsWith(COMMENT_START)) continue;
-			if (line.isEmpty()) continue;
+			
+			if (line.isEmpty() || line.startsWith(COMMENT_START))
+				continue;
+			
 			String[] entry = line.split(splitter);
+			
 			if (entry.length != 2)
 				throw new RuntimeException(String.format("Invalid entry %s, should be 'x%sy' at line %d", line, splitter, lineCount));
 			if (entry[0].isEmpty())
@@ -69,10 +84,11 @@ public final class FileUtil {
 	}
 	
 	public static void writeConfigFile(File file, Map<String, String> entryMap, String splitter) throws IOException {
-		if (file == null)
-			throw new NullPointerException("file is null!");
-		if (!file.isFile())
-			throw new IOException("file either doesn't exist or is a directory!");
+		writeConfigFile(file, true, entryMap, splitter);
+	}
+
+	public static void writeConfigFile(File file, boolean genDirectory, Map<String, String> entryMap, String splitter) throws IOException {
+		createFile(file, genDirectory);
 		
 		writeConfig(new FileWriter(file), entryMap, splitter);
 	}
@@ -122,8 +138,7 @@ public final class FileUtil {
 	}
 	
 	public static String readAsString(File file) throws IOException {
-		if (file == null)
-			throw new IllegalArgumentException("file is null!");
+		checkExistingFile(file);
 		
 		return readAsString(new FileReader(file));
 	}
@@ -217,10 +232,7 @@ public final class FileUtil {
 	}
 	
 	public static byte[] readAsBytes(File file) throws IOException {
-		if (file == null)
-			throw new IllegalArgumentException("file is null!");
-		if (!file.isFile())
-			throw new IllegalArgumentException("file either doesn't exist or is a directory!");
+		checkExistingFile(file);
 		
 		return Files.readAllBytes(file.toPath());
 	}
@@ -247,11 +259,6 @@ public final class FileUtil {
 	}
 	
 	public static void writeAsString(File file, boolean genDirectory, String data) throws IOException {
-		if (file == null)
-			throw new IllegalArgumentException("file is null!");
-		if (file.isDirectory())
-			throw new IllegalArgumentException("file is a directory!");
-		
 		createFile(file, genDirectory);
 		
 		writeAsString(new FileWriter(file), data);
@@ -270,19 +277,13 @@ public final class FileUtil {
 	}
 	
 	public static void writeAsBytes(File file, boolean genDirectory, byte[] data) throws IOException {
-		if (file == null)
-			throw new IllegalArgumentException("file is null!");
-		if (file.isDirectory())
-			throw new IllegalArgumentException("file is a directory!");
-		
 		createFile(file, genDirectory);
 		
 		writeAsBytes(new FileOutputStream(file), data);
 	}
 	
 	public static void createFile(File file, boolean genDirectory) throws IOException {
-		if (file == null)
-			throw new IllegalArgumentException("file is null!");
+		checkNotDirectory(file);
 		
 		File parent = file.getParentFile();
 		if (parent != null && !parent.exists()) {
