@@ -295,7 +295,7 @@ public final class SoundManager {
 //			InputStream is = WaveFile.class.getResourceAsStream("/assets/test.soundtest_2big.wav");
 			//URL url = new URL("http://www.class-connection.com/dealers/8bit-ulaw/Female-Voice/Saturday%20Female%20Voice.wav");
 			id = SoundManager.getInstance().loadSound(is);
-		} catch(IOException | AudioParsingException e) {
+		} catch(IOException e) {
 		}
 		
 		if (id == -1) {
