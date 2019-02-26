@@ -68,7 +68,7 @@ public class LinearComposition extends LayoutComposition {
 		}
 
 		// The number of children that
-		// have we have to lay out.
+		// we have to lay out.
 		int n = numChildren;
 		
 		if (direction == HORIZONTAL_DIRECTION) {
@@ -220,12 +220,12 @@ public class LinearComposition extends LayoutComposition {
 	}
 	
 	@Override
-	protected void calculatePreferredSize(Vec2i preferredSize, IRenderingContext2D context) {
+	public Vec2i calculateLayoutPreferredSize(IRenderingContext2D context) {
+		Vec2i preferredSize = new Vec2i();
+		
 		int numChildren = children.size();
-		if (numChildren == 0) {
-			preferredSize.set(0);
-			return;
-		}
+		if (numChildren == 0)
+			return preferredSize;
 		
 		if (direction == HORIZONTAL_DIRECTION) {
 			preferredSize.set(gap * (numChildren - 1), 0);
@@ -250,5 +250,7 @@ public class LinearComposition extends LayoutComposition {
 				preferredSize.y += py;
 			}
 		}
+		
+		return preferredSize;
 	}
 }

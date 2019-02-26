@@ -72,6 +72,21 @@ public abstract class LayoutComposition extends Composition {
 			comp.render(renderer, dt);
 	}
 	
-	protected abstract void calculatePreferredSize(Vec2i preferredSize, IRenderingContext2D context);
+	/**
+	 * Calculates and returns the preferred size of this layout. 
+	 * This method should only be called by the UI that owns this 
+	 * composition when the current preferred size is invalid. If 
+	 * the intention of calling this method is to get the current 
+	 * preferred size of the layout, then the cached version of the 
+	 * preferred size should instead be gathered by calling the 
+	 * function {@link #getPreferredSize(IRenderingContext2D)}.
+	 * 
+	 * @param context - The current rendering context
+	 * 
+	 * @return The calculated preferred size of the layout
+	 * 
+	 * @see #getPreferredSize(IRenderingContext2D)
+	 */
+	public abstract Vec2i calculateLayoutPreferredSize(IRenderingContext2D context);
 	
 }

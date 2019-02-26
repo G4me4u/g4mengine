@@ -48,6 +48,6 @@ public class LayoutCompositionUI extends CompositionUI {
 
 	@Override
 	public Vec2i getPreferredSize(IRenderingContext2D context) {
-		return null;
+		return layout.calculateLayoutPreferredSize(context);
 	}
 }
