@@ -1,6 +1,7 @@
 package com.g4mesoft.world;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -105,7 +106,7 @@ public abstract class World {
 	}
 	
 	public List<Entity> getEntityList() {
-		return entities;
+		return Collections.unmodifiableList(entities);
 	}
 	
 	public boolean isUpdatingEntities() {

@@ -7,6 +7,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -20,17 +21,17 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 
-import com.g4mesoft.graphic.DisplayConfig.DisplayMode;
+import com.g4mesoft.Application;
 
 public class Display implements IViewport {
 
-	private final Object renderingLock = new Object();
-	
 	private final DisplayConfig displayConfig;
 
 	private JFrame frame;
@@ -60,27 +61,35 @@ public class Display implements IViewport {
 	private Cursor prevCursor;
 	
 	public Display() { 
-		this(null); 
+		this(DisplayConfig.DEFAULT_DISPLAY_CONFIG); 
 	}
 	
 	public Display(InputStream configInputStream) {
-		DisplayConfig displayConfig = null;
-		
-		if (configInputStream != null) {
-			try {
-				displayConfig = DisplayConfig.loadConfigFile(
-						new InputStreamReader(configInputStream, StandardCharsets.UTF_8));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		if (displayConfig == null)
-			displayConfig = DisplayConfig.DEFAULT_DISPLAY_CONFIG;
+		this(readDisplayConfig(configInputStream));
+	}
 	
-		this.displayConfig = displayConfig;
+	public Display(DisplayConfig config) {
+		if (config == null)
+			throw new IllegalArgumentException("Display config must not be null!");
+		
+		displayConfig = config;
 		
 		initDisplay();
+	}
+	
+	private static DisplayConfig readDisplayConfig(InputStream is) {
+		DisplayConfig config = DisplayConfig.DEFAULT_DISPLAY_CONFIG;
+		if (is == null)
+			return config;
+		
+		try {
+			Reader reader = new InputStreamReader(is, StandardCharsets.UTF_8);
+			config = DisplayConfig.loadConfigFile(reader);
+		} catch (IOException e) {
+			Application.errorOccurred(e);
+		}
+		
+		return config;
 	}
 	
 	private void initDisplay() {
@@ -134,15 +143,18 @@ public class Display implements IViewport {
 		
 		// Set frame icon, if it exists
 		if (!DisplayConfig.NO_ICON_PATH.equals(displayConfig.iconPath)) {
-			BufferedImage icon = null;
-			try {
-				icon = ImageIO.read(Display.class.getResource(displayConfig.iconPath));
-			} catch (IOException e) {
-				e.printStackTrace();
+			URL iconUrl = Display.class.getResource(displayConfig.iconPath);
+			if (iconUrl != null) {
+				BufferedImage icon = null;
+				try {
+					icon = ImageIO.read(iconUrl);
+				} catch (IOException e) {
+					Application.errorOccurred(e);
+				}
+
+				if (icon != null)
+					setFrameIcon(icon);
 			}
-			
-			if (icon != null)
-				frame.setIconImage(icon);
 		}
 		
 		frame.setVisible(true);
@@ -153,6 +165,18 @@ public class Display implements IViewport {
 		renderer = new DefaultRenderer2D(this);
 		
 		canvas.requestFocus();
+	}
+	
+	public void setFrameIcon(Image icon) {
+		frame.setIconImage(icon);
+		
+		try {
+			Class<?> appClazz = Class.forName("com.apple.eawt.Application");
+			Object app = appClazz.getMethod("getApplication").invoke(null);
+			appClazz.getMethod("setDockIconImage", Image.class).invoke(app, icon);
+		} catch (Exception e1) {
+			// We're not on mac
+		}
 	}
 	
 	public void setDisplayMode(DisplayMode displayMode) {
@@ -230,53 +254,50 @@ public class Display implements IViewport {
 	}
 	
 	public IRenderer2D startRendering() {
-		if (frame == null || !frame.isShowing()) return null;
+		if (frame == null || !frame.isShowing()) 
+			return null;
 		
-		synchronized (renderingLock) {
-			if (rendering)
-				throw new IllegalStateException("Already started rendering!");
-			
-			bs = canvas.getBufferStrategy();
-			if (bs == null) {
-				// We have to make sure the canvas
-				// is displayable. It could have been
-				// disposed or removed before this call.
-				if (canvas.isDisplayable())
-					canvas.createBufferStrategy(3);
-				return null;
-			}
-			
-			g = bs.getDrawGraphics();
-			if (g == null || renderer == null)
-				return null;
-			
-			if (!renderer.start(g))
-				return null;
-			
-			rendering = true;
-			return renderer;
+		if (rendering)
+			throw new IllegalStateException("Already started rendering!");
+		
+		bs = canvas.getBufferStrategy();
+		if (bs == null) {
+			// We have to make sure the canvas
+			// is displayable. It could have been
+			// disposed or removed before this call.
+			if (canvas.isDisplayable())
+				canvas.createBufferStrategy(3);
+			return null;
 		}
+		
+		g = bs.getDrawGraphics();
+		if (g == null || renderer == null)
+			return null;
+		
+		if (!renderer.start(g))
+			return null;
+		
+		rendering = true;
+		return renderer;
 	}
 	
 	public void stopRendering() {
-		synchronized (renderingLock) {
-			if (!rendering)
-				throw new IllegalStateException("Already stopped rendering!");
-			
-			renderer.stop();
-			
-			g.dispose();
-			g = null;
-			
-			// We have to make sure the canvas 
-			// is displayable before showing the 
-			// next frame. (The bufferstrategy
-			// could have been invalidated).
-			if (canvas.isDisplayable())
-				bs.show();
-			
-			rendering = false;
-		}
+		if (!rendering)
+			throw new IllegalStateException("Already stopped rendering!");
+		
+		renderer.stop();
+		
+		g.dispose();
+		g = null;
+		
+		// We have to make sure the canvas 
+		// is displayable before showing the 
+		// next frame. (The bufferstrategy
+		// could have been invalidated).
+		if (canvas.isDisplayable())
+			bs.show();
+		
+		rendering = false;
 	}
 	
 	public boolean isRendering() {
@@ -287,15 +308,13 @@ public class Display implements IViewport {
 		if (renderer == null)
 			throw new NullPointerException("Renderer is null!");
 	
-		synchronized (renderingLock) {
-			if (rendering)
-				throw new IllegalStateException("Cannot change renderer if display is already rendering!");
-			
-			if (this.renderer != null)
-				this.renderer.dispose();
-			
-			this.renderer = renderer;
-		}
+		if (rendering)
+			throw new IllegalStateException("Cannot change renderer if display is already rendering!");
+		
+		if (this.renderer != null)
+			this.renderer.dispose();
+		
+		this.renderer = renderer;
 	}
 	
 	public IRenderer2D getRenderer() {

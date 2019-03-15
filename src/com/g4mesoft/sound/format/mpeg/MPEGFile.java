@@ -7,7 +7,6 @@ import java.util.List;
 
 import javax.sound.sampled.AudioFormat;
 
-import com.g4mesoft.sound.SoundManager;
 import com.g4mesoft.sound.format.AudioFile;
 import com.g4mesoft.sound.format.AudioParsingException;
 import com.g4mesoft.sound.format.TagParsingException;
@@ -201,19 +200,5 @@ public class MPEGFile extends AudioFile {
 
 	public ID3v2Tag getAudioTag() {
 		return audioTag;
-	}
-	
-	public static void main(String[] args) throws IOException, AudioParsingException {
-		int id = SoundManager.getInstance().loadSound(MPEGFile.class.getResourceAsStream("/assets/test.ifiwereaboytest.mp2"));
-		if (id == -1)
-			return;
-		
-		AudioFile file = SoundManager.getInstance().getAudioFile(id);
-		if (file instanceof MPEGFile) {
-			ID3v2Tag tag = ((MPEGFile)file).getAudioTag();
-			System.out.println(tag);
-		}
-		
-		SoundManager.getInstance().playSound(id, false).setVolume(0.5f);
 	}
 }

@@ -1,6 +1,8 @@
 package com.g4mesoft.composition;
 
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 
 import com.g4mesoft.composition.ui.LayoutCompositionUI;
 import com.g4mesoft.graphic.IRenderer2D;
@@ -9,7 +11,7 @@ import com.g4mesoft.math.Vec2i;
 
 public abstract class LayoutComposition extends Composition {
 
-	protected final LinkedList<Composition> children;
+	private final LinkedList<Composition> children;
 	
 	public LayoutComposition() {
 		children = new LinkedList<Composition>();
@@ -70,6 +72,23 @@ public abstract class LayoutComposition extends Composition {
 		
 		for (Composition comp : children)
 			comp.render(renderer, dt);
+	}
+	
+	/**
+	 * @return The number of children currently added to this
+	 *         layout composition.
+	 */
+	public int getNumChildren() {
+		return children.size();
+	}
+	
+	/**
+	 * @return The children of this layout composition in an
+	 *         unmodifiable collection. Any attempt to modify
+	 *         the returned list will throw an exception.
+	 */
+	public List<Composition> getChildren() {
+		return Collections.unmodifiableList(children);
 	}
 	
 	/**

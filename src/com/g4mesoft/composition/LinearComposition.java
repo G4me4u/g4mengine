@@ -1,5 +1,7 @@
 package com.g4mesoft.composition;
 
+import java.util.List;
+
 import com.g4mesoft.graphic.IRenderingContext2D;
 import com.g4mesoft.math.Vec2i;
 
@@ -36,6 +38,8 @@ public class LinearComposition extends LayoutComposition {
 	
 	@Override
 	public void doLayout(IRenderingContext2D context) {
+		List<Composition> children = getChildren();
+		
 		int numChildren = children.size();
 		if (numChildren == 0)
 			return;
@@ -223,7 +227,7 @@ public class LinearComposition extends LayoutComposition {
 	public Vec2i calculateLayoutPreferredSize(IRenderingContext2D context) {
 		Vec2i preferredSize = new Vec2i();
 		
-		int numChildren = children.size();
+		int numChildren = getNumChildren();
 		if (numChildren == 0)
 			return preferredSize;
 		
@@ -233,7 +237,7 @@ public class LinearComposition extends LayoutComposition {
 			preferredSize.set(0, gap * (numChildren - 1));
 		}
 		
-		for (Composition child : children) {
+		for (Composition child : getChildren()) {
 			Vec2i ps = child.getPreferredSize(context);
 			BorderInsets insets = child.getBorderInsets();
 			

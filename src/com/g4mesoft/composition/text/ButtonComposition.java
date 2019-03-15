@@ -1,5 +1,9 @@
 package com.g4mesoft.composition.text;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.g4mesoft.composition.ui.ButtonCompositionUI;
 import com.g4mesoft.graphic.GColor;
 import com.g4mesoft.input.mouse.MouseButtonInput;
@@ -16,7 +20,7 @@ public class ButtonComposition extends TextComposition {
 	private GColor pressedBackground;
 	
 	private MouseButtonInput mouseButton;
-	private IButtonCompositionListener buttonListener;
+	private Set<IButtonCompositionListener> buttonListeners;
 	
 	public ButtonComposition() {
 		this(null);
@@ -26,6 +30,7 @@ public class ButtonComposition extends TextComposition {
 		this.text = text == null ? "" : text;
 		
 		mouseButton = MouseInputListener.MOUSE_LEFT;
+		buttonListeners = new HashSet<IButtonCompositionListener>();
 
 		// Set UI
 		setUI(new ButtonCompositionUI());
@@ -102,16 +107,16 @@ public class ButtonComposition extends TextComposition {
 		return hoveredBackground;
 	}
 	
-	public void setButtonListener(IButtonCompositionListener listener) {
-		buttonListener = listener;
+	public void addButtonListener(IButtonCompositionListener listener) {
+		buttonListeners.add(listener);
 	}
 	
-	public IButtonCompositionListener getButtonListener() {
-		return buttonListener;
+	public Set<IButtonCompositionListener> getButtonListener() {
+		return Collections.unmodifiableSet(buttonListeners);
 	}
 
 	public void invokeButtonClickedEvent() {
-		if (buttonListener != null)
-			buttonListener.buttonClicked(this);
+		for (IButtonCompositionListener listener : buttonListeners)
+			listener.buttonClicked(this);
 	}
 }

@@ -7,7 +7,10 @@ import com.g4mesoft.composition.Composition;
 import com.g4mesoft.graphic.Display;
 import com.g4mesoft.graphic.IExitable;
 import com.g4mesoft.graphic.IRenderer2D;
+import com.g4mesoft.input.key.KeyInput;
 import com.g4mesoft.input.key.KeyInputListener;
+import com.g4mesoft.input.key.KeyTypedInput;
+import com.g4mesoft.input.mouse.MouseButtonInput;
 import com.g4mesoft.input.mouse.MouseInputListener;
 
 public abstract class Application implements IExitable {
@@ -424,8 +427,120 @@ public abstract class Application implements IExitable {
 	 * @see #enableMouseInput()
 	 */
 	public void setMouseGrabbed(boolean grabbed) {
-		if (mouseListener != null)
-			mouseListener.setGrabbed(grabbed);
+		if (mouseListener != null) {
+			try {
+				mouseListener.setGrabbed(grabbed);
+			} catch (Exception e) {
+				Application.errorOccurred(e);
+			}
+		}
+	}
+	
+	/**
+	 * Adds the given key to the KeyInputListener. Note that for the key 
+	 * to react to user keyboard input the key-listener must be enabled. 
+	 * This should be achieved by calling {@link #enableKeyInput()}.
+	 * 
+	 * @param key - The key to be registered
+	 * 
+	 * @return True, if the key was added successfully, false otherwise
+	 * 
+	 * @see com.g4mesoft.input.key.KeyInputListener#addKey(KeyInput)
+	 * @see #enableKeyInput()
+	 */
+	public static boolean addKey(KeyInput key) {
+		return KeyInputListener.getInstance().addKey(key);
+	}
+	
+	/**
+	 * Removes the given key from the KeyInputListener. Note that if the
+	 * goal is to disable all keyboard input, it shouldn't be achieved by
+	 * removing all keys. Instead call {@link #disableKeyInput()}.
+	 * 
+	 * @param key - The key to be removed from the KeyInputListener
+	 * 
+	 * @return True, if the key was removed successfully, false otherwise
+	 * 
+	 * @see com.g4mesoft.input.key.KeyInputListener#removeKey(KeyInput)
+	 * @see #disableKeyInput()
+	 */
+	public static boolean removeKey(KeyInput key) {
+		return KeyInputListener.getInstance().removeKey(key);
+	}
+	
+	/**
+	 * Adds the given typed key to the KeyInputListener. Note that for the 
+	 * key to react to user keyboard input the key-listener must be enabled. 
+	 * This should be achieved by calling {@link #enableKeyInput()}.
+	 * 
+	 * @param typedKey - The typed key to be added
+	 * 
+	 * @return True, if the typed key was added successfully, false 
+	 *         otherwise.
+	 *         
+	 * @see com.g4mesoft.input.key.KeyInputListener#addTypedKey(KeyTypedInput)
+	 * @see #enableKeyInput()
+	 */
+	public static boolean addTypedKey(KeyTypedInput typedKey) {
+		return KeyInputListener.getInstance().addTypedKey(typedKey);
+	}
+	
+	/**
+	 * Removes the given key from the KeyInputListener. Note that if the
+	 * goal is to disable all keyboard input, it shouldn't be achieved by
+	 * removing all keys. Instead call {@link #disableKeyInput()}.
+	 * 
+	 * @param typedKey - The key to be removed from the KeyInputListener
+	 * 
+	 * @return True, if the key was removed successfully, false otherwise
+	 * 
+	 * @see com.g4mesoft.input.key.KeyInputListener#removeTypedKey(KeyTypedInput)
+	 * @see #disableKeyInput()
+	 */	
+	public static boolean removeTypedKey(KeyTypedInput typedKey) {
+		return KeyInputListener.getInstance().removeTypedKey(typedKey);
+	}
+	
+	/**
+	 * Adds the given mouse input to the MouseInputListener. Note that for
+	 * the mouse button to react to user mouse input, the MouseInputListener
+	 * must be enabled. This can b achieved by calling {@link #enableMouseInput()}
+	 * 
+	 * @param mouseButton - The mouse button to be added to the MouseInputListener
+	 * 
+	 * @return True, if the mouse button was added successfully, false otherwise.
+	 * 
+	 * @see com.g4mesoft.input.mouse.MouseInputListener#addMouseInput(MouseButtonInput)
+	 * @see #enableMouseInput()
+	 */
+	public static boolean addMouseInput(MouseButtonInput mouseButton) {
+		return MouseInputListener.getInstance().addMouseInput(mouseButton);
+	}
+	
+	/**
+	 * Removes the given mouse input from the MouseInputListener
+	 * 
+	 * @param mouseButton - The mouse button input to be removed
+	 * 
+	 * @return True, if the mouse button was removed successfully, false otherwise.
+	 * 
+	 * @see com.g4mesoft.input.mouse.MouseInputListener#removeMouseInput(MouseButtonInput)
+	 */
+	public static boolean removeMouseInput(MouseButtonInput mouseButton) {
+		return MouseInputListener.getInstance().removeMouseInput(mouseButton);
+	}
+	
+	/**
+	 * Called when an unexpected error occurs, that should be notified
+	 * to the programmer. This function is useful for debugging, and
+	 * should be overridden, if the error should be logged or handled
+	 * differently. The default implementation of this method will
+	 * simply print the stack trace of the provided error.
+	 * 
+	 * @param throwable - The error that occurred.
+	 */
+	public static void errorOccurred(Throwable throwable) {
+		throwable.printStackTrace();
 	}
 	
 // Getter functions //

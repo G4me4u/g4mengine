@@ -2,12 +2,12 @@ package com.g4mesoft.composition.ui;
 
 import java.awt.Rectangle;
 
+import com.g4mesoft.Application;
 import com.g4mesoft.composition.Composition;
 import com.g4mesoft.composition.text.TextFieldComposition;
 import com.g4mesoft.graphic.GColor;
 import com.g4mesoft.graphic.IRenderer2D;
 import com.g4mesoft.graphic.IRenderingContext2D;
-import com.g4mesoft.input.key.KeyInputListener;
 import com.g4mesoft.input.key.KeyTypedInput;
 import com.g4mesoft.math.Vec2i;
 
@@ -40,7 +40,7 @@ public class TextFieldCompositionUI extends TextCompositionUI {
 		textField.setBorderColor(GColor.WHITE);
 		
 		typedInput = new KeyTypedInput();
-		KeyInputListener.getInstance().addTypedKey(typedInput);
+		Application.addTypedKey(typedInput);
 		
 		fieldBounds = new Rectangle();
 	}
@@ -54,7 +54,7 @@ public class TextFieldCompositionUI extends TextCompositionUI {
 		
 		// Remove typed input to release 
 		// resources. 
-		KeyInputListener.getInstance().removeTypedKey(typedInput);
+		Application.removeTypedKey(typedInput);
 		typedInput = null;
 
 		textField = null;

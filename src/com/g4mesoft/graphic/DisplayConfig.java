@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Map;
 
+import com.g4mesoft.Application;
 import com.g4mesoft.util.FileUtil;
 
 public final class DisplayConfig {
@@ -33,6 +34,19 @@ public final class DisplayConfig {
 			DEFAULT_CENTERED, 
 			DEFAULT_DISPLAY_MODE,
 			DEFAULT_DISPLAY_VISIBLE,
+			DEFAULT_ICON_PATH
+	);
+	
+	public static final DisplayConfig INVISIBLE_DISPLAY_CONFIG = new DisplayConfig(	
+			DEFAULT_TITLE, 
+			DEFAULT_WIDTH, 
+			DEFAULT_HEIGHT, 
+			DEFAULT_MINIMUM_WIDTH,
+			DEFAULT_MINIMUM_HEIGHT,
+			DEFAULT_RESIZABLE, 
+			DEFAULT_CENTERED, 
+			DEFAULT_DISPLAY_MODE,
+			false,
 			DEFAULT_ICON_PATH
 	);
 	
@@ -101,7 +115,7 @@ public final class DisplayConfig {
 			try {
 				return Integer.parseInt(value);
 			} catch (NumberFormatException e) {
-				e.printStackTrace();
+				Application.errorOccurred(e);
 			}
 		}
 		return defaultValue;
@@ -110,9 +124,12 @@ public final class DisplayConfig {
 	private static boolean getBoolean(Map<String, String> configurations, String key, boolean defaultValue) {
 		String value = configurations.get(key);
 		if (value != null) {
-			if (value.equalsIgnoreCase("false")) return false;
-			if (value.equalsIgnoreCase("true")) return true;
+			if (value.equalsIgnoreCase("false"))
+				return false;
+			if (value.equalsIgnoreCase("true"))
+				return true;
 		}
+		
 		return defaultValue;
 	}
 	
@@ -120,42 +137,9 @@ public final class DisplayConfig {
 		String value = configurations.get(key);
 		if (value != null) {
 			DisplayMode result = DisplayMode.parse(value);
-			if (result != null) return result;
+			if (result != null)
+				return result;
 		}
 		return defaultValue;
-	}
-	
-	public enum DisplayMode {
-		NORMAL(0, "normal"),
-		FULLSCREEN(1, "fullscreen"),
-		FULLSCREEN_WINDOWED(2, "fullscreen_windowed"),
-		FULLSCREEN_BORDERLESS(3, "fullscreen_borderless");
-		
-		private final int index;
-		private final String name;
-		
-		private DisplayMode(int index, String name) {
-			this.index = index;
-			this.name = name;
-		}
-		
-		public static DisplayMode parse(String name) {
-			if (name == null) return null;
-			
-			for (DisplayMode displayMode : values()) {
-				if (name.equalsIgnoreCase(displayMode.name))
-					return displayMode;
-			}
-			
-			return null;
-		}
-		
-		public int getIndex() {
-			return index;
-		}
-		
-		public String getName() {
-			return name;
-		}
 	}
 }
