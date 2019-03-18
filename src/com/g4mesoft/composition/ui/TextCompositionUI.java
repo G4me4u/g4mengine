@@ -61,7 +61,9 @@ public abstract class TextCompositionUI extends CompositionUI {
 	 * </pre>
 	 * Trimming an empty string will result in an empty string. If
 	 * the given text does not allow for any characters within the
-	 * available width, the default ellipsis '...' will be returned.
+	 * available width (i.e. the available width isn't sufficient 
+	 * to hold even a single character), the default ellipsis '...' 
+	 * will be returned.
 	 * 
 	 * @param context - The current rendering-context.
 	 * @param text - The text to be trimmed.
