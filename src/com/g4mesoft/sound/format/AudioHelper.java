@@ -2,9 +2,10 @@ package com.g4mesoft.sound.format;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+
+import com.g4mesoft.math.MathUtils;
 
 public final class AudioHelper {
 
@@ -12,15 +13,30 @@ public final class AudioHelper {
 	}
 	
 	public static String readString(InputStream is, byte[] buffer, int maxLength, int offset) throws IOException {
-		return toString(buffer, readBytes(is, buffer, maxLength, offset), offset);
+		return readString(is, buffer, maxLength, offset, StandardCharsets.US_ASCII);
 	}
 
 	public static String readString(InputStream is, byte[] buffer, int maxLength, int offset, Charset charset) throws IOException {
-		return toString(buffer, readBytes(is, buffer, maxLength, offset), offset, charset);
+		int len = readBytes(is, buffer, maxLength, offset);
+		if (len < 0)
+			return null;
+		if (len == 0)
+			return "";
+		return toString(buffer, len, offset, charset);
 	}
 	
 	public static int readBytes(InputStream is, byte[] buffer, int maxLength, int offset) throws IOException {
-		return is.read(buffer, offset, Math.min(buffer.length - offset, maxLength));
+		int numBytes = MathUtils.min(buffer.length - offset, maxLength);
+		
+		int br = 0;
+		while (br < numBytes) {
+			int n = is.read(buffer, offset, numBytes - br);
+			if (n < 0)
+				return br == 0 ? -1 : br;
+			br += n;
+		}
+		
+		return br;
 	}
 	
 	public static int readByte(InputStream is, byte[] buffer, int offset) throws IOException {
@@ -42,10 +58,5 @@ public final class AudioHelper {
 
 	public static String toString(byte[] buffer, int len, int offset, Charset charset) {
 		return new String(buffer, offset, len, charset);
-	}
-	
-	public static void writeString(byte[] buffer, String value, int offset, Charset charset) {
-		ByteBuffer bb = charset.encode(value);
-		bb.get(buffer, offset, bb.capacity());
 	}
 }

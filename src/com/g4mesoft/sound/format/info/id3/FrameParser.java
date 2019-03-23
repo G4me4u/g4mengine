@@ -6,6 +6,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+import com.g4mesoft.math.MathUtils;
 import com.g4mesoft.sound.format.TagParsingException;
 import com.g4mesoft.sound.format.info.AudioInfo;
 
@@ -64,7 +65,7 @@ abstract class FrameParser {
 	}
 	
 	protected static int findStringEnd(byte[] buffer, int maxLength, int offset, int numOfTerm) throws TagParsingException {
-		int end = Math.min(buffer.length, maxLength + offset);
+		int end = MathUtils.min(buffer.length, maxLength + offset);
 		
 		int tc = 0;
 		while(offset < end) {

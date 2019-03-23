@@ -1,6 +1,6 @@
 package com.g4mesoft.sound.processor;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.g4mesoft.math.Vec3f;
@@ -14,7 +14,7 @@ public abstract class AudioLine {
 	public AudioLine(Vec3f pos) {
 		this.pos = new Vec3f(pos);
 		
-		preProcessors = new ArrayList<IAudioProcessor>();
+		preProcessors = new LinkedList<IAudioProcessor>();
 	}
 
 	public void addPreProcessor(IAudioProcessor preAudioProcessor) {
@@ -31,7 +31,9 @@ public abstract class AudioLine {
 	}
 
 	public boolean hasPreProcessors() {
-		return !preProcessors.isEmpty();
+		synchronized (preProcessors) {
+			return !preProcessors.isEmpty();
+		}
 	}
 	
 	public void setPosition(Vec3f nPos) {

@@ -89,7 +89,7 @@ public class WaveFile extends AudioFile {
 	 * the WaveFile is loaded successfully, the WaveFile will be
 	 * returned.
 	 * <br><br>
-	 * The default wave file header is a total of 44 bytes or more 
+	 * The default wave file header is a total of 44 bytes, or more 
 	 * if storing extra parameters. This WaveFile loader will however 
 	 * skip over these custom parameters, as they are currently not 
 	 * supported. The following table shows how a typical header might 
@@ -189,17 +189,17 @@ public class WaveFile extends AudioFile {
 	 * so they have to be converted in code to make sense. Strings are
 	 * stored in big-endian byte order (1 byte per character)</i>
 	 * <br><br>
-	 * @param is	-	The {@code InputStream} streaming the wave data.
-	 * @return  null, if the {@code InputStream} does not contain a valid 
-	 * 			wave format, or if marking/resetting is not supported. 
-	 * 			Otherwise this method will return a WaveFile containing 
-	 * 			all information needed for playback.
+	 * @param is - The {@code InputStream} streaming the wave data.
+	 * @return null, if the {@code InputStream} does not contain a valid 
+	 *         wave format, or if marking/resetting is not supported. 
+	 *         Otherwise this method will return a WaveFile containing 
+	 *         all information needed for playback.
 	 * 
 	 * @throws IOException if an I/O error occurs.
 	 * @throws AudioParsingException if header is valid, but audio data 
-	 * 								 is corrupted or nonexistent. Note that
-	 * 								 the stream cannot be reset when this
-	 * 								 exception is thrown.
+	 *                               is corrupted or nonexistent. Note that
+	 *                               the stream cannot be reset when this
+	 *                               exception is thrown.
 	 * 
 	 * @see java.io.InputStream
 	 */
@@ -370,8 +370,8 @@ public class WaveFile extends AudioFile {
 	}
 	
 	/**
-	 * @return  The audio format of the audio data.
-	 * @see #getData()
+	 * @return The audio format of the audio data.
+	 * @see #getData(byte[], int, int, int)
 	 */
 	@Override
 	public AudioFormat getFormat() {
@@ -379,22 +379,21 @@ public class WaveFile extends AudioFile {
 	}
 
 	/**
-	 * Copies the raw PCM audio data in this WaveFile into
-	 * the destination array.
+	 * Copies the raw PCM audio data from this WaveFile into the 
+	 * destination array.
 	 * 
-	 * @param dst		-	The destination array
-	 * @param srcPos	-	The starting position in the
-	 * 						raw audio data array.
-	 * @param dstPos	-	The destination start position
-	 * @param len		-	The number of bytes to be copied.
+	 * @param dst - The destination array
+	 * @param srcPos - The starting position in the raw audio data array.
+	 * @param dstPos - The destination start position
+	 * @param len - The number of bytes to be copied.
 	 * 
 	 * @return The amount of bytes actually copied to
 	 * 	       the destination.
 	 * @throws IndexOutOfBoundsException If copying would cause 
-	 * 									 access of data outside 
-	 * 									 array bounds.
+	 *                                   access of data outside 
+	 *                                   array bounds.
 	 * 
-	 * @see #getData()
+	 * @see #getFormat()
 	 */
 	@Override
 	public int getData(byte[] dst, int srcPos, int dstPos, int len) {

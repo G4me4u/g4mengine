@@ -1,5 +1,7 @@
 package com.g4mesoft.sound.processor;
 
+import javax.sound.sampled.AudioFormat;
+
 import com.g4mesoft.math.Vec3f;
 import com.g4mesoft.sound.format.AudioFile;
 
@@ -36,7 +38,7 @@ public class AudioSource extends AudioLine {
 	
 	public AudioSource setPitch(float pitch) {
 		if (pitchProcessor == null) {
-			addPreProcessor(pitchProcessor = new PitchAudioProcessor(pitch, audioFile.getFormat().getSampleRate()));
+			addPreProcessor(pitchProcessor = new PitchAudioProcessor(pitch, getFormat().getSampleRate()));
 		} else {
 			pitchProcessor.setPitch(pitch);
 		}
@@ -48,11 +50,11 @@ public class AudioSource extends AudioLine {
 		if (frameLocation == -1)
 			return 0;
 		
-		int frameSize = audioFile.getFormat().getFrameSize();
+		int frameSize = getFormat().getFrameSize();
 		
 		int bytesToRead = framesToRead * frameSize;
 		int bp = frameLocation * frameSize;
-		
+
 		while (true) {
 			int br = audioFile.getData(block, bp, 0, bytesToRead);
 			bytesToRead -= br;
@@ -92,5 +94,13 @@ public class AudioSource extends AudioLine {
 	
 	public boolean isPlaying() {
 		return frameLocation != -1;
+	}
+	
+	public AudioFormat getFormat() {
+		return audioFile.getFormat();
+	}
+	
+	public AudioFile getAudioFile() {
+		return audioFile;
 	}
 }
