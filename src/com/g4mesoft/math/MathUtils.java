@@ -58,6 +58,79 @@ public final class MathUtils {
 	public static long clamp(long v, long mn, long mx) {
 		return v > mx ? mx : (v < mn ? mn : v);
 	}
+	
+
+	public static float max(float[] arr) {
+		float max = Float.NEGATIVE_INFINITY;
+		for (float v : arr) {
+			if (v > max)
+				max = v;
+		}
+		return max;
+	}
+	
+	public static float min(float[] arr) {
+		float min = Float.POSITIVE_INFINITY;
+		for (float v : arr) {
+			if (v < min)
+				min = v;
+		}
+		return min;
+	}
+	
+	public static double max(double[] arr) {
+		double max = Double.NEGATIVE_INFINITY;
+		for (double v : arr) {
+			if (v > max)
+				max = v;
+		}
+		return max;
+	}
+	
+	public static double min(double[] arr) {
+		double min = Double.POSITIVE_INFINITY;
+		for (double v : arr) {
+			if (v < min)
+				min = v;
+		}
+		return min;
+	}
+	
+	public static int max(int[] arr) {
+		int max = Integer.MIN_VALUE;
+		for (int v : arr) {
+			if (v > max)
+				max = v;
+		}
+		return max;
+	}
+
+	public static int min(int[] arr) {
+		int min = Integer.MAX_VALUE;
+		for (int v : arr) {
+			if (v < min)
+				min = v;
+		}
+		return min;
+	}
+	
+	public static long max(long[] arr) {
+		long max = Long.MIN_VALUE;
+		for (long v : arr) {
+			if (v > max)
+				max = v;
+		}
+		return max;
+	}
+	
+	public static long min(long[] arr) {
+		long min = Long.MAX_VALUE;
+		for (long v : arr) {
+			if (v < min)
+				min = v;
+		}
+		return min;
+	}
 
 	public static boolean nearZero(float v) {
 		return v < EPSILON && v > -EPSILON;
@@ -162,6 +235,30 @@ public final class MathUtils {
 	public static double exp(double v) {
 		return Math.exp(v);
 	}
+	
+	public static double log(double v) {
+		return Math.log(v);
+	}
+
+	public static float log(float v) {
+		return (float)Math.log(v);
+	}
+	
+	public static double log10(double v) {
+		return Math.log10(v);
+	}
+	
+	public static float log10(float v) {
+		return (float)Math.log10(v);
+	}
+
+	public static double log1p(double v) {
+		return Math.log1p(v);
+	}
+	
+	public static float log1p(float v) {
+		return (float)Math.log1p(v);
+	}
 
 	public static float ceil(float v) {
 		return (float)Math.ceil(v);
@@ -193,5 +290,13 @@ public final class MathUtils {
 
 	public static long floorDiv(long x, long y) {
 		return Math.floorDiv(x, y);
+	}
+
+	public static float pow(float a, float b) {
+		return (float)Math.pow(a, b);
+	}
+
+	public static double pow(double a, double b) {
+		return Math.pow(a, b);
 	}
 }
