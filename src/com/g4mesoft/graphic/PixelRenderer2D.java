@@ -332,6 +332,10 @@ public class PixelRenderer2D implements IRenderer2D {
 	public void applyFilter(IPixelFilter filter) {
 		filter.filterPixels(pixels, width, height);
 	}
+
+	public void applyFilter(IPixelFilter filter, int x, int y, int width, int height) {
+		filter.filterPixels(pixels, x + y * this.width, width, height, this.width);
+	}
 	
 	@Override
 	public void setColor(GColor color) {

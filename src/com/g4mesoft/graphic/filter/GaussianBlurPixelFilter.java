@@ -72,12 +72,12 @@ public class GaussianBlurPixelFilter implements IPixelFilter {
 	}
 	
 	@Override
-	public void filterPixels(int[] pixels, int width, int height) {
-		horizontalBlur(pixels, width, height);
-		verticalBlur(pixels, width, height);
+	public void filterPixels(int[] pixels, int offset, int width, int height, int stride) {
+		horizontalBlur(pixels, offset, width, height, stride);
+		verticalBlur(pixels, offset, width, height, stride);
 	}
 	
-	public void horizontalBlur(int[] pixels, int width, int height) {
+	public void horizontalBlur(int[] pixels, int offset, int width, int height, int stride) {
 		float r, g, b;
 		
 		// The number of pixels to the 
@@ -90,7 +90,7 @@ public class GaussianBlurPixelFilter implements IPixelFilter {
 		int kernelSetupStart = Math.max(halfKernelSize, kernelSize - width);
 		
 		int pixel;
-		int index = 0;
+		int index = offset;
 		for (int y = 0; y < height; y++) {
 			// Setup temp pixels for next row
 			// with leading zeroes.
@@ -147,10 +147,12 @@ public class GaussianBlurPixelFilter implements IPixelFilter {
 				// rgb values above 255.
 				pixels[index++] = ((int)r << 16) | ((int)g << 8) | (int)b;
 			}
+			
+			index += stride - width;
 		}
 	}
 	
-	public void verticalBlur(int[] pixels, int width, int height) {
+	public void verticalBlur(int[] pixels, int offset, int width, int height, int stride) {
 		float r, g, b;
 		
 		// The number of pixels above the 
@@ -164,7 +166,7 @@ public class GaussianBlurPixelFilter implements IPixelFilter {
 		
 		int pixel;
 		for (int x = 0; x < width; x++) {
-			int index = x;
+			int index = offset + x;
 			
 			// Setup temp pixels for next column
 			// with leading zeroes.
@@ -177,7 +179,7 @@ public class GaussianBlurPixelFilter implements IPixelFilter {
 
 			// Gather temp pixels
 			for ( ; i < kernelSize; i++) {
-				pixel = pixels[index + (i - kernelSetupStart) * width];
+				pixel = pixels[index + (i - kernelSetupStart) * stride];
 				
 				tmpPixelsR[i] = (pixel >>> 16) & 0xFF;
 				tmpPixelsG[i] = (pixel >>>  8) & 0xFF;
@@ -205,7 +207,7 @@ public class GaussianBlurPixelFilter implements IPixelFilter {
 				// Gather next pixel for temp
 				// pixel array.
 				if (y + halfKernelSize < height) {
-					pixel = pixels[index + halfKernelSize * width];
+					pixel = pixels[index + halfKernelSize * stride];
 					
 					tmpPixelsR[kernelSizeMO] = (pixel >>> 16) & 0xFF;
 					tmpPixelsG[kernelSizeMO] = (pixel >>>  8) & 0xFF;
@@ -220,7 +222,7 @@ public class GaussianBlurPixelFilter implements IPixelFilter {
 				// zero, so we'll never get
 				// rgb values above 255.
 				pixels[index] = ((int)r << 16) | ((int)g << 8) | (int)b;
-				index += width;
+				index += stride;
 			}
 		}
 	}

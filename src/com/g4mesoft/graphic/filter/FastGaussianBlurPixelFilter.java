@@ -8,8 +8,17 @@ public class FastGaussianBlurPixelFilter implements IPixelFilter {
 	
 	private final int[] boxSizes;
 	
+	private final int[] bufferR;
+	private final int[] bufferG;
+	private final int[] bufferB;
+	
 	public FastGaussianBlurPixelFilter(float radius) {
 		boxSizes = calculateSizesForGaussian(radius, DEFAULT_NUM_BOXES);
+	
+		int bufferLength = MathUtils.max(boxSizes);
+		bufferR = new int[bufferLength];
+		bufferG = new int[bufferLength];
+		bufferB = new int[bufferLength];
 	}
 	
 	private static int[] calculateSizesForGaussian(float radius, int n) {
@@ -31,22 +40,24 @@ public class FastGaussianBlurPixelFilter implements IPixelFilter {
 	}
 	
 	@Override
-	public void filterPixels(int[] pixels, int width, int height) {
+	public void filterPixels(int[] pixels, int offset, int width, int height, int stride) {
 		for (int i = 0; i < DEFAULT_NUM_BOXES; i++)
-			boxBlur(pixels, width, height, boxSizes[i] >>> 1);
+			boxBlur(pixels, offset, width, height, stride, boxSizes[i] >>> 1);
 	}
 	
-	private void boxBlur(int[] pixels, int width, int height, int rad) {
-		horizontalBoxBlur(pixels, width, height, rad);
-		verticalBoxBlur(pixels, width, height, rad);
+	private void boxBlur(int[] pixels, int offset, int width, int height, int stride, int rad) {
+		horizontalBoxBlur(pixels, offset, width, height, stride, rad);
+		verticalBoxBlur(pixels, offset, width, height, stride, rad);
 	}
 	
-	private void horizontalBoxBlur(int[] pixels, int width, int height, int rad) {
-		float c = 1.0f / (rad + rad + 1);
+	private void horizontalBoxBlur(int[] pixels, int offset, int width, int height, int stride, int rad) {
+		int bufferLength = rad + rad + 1;
+
+		float c = 1.0f / bufferLength;
 		
 		int rgb;
 		
-		int index = 0;
+		int index = offset;
 		for (int y = 0; y < height; y++) {
 			int rightIndex = index + rad;
 			
@@ -64,9 +75,11 @@ public class FastGaussianBlurPixelFilter implements IPixelFilter {
 			int ag = (rad + 2) * fg;
 			int ab = (rad + 2) * fb;
 			
-			PixelNode bufferStart = new PixelNode(fr, fg, fb);
-			PixelNode bufferEnd = bufferStart;
-			PixelNode tmpNode;
+			int bufferPos = 0;
+			bufferR[bufferPos] = fr;
+			bufferG[bufferPos] = fg;
+			bufferB[bufferPos] = fb;
+			bufferPos++;
 			
 			int x;
 			for (x = 1; x < rad && x < width; x++) {
@@ -79,10 +92,11 @@ public class FastGaussianBlurPixelFilter implements IPixelFilter {
 				ar += r;
 				ag += g;
 				ab += b;
-				
-				tmpNode = bufferEnd;
-				bufferEnd = new PixelNode(r, g, b);
-				tmpNode.next = bufferEnd;
+			
+				bufferR[bufferPos] = r;
+				bufferG[bufferPos] = g;
+				bufferB[bufferPos] = b;
+				bufferPos++;
 			}
 			
 			// Perform blur on first part of row 
@@ -95,9 +109,10 @@ public class FastGaussianBlurPixelFilter implements IPixelFilter {
 				int g = (rgb >>>  8) & 0xFF;
 				int b = (rgb >>>  0) & 0xFF;
 				
-				tmpNode = bufferEnd;
-				bufferEnd = new PixelNode(r, g, b);
-				tmpNode.next = bufferEnd;
+				bufferR[bufferPos] = r;
+				bufferG[bufferPos] = g;
+				bufferB[bufferPos] = b;
+				bufferPos++;
 				
 				ar += r - fr;
 				ag += g - fg;
@@ -117,17 +132,17 @@ public class FastGaussianBlurPixelFilter implements IPixelFilter {
 				int g = (rgb >>>  8) & 0xFF;
 				int b = (rgb >>>  0) & 0xFF;
 
-				ar += r - bufferStart.r;
-				ag += g - bufferStart.g;
-				ab += b - bufferStart.b;
-				
-				bufferStart.r = r;
-				bufferStart.g = g;
-				bufferStart.b = b;
-				
-				bufferEnd.next = bufferStart;
-				bufferEnd = bufferStart;
-				bufferStart = bufferStart.next;
+				if (bufferPos >= bufferLength)
+					bufferPos = 0;
+
+				ar += r - bufferR[bufferPos];
+				ag += g - bufferG[bufferPos];
+				ab += b - bufferB[bufferPos];
+
+				bufferR[bufferPos] = r;
+				bufferG[bufferPos] = g;
+				bufferB[bufferPos] = b;
+				bufferPos++;
 				
 				r = (int)(ar * c);
 				g = (int)(ag * c);
@@ -137,12 +152,15 @@ public class FastGaussianBlurPixelFilter implements IPixelFilter {
 			}
 			
 			for ( ; x < width; x++) {
-				ar += lr - bufferStart.r;
-				ag += lg - bufferStart.g;
-				ab += lb - bufferStart.b;
+				if (bufferPos >= bufferLength)
+					bufferPos = 0;
 				
+				ar += lr - bufferR[bufferPos];
+				ag += lg - bufferG[bufferPos];
+				ab += lb - bufferB[bufferPos];
+
 				// Shift buffer
-				bufferStart = bufferStart.next;
+				bufferPos++;
 				
 				int r = (int)(ar * c);
 				int g = (int)(ag * c);
@@ -150,25 +168,29 @@ public class FastGaussianBlurPixelFilter implements IPixelFilter {
 				
 				pixels[index++] = (r << 16) | (g << 8) | b;
 			}
+			
+			index += stride - width;
 		}
 	}
 
-	private void verticalBoxBlur(int[] pixels, int width, int height, int rad) {
-		float c = 1.0f / (rad + rad + 1);
+	private void verticalBoxBlur(int[] pixels, int offset, int width, int height, int stride, int rad) {
+		int bufferLength = rad + rad + 1;
+		
+		float c = 1.0f / bufferLength;
 		
 		int rgb;
 		
 		for (int x = 0; x < width; x++) {
-			int index = x;
+			int index = offset + x;
 			
-			int bottomIndex = index + rad * width;
+			int bottomIndex = index + rad * stride;
 			
 			rgb = pixels[index];
 			int fr = (rgb >>> 16) & 0xFF;
 			int fg = (rgb >>>  8) & 0xFF;
 			int fb = (rgb >>>  0) & 0xFF;
 
-			rgb = pixels[index + (height - 1) * width];
+			rgb = pixels[index + (height - 1) * stride];
 			int lr = (rgb >>> 16) & 0xFF;
 			int lg = (rgb >>>  8) & 0xFF;
 			int lb = (rgb >>>  0) & 0xFF;
@@ -177,13 +199,15 @@ public class FastGaussianBlurPixelFilter implements IPixelFilter {
 			int ag = (rad + 2) * fg;
 			int ab = (rad + 2) * fb;
 			
-			PixelNode bufferStart = new PixelNode(fr, fg, fb);
-			PixelNode bufferEnd = bufferStart;
-			PixelNode tmpNode;
+			int bufferPos = 0;
+			bufferR[bufferPos] = fr;
+			bufferG[bufferPos] = fg;
+			bufferB[bufferPos] = fb;
+			bufferPos++;
 			
 			int y;
 			for (y = 1; y < rad && y < height; y++) {
-				rgb = pixels[index + y * width];
+				rgb = pixels[index + y * stride];
 				
 				int r = (rgb >>> 16) & 0xFF;
 				int g = (rgb >>>  8) & 0xFF;
@@ -193,9 +217,10 @@ public class FastGaussianBlurPixelFilter implements IPixelFilter {
 				ag += g;
 				ab += b;
 				
-				tmpNode = bufferEnd;
-				bufferEnd = new PixelNode(r, g, b);
-				tmpNode.next = bufferEnd;
+				bufferR[bufferPos] = r;
+				bufferG[bufferPos] = g;
+				bufferB[bufferPos] = b;
+				bufferPos++;
 			}
 			
 			// Perform blur on first part of column 
@@ -208,9 +233,10 @@ public class FastGaussianBlurPixelFilter implements IPixelFilter {
 				int g = (rgb >>>  8) & 0xFF;
 				int b = (rgb >>>  0) & 0xFF;
 				
-				tmpNode = bufferEnd;
-				bufferEnd = new PixelNode(r, g, b);
-				tmpNode.next = bufferEnd;
+				bufferR[bufferPos] = r;
+				bufferG[bufferPos] = g;
+				bufferB[bufferPos] = b;
+				bufferPos++;
 				
 				ar += r - fr;
 				ag += g - fg;
@@ -222,8 +248,8 @@ public class FastGaussianBlurPixelFilter implements IPixelFilter {
 				
 				pixels[index] = (r << 16) | (g << 8) | b;
 
-				index += width;
-				bottomIndex += width;
+				index += stride;
+				bottomIndex += stride;
 			}
 			
 			// Perform center blur (where entire box is
@@ -235,17 +261,17 @@ public class FastGaussianBlurPixelFilter implements IPixelFilter {
 				int g = (rgb >>>  8) & 0xFF;
 				int b = (rgb >>>  0) & 0xFF;
 
-				ar += r - bufferStart.r;
-				ag += g - bufferStart.g;
-				ab += b - bufferStart.b;
-				
-				bufferStart.r = r;
-				bufferStart.g = g;
-				bufferStart.b = b;
-				
-				bufferEnd.next = bufferStart;
-				bufferEnd = bufferStart;
-				bufferStart = bufferStart.next;
+				if (bufferPos >= bufferLength)
+					bufferPos = 0;
+
+				ar += r - bufferR[bufferPos];
+				ag += g - bufferG[bufferPos];
+				ab += b - bufferB[bufferPos];
+
+				bufferR[bufferPos] = r;
+				bufferG[bufferPos] = g;
+				bufferB[bufferPos] = b;
+				bufferPos++;
 				
 				r = (int)(ar * c);
 				g = (int)(ag * c);
@@ -253,19 +279,22 @@ public class FastGaussianBlurPixelFilter implements IPixelFilter {
 				
 				pixels[index] = (r << 16) | (g << 8) | b;
 				
-				index += width;
-				bottomIndex += width;
+				index += stride;
+				bottomIndex += stride;
 			}
 			
 			// Perform bottom blur, where the box is 
 			// outside of the bottom part of the image.
 			for ( ; y < height; y++) {
-				ar += lr - bufferStart.r;
-				ag += lg - bufferStart.g;
-				ab += lb - bufferStart.b;
+				if (bufferPos >= bufferLength)
+					bufferPos = 0;
 				
+				ar += lr - bufferR[bufferPos];
+				ag += lg - bufferG[bufferPos];
+				ab += lb - bufferB[bufferPos];
+
 				// Shift buffer
-				bufferStart = bufferStart.next;
+				bufferPos++;
 				
 				int r = (int)(ar * c);
 				int g = (int)(ag * c);
@@ -273,24 +302,8 @@ public class FastGaussianBlurPixelFilter implements IPixelFilter {
 				
 				pixels[index] = (r << 16) | (g << 8) | b;
 				
-				index += width;
+				index += stride;
 			}
-		}
-	}
-	
-	
-	private class PixelNode {
-		
-		private int r;
-		private int g;
-		private int b;
-		
-		private PixelNode next;
-		
-		public PixelNode(int r, int g, int b) {
-			this.r = r;
-			this.g = g;
-			this.b = b;
 		}
 	}
 }
