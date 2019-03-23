@@ -288,6 +288,16 @@ public class Mat3f {
 		                cr.x, cr.y, cr.z);
 	}
 
+	public Mat3f transpose() {
+		return transpose(this);
+	}
+
+	public Mat3f transpose(Mat3f dest) {
+		return dest.set(m00, m01, m02,
+		                m10, m11, m12,
+		                m20, m21, m22);
+	}
+	
 	public Mat3f copy() {
 		return new Mat3f(m00, m10, m20,
 		                 m01, m11, m21,

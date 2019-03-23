@@ -504,6 +504,17 @@ public class Mat4f {
 		              qa.z * ra + qb.z * rb);
 	}
 	
+	public Mat4f transpose() {
+		return transpose(this);
+	}
+
+	public Mat4f transpose(Mat4f dest) {
+		return dest.set(m00, m01, m02, m03,
+		                m10, m11, m12, m13,
+		                m20, m21, m22, m23,
+		                m30, m31, m32, m33);
+	}
+
 	public Mat4f copy() {
 		return new Mat4f(m00, m10, m20, m30,
 		                 m01, m11, m21, m31,

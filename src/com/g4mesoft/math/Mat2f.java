@@ -132,6 +132,15 @@ public class Mat2f {
 		                -m01 * detInv,  m00 * detInv);
 	}
 
+	public Mat2f transpose() {
+		return transpose(this);
+	}
+
+	public Mat2f transpose(Mat2f dest) {
+		return dest.set(m00, m01,
+		                m10, m11);
+	}
+	
 	public Mat2f copy() {
 		return new Mat2f(m00, m10,
 		                 m01, m11);
