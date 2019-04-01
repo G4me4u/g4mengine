@@ -85,16 +85,26 @@ public class AStarSearch {
 			if (isGoalNode(current))
 				break;
 			
-			visitNextNode(filter, current, CardinalDirection.NORTH);
-			visitNextNode(filter, current, CardinalDirection.EAST );
-			visitNextNode(filter, current, CardinalDirection.SOUTH);
-			visitNextNode(filter, current, CardinalDirection.WEST );
+			CardinalDirection dir = current.getDirection();
+			if (dir == null)
+				dir = CardinalDirection.NORTH;
+			
+			// FORWARD, RIGHT, LEFT, BACKWARD
+			visitNextNode(filter, current, dir);
+			visitNextNode(filter, current, dir.rotCW90());
+			visitNextNode(filter, current, dir.rotCCW90());
+			visitNextNode(filter, current, dir.getOpposite());
 			
 			if (allowDiagonals) {
-				visitNextNode(filter, current, CardinalDirection.NORTH_EAST);
-				visitNextNode(filter, current, CardinalDirection.SOUTH_EAST);
-				visitNextNode(filter, current, CardinalDirection.SOUTH_WEST);
-				visitNextNode(filter, current, CardinalDirection.NORTH_WEST);
+				dir = dir.rotCW45();
+
+				// RIGHT FORWARD, LEFT FORWARD
+				visitNextNode(filter, current, dir);
+				visitNextNode(filter, current, dir.rotCCW90());
+				
+				// RIGHT BACKWARD, LEFT BACKWARD
+				visitNextNode(filter, current, dir.rotCW90());
+				visitNextNode(filter, current, dir.getOpposite());
 			}
 			
 			BinaryTree.Entry<Float, Node> min = openList.getMin();
@@ -123,24 +133,18 @@ public class AStarSearch {
 		return true;
 	}
 
-	public static interface IPositionFilter {
-		
-		public boolean isValidPos(Vec2f pos, CardinalDirection dir, int step);
-		
-	}
-	
 	public class Node {
 
 		private final Node parent;
-		public final Vec2f pos;
-		public final CardinalDirection dir;
+		private final Vec2f pos;
+		private final CardinalDirection dir;
 		
 		private final long index;
 		
 		private final float movecost;
 		private final int step;
 		
-		public Node(Vec2f pos) {
+		private Node(Vec2f pos) {
 			parent = null;
 			this.pos = pos;
 			dir = null;
@@ -150,7 +154,7 @@ public class AStarSearch {
 			step = 0;
 		}
 		
-		public Node(Node parent, Vec2f pos, CardinalDirection dir) {
+		private Node(Node parent, Vec2f pos, CardinalDirection dir) {
 			this.parent = parent;
 			this.pos = pos;
 			this.dir = dir;
@@ -158,6 +162,14 @@ public class AStarSearch {
 			index = offsetIndex(parent.index, dir);
 			movecost = parent.movecost + (dir.isDiagonal() ? MOVE_COST_DIAG : MOVE_COST);
 			step = parent.step + 1;
+		}
+		
+		public Vec2f getPosition() {
+			return pos;
+		}
+
+		public CardinalDirection getDirection() {
+			return dir;
 		}
 	}
 }
