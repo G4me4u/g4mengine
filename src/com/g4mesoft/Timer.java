@@ -6,9 +6,10 @@ public class Timer {
 
 	private static final long MS_PER_SEC = 1000L;
 	private static final float MS_TO_SEC = 1.0f / (float)MS_PER_SEC;
+
+	private final Application application;
 	
 	private float tps;
-	private boolean debug;
 
 	private long last;
 	private long dMs; 
@@ -19,9 +20,9 @@ public class Timer {
 	private TickCounter tpsCounter;
 	private TickCounter fpsCounter;
 	
-	public Timer(float tps, boolean debug) {
+	public Timer(Application application, float tps) {
+		this.application = application;
 		this.tps = tps;
-		this.debug = debug;
 		
 		tpsCounter = new TickCounter();
 		fpsCounter = new TickCounter();
@@ -39,8 +40,9 @@ public class Timer {
 		last = now;
 		dt += (float)deltaMs * MS_TO_SEC * tps;
 		missingTicks = (int)dt;
+		dt -= missingTicks;
 
-		if (debug) {
+		if (application.isDebug()) {
 			dMs += deltaMs;
 			if (dMs >= MS_PER_SEC) {
 				if (dMs >= MS_PER_SEC * 2) {
@@ -51,7 +53,11 @@ public class Timer {
 				
 				tpsCounter.cycle();
 				fpsCounter.cycle();
-				System.out.println(String.format("%d tps, %d fps", tpsCounter.ticksLastCycle, fpsCounter.ticksLastCycle));
+				
+				int ticks = tpsCounter.ticksLastCycle;
+				int frames = fpsCounter.ticksLastCycle;
+				
+				System.out.println(ticks + " tps, " + frames + " fps");
 			}
 		}
 	}
@@ -65,7 +71,6 @@ public class Timer {
 	}
 
 	public void tickPassed() {
-		dt--;
 		tpsCounter.tickPassed();
 	}
 	
@@ -95,8 +100,8 @@ public class Timer {
 		this.tps = tps;
 	}
 	
-	public void setDebug(boolean state) {
-		debug = state;
+	public float getTps() {
+		return tps;
 	}
 	
 	private static class TickCounter {

@@ -1,10 +1,14 @@
 package com.g4mesoft;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 
 import com.g4mesoft.composition.Composition;
 import com.g4mesoft.graphic.Display;
+import com.g4mesoft.graphic.DisplayConfig;
 import com.g4mesoft.graphic.IExitable;
 import com.g4mesoft.graphic.IRenderer2D;
 import com.g4mesoft.input.key.KeyInput;
@@ -18,6 +22,8 @@ public abstract class Application implements IExitable {
 	private static final boolean DEFAULT_DEBUG = true;
 	private static final float DEFAULT_TPS = 20.0f;
 	private static final float DEFAULT_MIN_FPS = 60.0f;
+	
+	private static final float MAX_SECONDS_BEHIND = 5.0f;
 
 	private static final String DISPLAY_CONFIG_LOCATION = "/config/display.txt";
 	
@@ -29,6 +35,7 @@ public abstract class Application implements IExitable {
 	private Timer timer;
 	private float minimumFps;
 	
+	private boolean debug;
 	private long ticksPassed;
 	
 	/*
@@ -49,10 +56,26 @@ public abstract class Application implements IExitable {
 	private KeyInputListener keyListener;
 	private MouseInputListener mouseListener;
 
-	private final String displayConfig;
+	private final DisplayConfig displayConfig;
 	
-	protected Application(String displayConfig) {
+	protected Application(DisplayConfig displayConfig) {
 		this.displayConfig = displayConfig;
+	}
+	
+	protected Application(String displayConfigFile) {
+		URL configURL = Application.class.getResource(displayConfigFile);
+
+		DisplayConfig config = null;
+		if (configURL != null) {
+			try (InputStream is = configURL.openStream()){
+				config = Display.readDisplayConfig(is);
+			} catch (IOException e) {
+				Application.errorOccurred(e);
+			}
+		}
+		
+		displayConfig = (config == null) ? 
+				DisplayConfig.DEFAULT_DISPLAY_CONFIG : config;
 	}
 	
 	protected Application() {
@@ -147,13 +170,14 @@ public abstract class Application implements IExitable {
 	 * executing properly.</i>
 	 */
 	protected void init() {
-		display = new Display(Application.class.getResourceAsStream(displayConfig));
+		display = new Display(displayConfig);
 
 		composition = null;
 		
-		timer = new Timer(DEFAULT_TPS, DEFAULT_DEBUG);
+		timer = new Timer(this, DEFAULT_TPS);
 		minimumFps = DEFAULT_MIN_FPS;
 		
+		debug = DEFAULT_DEBUG;
 		ticksPassed = 0;
 	
 		oldRendererWidth = 0;
@@ -189,18 +213,28 @@ public abstract class Application implements IExitable {
 			}
 			
 			timer.update();
+			
 			int missingTicks = timer.getMissingTicks();
-			for (int i = 0; i < missingTicks; i++) {
-				update();
-				timer.tickPassed();
+			if (missingTicks > timer.getTps() * MAX_SECONDS_BEHIND) {
+				if (isDebug()) {
+					System.out.println("Application is running slow. " + 
+					                   "Skipping " + missingTicks + " ticks");
+				}
+			} else {
+				while (missingTicks != 0) {
+					update();
+					timer.tickPassed();
+				
+					missingTicks--;
+				}
+	
+				if (display.isVisible()) {
+					draw(timer.getDeltaTick());
+					timer.framePassed();
+				}
+	
+				timer.sleep(minimumFps);
 			}
-
-			if (display.isVisible()) {
-				draw(timer.getDeltaTick());
-				timer.framePassed();
-			}
-
-			timer.sleep(minimumFps);
 		}
 	}
 
@@ -441,6 +475,26 @@ public abstract class Application implements IExitable {
 	}
 	
 	/**
+	 * @return True, if we're currently debugging the application, and false
+	 *         otherwise. If one wishes to disable debugging, they should call
+	 *         {@link #setDebug(boolean)}.
+	 * 
+	 * @see #setDebug(boolean)
+	 */
+	public boolean isDebug() {
+		return debug;
+	}
+	
+	/**
+	 * @return The desired ticks per seconds that was set using the setter
+	 *         function {@link #setTps(float)}, or {@link #DEFAULT_TPS} if the
+	 *         desired ticks per second was not changed by the application.
+	 */
+	public float getTps() {
+		return timer.getTps();
+	}
+	
+	/**
 	 * @return The amount of ticks passed since the application was initialized.
 	 */
 	public long getTicksPassed() {
@@ -514,7 +568,7 @@ public abstract class Application implements IExitable {
 	 * @see com.g4mesoft.Timer
 	 */
 	public void setDebug(boolean debug) {
-		timer.setDebug(debug);
+		this.debug = debug;
 	}
 	
 	/**

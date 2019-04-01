@@ -64,10 +64,6 @@ public class Display implements IViewport {
 		this(DisplayConfig.DEFAULT_DISPLAY_CONFIG); 
 	}
 	
-	public Display(InputStream configInputStream) {
-		this(readDisplayConfig(configInputStream));
-	}
-	
 	public Display(DisplayConfig config) {
 		if (config == null)
 			throw new IllegalArgumentException("Display config must not be null!");
@@ -77,19 +73,13 @@ public class Display implements IViewport {
 		initDisplay();
 	}
 	
-	private static DisplayConfig readDisplayConfig(InputStream is) {
-		DisplayConfig config = DisplayConfig.DEFAULT_DISPLAY_CONFIG;
+	public static DisplayConfig readDisplayConfig(InputStream is) throws IOException {
 		if (is == null)
-			return config;
+			return DisplayConfig.DEFAULT_DISPLAY_CONFIG;
 		
-		try {
-			Reader reader = new InputStreamReader(is, StandardCharsets.UTF_8);
-			config = DisplayConfig.loadConfigFile(reader);
-		} catch (IOException e) {
-			Application.errorOccurred(e);
+		try (Reader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
+			return DisplayConfig.loadConfigFile(reader);
 		}
-		
-		return config;
 	}
 	
 	private void initDisplay() {
