@@ -62,19 +62,17 @@ public abstract class Application implements IExitable {
 // Abstract functions //
 
 	/**
-	 * When this function is overridden, it should be in
-	 * charge of ticking/updating necessary world objects,
-	 * inputs or doing other necessary calculations. 
+	 * When this function is overridden, it should be in charge of ticking / 
+	 * updating necessary world objects, inputs or doing other necessary 
+	 * calculations. 
 	 * <br>
-	 * This function should not be used for drawing, as there
-	 * is another method, {@code render(IRenderer2D, float)}
-	 * used for handling that. 
+	 * This function should not be used for drawing, as there is another method,
+	 * {@code render(IRenderer2D, float)} used for handling that. 
 	 * <br><br>
-	 * <b>NOTE:</b> this function will always be called with
-	 * approximately the same time-interval (if the system isn't 
-	 * overloaded). If you want to change the interval between 
-	 * each tick, call {@code setTps(float)} with the desired 
-	 * amount of ticks per second.
+	 * <b>NOTE:</b> this function will always be called with approximately the 
+	 * same time-interval (if the system isn't overloaded). If you want to 
+	 * change the interval between each tick, call {@code setTps(float)} with
+	 * the desired amount of ticks per second.
 	 * 
 	 * @see #setTps(float)
 	 * @see #render(IRenderer2D, float)
@@ -82,28 +80,24 @@ public abstract class Application implements IExitable {
 	protected abstract void tick();
 
 	/**
-	 * When this function is overridden, it should be in
-	 * charge of rendering to the display through the
-	 * Renderer2D object.<br>
-	 * The dt time constant can be used for 
-	 * smoother drawing of moving objects. 
+	 * When this function is overridden, it should be in charge of rendering to
+	 * the display through the Renderer2D object.
+	 * <br>
+	 * The dt time constant can be used for smoother drawing of moving objects. 
 	 * <br><br>
 	 * <b>Example <i>(no casting handled)</i>:</b>
 	 * <pre>
-	 * int xPixel = prevX + (x - prevX) * dt;
-	 * int yPixel = prevY + (y - prevY) * dt;
+	 *   int xPixel = prevX + (x - prevX) * dt;
+	 *   int yPixel = prevY + (y - prevY) * dt;
 	 * </pre>
-	 * Where {@code prevX} and {@code prevY} represent the
-	 * coordinates of an object or a point (in the previous 
-	 * tick) to be drawn with a smooth motion onto the 
-	 * display. The {@code x} and {@code y} coordinates are
-	 * the current location of the object or point.
+	 * Where {@code prevX} and {@code prevY} represent the coordinates of an
+	 * object or a point (in the previous tick) to be drawn with a smooth motion
+	 * onto the display. The {@code x} and {@code y} coordinates are the current
+	 * location of the object or point.
 	 * 
-	 * @param renderer	-	A renderer used for drawing to
-	 * 						the display.
-	 * @param dt		-	A constant representing how much 
-	 * 						time has passed since previous 
-	 * 						tick (0.0 - 1.0).
+	 * @param renderer	-	A renderer used for drawing to the display.
+	 * @param dt		-	A constant representing how much time has passed 
+	 *                      since previous tick (0.0 - 1.0).
 	 * 
 	 * @see #setMinimumFps(float)
 	 * @see #tick()
@@ -113,15 +107,14 @@ public abstract class Application implements IExitable {
 // Overridable functions //
 	
 	/**
-	 * This function should be overridden by sub-classes and
-	 * used for general startup calls. This function will be
-	 * called before {@code init()}.
+	 * This function should be overridden by sub-classes and used for general 
+	 * startup calls. This function will be called before {@code init()}.
 	 * <br><br>
-	 * <b>NOTE:</b><i> any sub-classes overriding this function should
-	 * call {@code super.start()} to make sure the application starts 
-	 * executing properly. Make sure to place that line of code at the
-	 * end of the sub-implementation of this function, as this function 
-	 * will cause the execution to pause until the game has stopped.</i>
+	 * <b>NOTE:</b><i> any sub-classes overriding this function should call 
+	 * {@code super.start()} to make sure the application starts executing 
+	 * properly. Make sure to place that line of code at the end of the sub-
+	 * implementation of this function, as this function will cause the 
+	 * execution to pause until the game has stopped.</i>
 	 * 
 	 * @deprecated Use {@link #start(String[], Class)} instead.
 	 */
@@ -141,14 +134,13 @@ public abstract class Application implements IExitable {
 	}
 	
 	/**
-	 * This function should be overridden by sub-classes and
-	 * used for general initialization. This implementation of
-	 * the function will intialize the main display, the timer
-	 * etc. If one wishes to enable or disable user input, this
-	 * can be achieved by invoking the methods {@link #enableKeyInput()}
-	 * or {@link #enableMouseInput()}. User input will be enabled
-	 * by default and can be disabled using {@link #disableKeyInput()}
-	 * or {@link #disableMouseInput()}.
+	 * This function should be overridden by sub-classes and used for general
+	 * initialization. This implementation of the function will initialize the
+	 * main display, the timer etc. If one wishes to enable or disable user
+	 * input, this can be achieved by invoking the respective methods such as
+	 * {@link #enableKeyInput()} or {@link #enableMouseInput()}. User input will
+	 * be enabled by default and is disabled using {@link #disableKeyInput()} or
+	 * {@link #disableMouseInput()}.
 	 * <br><br>
 	 * <b>NOTE:</b><i> any sub-classes overriding this function should
 	 * call {@code super.init()} to make sure the application starts 
@@ -182,9 +174,8 @@ public abstract class Application implements IExitable {
 // Runtime functions //
 	
 	/**
-	 * Starts the main game loop. This function will use a timer
-	 * for timing the ticks, and sleep x amount of time depending
-	 * on the minimumFps field.
+	 * Starts the main game loop. This function will use a timer for timing the
+	 * ticks, and sleep x amount of time depending on the minimumFps field.
 	 * 
 	 * @see com.g4mesoft.Timer Timer
 	 */
@@ -214,10 +205,9 @@ public abstract class Application implements IExitable {
 	}
 
 	/**
-	 * Sets up the update before calling the overridden
-	 * tick function. This function is in charge of 
-	 * updating important features such as the root ui
-	 * composition. 
+	 * Sets up the update before calling the overridden tick function. This
+	 * function is in charge of updating important features such as the root UI
+	 * composition.
 	 * 
 	 * @see #tick()
 	 * @see #render(IRenderer2D, float)
@@ -239,13 +229,11 @@ public abstract class Application implements IExitable {
 	}
 	
 	/**
-	 * Sets up the drawing before calling the overridden
-	 * render function. This will start and stop rendering
-	 * automatically and check for changes in display and
-	 * renderer viewport sizes. If a viewport has changed
-	 * size, the functions {@link #displayResized(int, int)}
-	 * and {@link #rendererResized(int, int)} will be
-	 * invoked accordingly.
+	 * Sets up the drawing before calling the overridden render function. This
+	 * will start and stop rendering automatically and check for changes in
+	 * display and renderer viewport sizes. If a viewport has changed size, the
+	 * functions {@link #displayResized(int, int)} and 
+	 * {@link #rendererResized(int, int)} will be invoked accordingly.
 	 * 
 	 * @param dt	-	A constant representing how much 
 	 * 					time has passed since previous tick.
@@ -300,13 +288,13 @@ public abstract class Application implements IExitable {
 	
 	/**
 	 * Invoked during rendering, if the viewport size of the current 
-	 * {@link com.g4mesoft.graphic.IRenderingContext2D IRenderingContext2D}
-	 * has changed within the last frame.
+	 * {@link com.g4mesoft.graphic.IRenderingContext2D IRenderingContext2D} has
+	 * changed within the last frame.
 	 * <br><br>
-	 * <b>NOTE:</b><i> any sub-classes overriding this function should
-	 * call {@code super.rendererResized(int, int)} to make sure the 
-	 * application handles context resizing correctly. If one wants to
-	 * change the renderer of the display, override and use the method
+	 * <b>NOTE:</b><i> any sub-classes overriding this function should call 
+	 * {@code super.rendererResized(int, int)} to make sure the application 
+	 * handles context resizing correctly. If one wants to change the renderer
+	 * of the display, override and use the method
 	 * {@link #displayResized(int, int)} instead.</i>
 	 * 
 	 * @param newWidth - The new width of the context viewport
@@ -323,13 +311,13 @@ public abstract class Application implements IExitable {
 	}
 
 	/**
-	 * Invoked during rendering, if the display viewport size has been
-	 * changed. Such event could be caused by the user resizing the
-	 * frame or when the display size was changed by the application.
+	 * Invoked during rendering, if the display viewport size has been changed.
+	 * Such event could be caused by the user resizing the frame or when the
+	 * display size was changed by the application.
 	 * 
-	 * <b>NOTE:</b><i> This function is called before rendering has been
-	 * started, which makes it possible to change the renderer of the
-	 * current display directly from this method.</i>
+	 * <b>NOTE:</b><i> This function is called before rendering has been started
+	 * which makes it possible to change the renderer of the current display
+	 * directly from this method.</i>
 	 * 
 	 * @param newWidth - The new width of the display.
 	 * @param newHeight - The new height of the display.
@@ -340,27 +328,27 @@ public abstract class Application implements IExitable {
 	}
 	
 	/**
-	 * Enables the KeyInputListener to listen for key events on the 
-	 * current display. Calling this function will replace the manual 
-	 * work having to update the keys in the static class called
+	 * Enables the KeyInputListener to listen for key events on the current
+	 * display. Calling this function will replace the manual work having to 
+	 * update the keys in the static class called
 	 * {@link com.g4mesoft.input.key.KeyInputListener KeyInputListener}.
 	 * The following code snippet could replace a call to this function:
 	 * <pre>
-	 * // Somewhere during initialization:
-	 * KeyInputListener.getInstance().registerDisplay(getDisplay());
-	 * ...
-	 * // After every tick
-	 * KeyInputListener.getInstance().updateKeys();
+	 *   // Somewhere during initialization:
+	 *   KeyInputListener.getInstance().registerDisplay(getDisplay());
+	 *   ...
+	 *   // After every tick
+	 *   KeyInputListener.getInstance().updateKeys();
 	 * </pre>
-	 * The above code snippet can seem confusing at first, but is actually
-	 * quite simple. Firstly, the KeyInputListener is registered to the
-	 * display owned by this application. Since the KeyInputListener
-	 * supports various key-input features (such as key-clicked events)
-	 * the keys have to be updated after every tick has passed. This small 
-	 * detail is very important for the functionality of the key-listener. 
+	 * The above code snippet can seem confusing at first, but is actually quite
+	 * simple. Firstly, the KeyInputListener is registered to the display owned
+	 * by this application. Since the KeyInputListener supports various key-
+	 * input features (such as key-clicked events) the keys have to be updated
+	 * after every tick has passed. This small detail is very important for the
+	 * functionality of the key-listener. 
 	 * <br><br>
-	 * <b>NOTE: </b><i>To simplify programs, it is advised that this 
-	 * function is to be used instead of the above code snippet.<i>
+	 * <b>NOTE: </b><i>To simplify programs, it is advised that this function is
+	 * to be used instead of the above code snippet.<i>
 	 * 
 	 * @see #disableKeyInput()
 	 * @see com.g4mesoft.input.key.KeyInputListener
@@ -371,10 +359,10 @@ public abstract class Application implements IExitable {
 	}
 	
 	/**
-	 * Disables the {@code KeyInputListener}. If the listener was not 
-	 * enabled prior to calling this function, no action will occur. 
-	 * If one wishes to re-enable to key-listener after disabling it, 
-	 * it can be done by using the {@link #enableKeyInput()} function.
+	 * Disables the {@code KeyInputListener}. If the listener was not enabled 
+	 * prior to calling this function, no action will occur. If one wishes to
+	 * re-enable to key-listener after disabling it, it can be done by using the
+	 * {@link #enableKeyInput()} function.
 	 * 
 	 * @see #enableKeyInput()
 	 */
@@ -387,12 +375,12 @@ public abstract class Application implements IExitable {
 
 	/**
 	 * Enables the {@link com.g4mesoft.input.mouse.MouseInputListener
-	 * MouseInputListener} by registering it to the display owned by
-	 * this application. Enabling the mouse input listener using this
-	 * function will replace the manual work of having to call the
-	 * {@link MouseInputListener#updateMouseButtons()} function after 
-	 * every update in the {@link #tick()} method. For the sake of 
-	 * simplicity it is adviced to use this function instead of calling 
+	 * MouseInputListener} by registering it to the display owned by this
+	 * application. Enabling the mouse input listener using this function will
+	 * replace the manual work of having to call the
+	 * {@link MouseInputListener#updateMouseButtons()} function after every
+	 * update in the {@link #tick()} method. For the sake of simplicity it is
+	 * advised to use this function instead of calling 
 	 * {@code MouseInputListener.registerDisplay(getDisplay())} manually.
 	 * 
 	 * @see #disableMouseInput()
@@ -403,10 +391,10 @@ public abstract class Application implements IExitable {
 	}
 	
 	/**
-	 * Disables the {@code MouseInputListener}. If the listener was not
-	 * enabled prior to calling this function, no action will occur.
-	 * If one wishes to re-enable the mouse-listener after disabling it,
-	 * it can be achieved by using the {@link #enableMouseInput()} function.
+	 * Disables the {@code MouseInputListener}. If the listener was not enabled
+	 * prior to calling this function, no action will occur. If one wishes to
+	 * re-enable the mouse-listener after disabling it, it can be achieved by
+	 * using the {@link #enableMouseInput()} function.
 	 * 
 	 * @see #enableMouseInput()
 	 */
@@ -418,9 +406,9 @@ public abstract class Application implements IExitable {
 	}
 	
 	/**
-	 * Sets the grabbed state of the {@code MouseInputListener} to the
-	 * state specified in the parameters. If the listener was not
-	 * enabled prior to calling this function, no action will occur.
+	 * Sets the grabbed state of the {@code MouseInputListener} to the state
+	 * specified in the parameters. If the listener was not enabled prior to
+	 * calling this function, no action will occur.
 	 * 
 	 * @param grabbed - The new grabbed state of the {@code MouseInputListener}
 	 * 
@@ -435,114 +423,7 @@ public abstract class Application implements IExitable {
 			}
 		}
 	}
-	
-	/**
-	 * Adds the given key to the KeyInputListener. Note that for the key 
-	 * to react to user keyboard input the key-listener must be enabled. 
-	 * This should be achieved by calling {@link #enableKeyInput()}.
-	 * 
-	 * @param key - The key to be registered
-	 * 
-	 * @return True, if the key was added successfully, false otherwise
-	 * 
-	 * @see com.g4mesoft.input.key.KeyInputListener#addKey(KeyInput)
-	 * @see #enableKeyInput()
-	 */
-	public static boolean addKey(KeyInput key) {
-		return KeyInputListener.getInstance().addKey(key);
-	}
-	
-	/**
-	 * Removes the given key from the KeyInputListener. Note that if the
-	 * goal is to disable all keyboard input, it shouldn't be achieved by
-	 * removing all keys. Instead call {@link #disableKeyInput()}.
-	 * 
-	 * @param key - The key to be removed from the KeyInputListener
-	 * 
-	 * @return True, if the key was removed successfully, false otherwise
-	 * 
-	 * @see com.g4mesoft.input.key.KeyInputListener#removeKey(KeyInput)
-	 * @see #disableKeyInput()
-	 */
-	public static boolean removeKey(KeyInput key) {
-		return KeyInputListener.getInstance().removeKey(key);
-	}
-	
-	/**
-	 * Adds the given typed key to the KeyInputListener. Note that for the 
-	 * key to react to user keyboard input the key-listener must be enabled. 
-	 * This should be achieved by calling {@link #enableKeyInput()}.
-	 * 
-	 * @param typedKey - The typed key to be added
-	 * 
-	 * @return True, if the typed key was added successfully, false 
-	 *         otherwise.
-	 *         
-	 * @see com.g4mesoft.input.key.KeyInputListener#addTypedKey(KeyTypedInput)
-	 * @see #enableKeyInput()
-	 */
-	public static boolean addTypedKey(KeyTypedInput typedKey) {
-		return KeyInputListener.getInstance().addTypedKey(typedKey);
-	}
-	
-	/**
-	 * Removes the given key from the KeyInputListener. Note that if the
-	 * goal is to disable all keyboard input, it shouldn't be achieved by
-	 * removing all keys. Instead call {@link #disableKeyInput()}.
-	 * 
-	 * @param typedKey - The key to be removed from the KeyInputListener
-	 * 
-	 * @return True, if the key was removed successfully, false otherwise
-	 * 
-	 * @see com.g4mesoft.input.key.KeyInputListener#removeTypedKey(KeyTypedInput)
-	 * @see #disableKeyInput()
-	 */	
-	public static boolean removeTypedKey(KeyTypedInput typedKey) {
-		return KeyInputListener.getInstance().removeTypedKey(typedKey);
-	}
-	
-	/**
-	 * Adds the given mouse input to the MouseInputListener. Note that for
-	 * the mouse button to react to user mouse input, the MouseInputListener
-	 * must be enabled. This can b achieved by calling {@link #enableMouseInput()}
-	 * 
-	 * @param mouseButton - The mouse button to be added to the MouseInputListener
-	 * 
-	 * @return True, if the mouse button was added successfully, false otherwise.
-	 * 
-	 * @see com.g4mesoft.input.mouse.MouseInputListener#addMouseInput(MouseButtonInput)
-	 * @see #enableMouseInput()
-	 */
-	public static boolean addMouseInput(MouseButtonInput mouseButton) {
-		return MouseInputListener.getInstance().addMouseInput(mouseButton);
-	}
-	
-	/**
-	 * Removes the given mouse input from the MouseInputListener
-	 * 
-	 * @param mouseButton - The mouse button input to be removed
-	 * 
-	 * @return True, if the mouse button was removed successfully, false otherwise.
-	 * 
-	 * @see com.g4mesoft.input.mouse.MouseInputListener#removeMouseInput(MouseButtonInput)
-	 */
-	public static boolean removeMouseInput(MouseButtonInput mouseButton) {
-		return MouseInputListener.getInstance().removeMouseInput(mouseButton);
-	}
-	
-	/**
-	 * Called when an unexpected error occurs, that should be notified
-	 * to the programmer. This function is useful for debugging, and
-	 * should be overridden, if the error should be logged or handled
-	 * differently. The default implementation of this method will
-	 * simply print the stack trace of the provided error.
-	 * 
-	 * @param throwable - The error that occurred.
-	 */
-	public static void errorOccurred(Throwable throwable) {
-		throwable.printStackTrace();
-	}
-	
+
 // Getter functions //
 	
 	/**
@@ -560,8 +441,7 @@ public abstract class Application implements IExitable {
 	}
 	
 	/**
-	 * @return The amount of ticks passed since
-	 *         the application was initialized.
+	 * @return The amount of ticks passed since the application was initialized.
 	 */
 	public long getTicksPassed() {
 		return ticksPassed;
@@ -570,21 +450,19 @@ public abstract class Application implements IExitable {
 // Setter functions //
 	
 	/**
-	 * Sets the root composition of this application. The root
-	 * composition is the lowest ui element in the ui hierarchy.
-	 * It should be noted, that the root composition is drawn on
-	 * top of the application. In other words, the render function
-	 * {@link #render(IRenderer2D, float)} is invoked before the
-	 * {@link Composition#render(IRenderer2D, float)} function.
-	 * Setting the root composition to null will be the equivalent
-	 * to removing it from the application. By default, the root 
-	 * composition is null. The root composition can be changed at
-	 * any given time, and will be revalidated, when the function
-	 * {@link #draw(float)} is called. - if the renderer size changes
-	 * or the root composition was invalidated by another mean.
+	 * Sets the root composition of this application. The root composition is
+	 * the lowest ui element in the ui hierarchy. It should be noted, that the
+	 * root composition is drawn on top of the application. In other words, the
+	 * render function {@link #render(IRenderer2D, float)} is invoked before the
+	 * {@link Composition#render(IRenderer2D, float)} function. Setting the root
+	 * composition to null will be the equivalent to removing it from the
+	 * application. By default, the root composition is null. The root
+	 * composition can be changed at any given time, and will be revalidated,
+	 * when the function {@link #draw(float)} is called. - if the renderer size
+	 * changes or the root composition was invalidated by another mean.
 	 * 
-	 * @param composition - The new root composition or null, if 
-	 *                      the root composition should be removed.
+	 * @param composition - The new root composition or null, if the root
+	 *                      composition should be removed.
 	 * 
 	 * @see #getRootComposition()
 	 */
@@ -598,16 +476,13 @@ public abstract class Application implements IExitable {
 	}
 	
 	/**
-	 * Sets the tps in the timer used for ticking and
-	 * drawing. Changing this constant will instantly
-	 * change the speed, at which the game will run.
+	 * Sets the tps in the timer used for ticking and drawing. Changing this
+	 * constant will instantly change the speed, at which the game will run.
 	 * <br>
-	 * Calling this function will only directly change
-	 * the ticks per second. Whether or not this function
-	 * changes frames per second is unknown.
+	 * Calling this function will only directly change the ticks per second.
+	 * Whether or not this function changes frames per second is undefined.
 	 *  
-	 * @param tps	-	The new constant used for timing
-	 * 					the ticks per second.
+	 * @param tps	-	The new constant used for timing the ticks per second.
 	 * 
 	 * @see #tick()
 	 * @see #setMinimumFps(float)
@@ -617,11 +492,9 @@ public abstract class Application implements IExitable {
 	}
 	
 	/**
-	 * Sets the minimumFps in the timer used for ticking
-	 * and drawing. If this constant is lower than the tps,
-	 * the timer will not allow for such a low frame-rate,
-	 * and compensate, to make sure the ticks per second is
-	 * met.
+	 * Sets the minimumFps in the timer used for ticking and drawing. If this
+	 * constant is lower than the tps, the timer will not allow for such a low
+	 * frame-rate, and compensate, to make sure the ticks per second is met.
 	 * 
 	 * @param minimumFps	-	The minimum frames per second.
 	 * 
@@ -633,8 +506,8 @@ public abstract class Application implements IExitable {
 	}
 	
 	/**
-	 * Sets the debugging state of the timer. Setting debug
-	 * to false will disable tps and fps logging.
+	 * Sets the debugging state of the timer. Setting debug to false will
+	 * disable tps and fps logging.
 	 * 
 	 * @param debug 	-	The new debug state
 	 * 
@@ -645,9 +518,8 @@ public abstract class Application implements IExitable {
 	}
 	
 	/**
-	 * Sets running to false. The thread will terminate
-	 * if the application is running at the time of the
-	 * call to this method.
+	 * Sets running to false. The thread will terminate if the application is
+	 * running at the time of the call to this method.
 	 * 
 	 * @see #start()
 	 * @see #exit()
@@ -659,8 +531,8 @@ public abstract class Application implements IExitable {
 // Interface functions //
 	
 	/**
-	 * Sets running to false. This will stop the main game
-	 * loop and stop execution.
+	 * Sets running to false. This will stop the main game loop and stop
+	 * execution.
 	 */
 	@Override
 	public void exit() {
@@ -668,34 +540,140 @@ public abstract class Application implements IExitable {
 	}
 	
 // Static functions //
+
+	/**
+	 * Adds the given key to the KeyInputListener. Note that for the key to
+	 * react to user keyboard input the key-listener must be enabled. This
+	 * should be achieved by calling {@link #enableKeyInput()}.
+	 * 
+	 * @param key - The key to be registered
+	 * 
+	 * @return True, if the key was added successfully, false otherwise
+	 * 
+	 * @see com.g4mesoft.input.key.KeyInputListener#addKey(KeyInput)
+	 * @see #enableKeyInput()
+	 */
+	public static boolean addKey(KeyInput key) {
+		return KeyInputListener.getInstance().addKey(key);
+	}
 	
 	/**
-	 * Constructs and starts the given application class. This
-	 * method is the safest way to start an application, and will
-	 * be compatible with future all versions of the engine. 
-	 * Alternatively one could initialize and start the application 
-	 * by doing the following:
+	 * Removes the given key from the KeyInputListener. Note that if the goal is
+	 * to disable all keyboard input, it shouldn't be achieved by removing all
+	 * keys. Instead call {@link #disableKeyInput()}.
+	 * 
+	 * @param key - The key to be removed from the KeyInputListener
+	 * 
+	 * @return True, if the key was removed successfully, false otherwise
+	 * 
+	 * @see com.g4mesoft.input.key.KeyInputListener#removeKey(KeyInput)
+	 * @see #disableKeyInput()
+	 */
+	public static boolean removeKey(KeyInput key) {
+		return KeyInputListener.getInstance().removeKey(key);
+	}
+	
+	/**
+	 * Adds the given typed key to the KeyInputListener. Note that for the key
+	 * to react to user keyboard input the key-listener must be enabled. This
+	 * should be achieved by calling {@link #enableKeyInput()}.
+	 * 
+	 * @param typedKey - The typed key to be added
+	 * 
+	 * @return True, if the typed key was added successfully, false otherwise.
+	 *         
+	 * @see com.g4mesoft.input.key.KeyInputListener#addTypedKey(KeyTypedInput)
+	 * @see #enableKeyInput()
+	 */
+	public static boolean addTypedKey(KeyTypedInput typedKey) {
+		return KeyInputListener.getInstance().addTypedKey(typedKey);
+	}
+	
+	/**
+	 * Removes the given key from the KeyInputListener. Note that if the goal is
+	 * to disable all keyboard input, it shouldn't be achieved by removing all
+	 * keys. Instead call {@link #disableKeyInput()}.
+	 * 
+	 * @param typedKey - The key to be removed from the KeyInputListener
+	 * 
+	 * @return True, if the key was removed successfully, false otherwise
+	 * 
+	 * @see com.g4mesoft.input.key.KeyInputListener#removeTypedKey(KeyTypedInput)
+	 * @see #disableKeyInput()
+	 */	
+	public static boolean removeTypedKey(KeyTypedInput typedKey) {
+		return KeyInputListener.getInstance().removeTypedKey(typedKey);
+	}
+	
+	/**
+	 * Adds the given mouse input to the MouseInputListener. Note that for the
+	 * mouse button to react to user mouse input, the MouseInputListener must be
+	 * enabled. This can b achieved by calling {@link #enableMouseInput()}
+	 * 
+	 * @param mouseButton - The mouse button to be added to the
+	 *                      MouseInputListener
+	 * 
+	 * @return True, if the mouse button was added successfully, false otherwise
+	 * 
+	 * @see com.g4mesoft.input.mouse.MouseInputListener#addMouseInput(MouseButtonInput)
+	 * @see #enableMouseInput()
+	 */
+	public static boolean addMouseInput(MouseButtonInput mouseButton) {
+		return MouseInputListener.getInstance().addMouseInput(mouseButton);
+	}
+	
+	/**
+	 * Removes the given mouse input from the MouseInputListener
+	 * 
+	 * @param mouseButton - The mouse button input to be removed
+	 * 
+	 * @return True, if the mouse button was removed successfully, false
+	 *         otherwise.
+	 * 
+	 * @see com.g4mesoft.input.mouse.MouseInputListener#removeMouseInput(MouseButtonInput)
+	 */
+	public static boolean removeMouseInput(MouseButtonInput mouseButton) {
+		return MouseInputListener.getInstance().removeMouseInput(mouseButton);
+	}
+	
+	/**
+	 * Called when an unexpected error occurs, that should be notified to the
+	 * programmer. The default implementation of this method will simply print
+	 * the stack trace of the provided error. In later versions this function
+	 * should call a member function to make the error retrievable by the
+	 * application owner.
+	 * 
+	 * @param throwable - The error that occurred.
+	 */
+	public static void errorOccurred(Throwable throwable) {
+		throwable.printStackTrace();
+	}
+	
+	/**
+	 * Constructs and starts the given application class. This method is the
+	 * safest way to start an application, and will be compatible with all
+	 * future versions of the engine. Alternatively one could initialize and
+	 * start the application by doing the following:
 	 * <pre>
-	 * Application app = new YourApplication();
-	 * app.start();
+	 *   Application app = new YourApplication();
+	 *   app.start();
 	 * </pre>
-	 * Although the above code snippet may work in most situations, 
-	 * it is not guaranteed to work reliably in future versions and
-	 * is therefore deprecated. It is advised that this implementation 
-	 * is to be used instead.
+	 * Although the above code snippet may work in most situations, it is not
+	 * guaranteed to work reliably in future versions and is therefore
+	 * deprecated. It is advised that this implementation is to be used instead.
 	 * <br><br>
-	 * <b>NOTE:</b><i>The provided Application class implementation must
-	 * contain a public empty default constructor, for the application to 
-	 * be able to start. If the application is unable to find such 
-	 * constructor an exception is thrown.</i>
+	 * <b>NOTE:</b><i>The provided Application class implementation must contain
+	 * a public empty default constructor, for the application to be able to
+	 * start. If the application is unable to find such constructor an exception
+	 * is thrown.</i>
 	 * 
 	 * @param args - The JVM arguments parsed from the main method.
 	 * @param appClazz - The class of the application to be started.
 	 * 
-	 * @throws NoSuchMethodException If the default empty constructor was
-	 *                               not found or is unavailable.
-	 * @throws InstantiationException If the method was unable to construct
-	 *                                a new instance of the application.
+	 * @throws NoSuchMethodException If the default empty constructor was not
+	 *                               found or is unavailable.
+	 * @throws InstantiationException If the method was unable to construct a
+	 *                                new instance of the application.
 	 */
 	public static void start(String[] args, Class<? extends Application> appClazz) throws NoSuchMethodException, InstantiationException {
 		Constructor<?> defaultConstructor = null;
