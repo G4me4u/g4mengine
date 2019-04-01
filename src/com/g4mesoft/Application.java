@@ -217,15 +217,30 @@ public abstract class Application implements IExitable {
 			int missingTicks = timer.getMissingTicks();
 			if (missingTicks > timer.getTps() * MAX_SECONDS_BEHIND) {
 				if (isDebug()) {
-					System.out.println("Application is running slow. " + 
-					                   "Skipping " + missingTicks + " ticks");
+					System.out.println("Application is running slow. Skipping " + 
+							missingTicks + " ticks");
 				}
 			} else {
+				long startMs = System.currentTimeMillis();
+				
+				int ticks = 0;
 				while (missingTicks != 0) {
+					ticks++;
+					missingTicks--;
+					
 					update();
 					timer.tickPassed();
-				
-					missingTicks--;
+
+					long deltaMs = System.currentTimeMillis() - startMs;
+					if (deltaMs > 1000.0f * MAX_SECONDS_BEHIND) {
+						if (isDebug()) {
+							int avg = (int)(deltaMs / ticks);
+							System.out.println("Ticking is slow, around " + avg + 
+									"ms on average. Skipping " + missingTicks + " ticks");
+						}
+						
+						missingTicks = 0;
+					}
 				}
 	
 				if (display.isVisible()) {
