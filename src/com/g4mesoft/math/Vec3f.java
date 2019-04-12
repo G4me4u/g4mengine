@@ -8,7 +8,7 @@ package com.g4mesoft.math;
  * @see com.g4mesoft.math.Vec2f Vec2f
  * @see com.g4mesoft.math.Vec4f Vec4f
  */
-public class Vec3f {
+public class Vec3f implements IVecf<Vec3f> {
 
 	public float x;
 	public float y;
@@ -76,6 +76,7 @@ public class Vec3f {
 	 * @see #set(float, float, float)
 	 * @see #set(float)
 	 */
+	@Override
 	public Vec3f set(Vec3f other) {
 		x = other.x;
 		y = other.y;
@@ -96,6 +97,7 @@ public class Vec3f {
 	 * @see #set(float, float, float)
 	 * @see #set(Vec3f)
 	 */
+	@Override
 	public Vec3f set(float k) {
 		x = y = z = k;
 		return this;
@@ -134,6 +136,7 @@ public class Vec3f {
 	 * @see #add(float, float, float)
 	 * @see #add(float)
 	 */
+	@Override
 	public Vec3f add(Vec3f other) {
 		x += other.x;
 		y += other.y;
@@ -152,6 +155,7 @@ public class Vec3f {
 	 * @see #add(float, float, float)
 	 * @see #add(Vec3f)
 	 */
+	@Override
 	public Vec3f add(float k) {
 		x += k;
 		y += k;
@@ -192,6 +196,7 @@ public class Vec3f {
 	 * @see #sub(float, float, float)
 	 * @see #sub(float)
 	 */
+	@Override
 	public Vec3f sub(Vec3f other) {
 		x -= other.x;
 		y -= other.y;
@@ -210,6 +215,7 @@ public class Vec3f {
 	 * @see #sub(float, float, float)
 	 * @see #sub(Vec3f)
 	 */
+	@Override
 	public Vec3f sub(float k) {
 		x -= k;
 		y -= k;
@@ -251,6 +257,7 @@ public class Vec3f {
 	 * @see #mul(float, float, float)
 	 * @see #mul(float)
 	 */
+	@Override
 	public Vec3f mul(Vec3f other) {
 		x *= other.x;
 		y *= other.y;
@@ -269,6 +276,7 @@ public class Vec3f {
 	 * @see #mul(float, float, float)
 	 * @see #mul(Vec3f)
 	 */
+	@Override
 	public Vec3f mul(float k) {
 		x *= k;
 		y *= k;
@@ -310,6 +318,7 @@ public class Vec3f {
 	 * @see #div(float, float, float)
 	 * @see #div(float)
 	 */
+	@Override
 	public Vec3f div(Vec3f other) {
 		x /= other.x;
 		y /= other.y;
@@ -329,6 +338,7 @@ public class Vec3f {
 	 * @see #div(float, float, float)
 	 * @see #div(Vec3f)
 	 */
+	@Override
 	public Vec3f div(float k) {
 		x /= k;
 		y /= k;
@@ -344,6 +354,7 @@ public class Vec3f {
 	 * 
 	 * @return The dotted value as a float.
 	 */
+	@Override
 	public float dot(Vec3f other) {
 		return x * other.x + y * other.y + z * other.z;
 	}
@@ -356,6 +367,7 @@ public class Vec3f {
 	 * 
 	 * @see #length()
 	 */
+	@Override
 	public float lengthSqr() {
 		return x * x + y * y + z * z;
 	}
@@ -367,6 +379,7 @@ public class Vec3f {
 	 * 
 	 * @see #lengthSqr()
 	 */
+	@Override
 	public float length() {
 		return MathUtils.sqrt(lengthSqr());
 	}
@@ -413,6 +426,7 @@ public class Vec3f {
 	 * @see #div(float)
 	 * @see #length()
 	 */
+	@Override
 	public Vec3f normalize() {
 		return div(length());
 	}
@@ -420,6 +434,7 @@ public class Vec3f {
 	/**
 	 * @return	The sum of x, y and z
 	 */
+	@Override
 	public float sum() {
 		return x + y + z;
 	}
@@ -435,6 +450,7 @@ public class Vec3f {
 	 * @see #distSqr(Vec3f)
 	 * @see #dist(Vec3f)
 	 */
+	@Override
 	public float distManhattan(Vec3f other) {
 		return MathUtils.abs(other.x - x) + 
 		       MathUtils.abs(other.y - y) +
@@ -453,6 +469,7 @@ public class Vec3f {
 	 * @see #dist(Vec3f)
 	 * @see #distManhattan(Vec3f)
 	 */
+	@Override
 	public float distSqr(Vec3f other) {
 		return (other.x - x) * (other.x - x) + 
 		       (other.y - y) * (other.y - y) +
@@ -470,8 +487,14 @@ public class Vec3f {
 	 * @see #distSqr(Vec3f)
 	 * @see #distManhattan(Vec3f)
 	 */
+	@Override
 	public float dist(Vec3f other) {
 		return MathUtils.sqrt(distSqr(other));
+	}
+	
+	@Override
+	public Vec3f copy() {
+		return new Vec3f(this);
 	}
 	
 	public boolean equals(float x, float y, float z) {
@@ -480,23 +503,17 @@ public class Vec3f {
 		       z == this.z;
 	}
 
+	@Override
 	public boolean equals(Vec3f other) {
 		if (other == null)
 			return false;
-		
-		return other.x == x &&
-		       other.y == y &&
-		       other.z == z;
+		return equals(other.x, other.y, other.z);
 	}
 	
 	@Override
 	public boolean equals(Object other) {
 		if (!(other instanceof Vec3f))
 			return false;
-
-		Vec3f otherVec = ((Vec3f)other);
-		return otherVec.x == x && 
-		       otherVec.y == y &&
-		       otherVec.z == z;
+		return equals((Vec3f)other);
 	}
 }

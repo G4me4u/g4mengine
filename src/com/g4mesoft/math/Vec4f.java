@@ -1,14 +1,14 @@
 package com.g4mesoft.math;
 
 /**
- * A 3D vector consisting of x, y and z.
+ * A 4D vector consisting of x, y, z and w.
  *
  * @author Christian
  * 
  * @see com.g4mesoft.math.Vec2f Vec2f
  * @see com.g4mesoft.math.Vec3f Vec3f
  */
-public class Vec4f {
+public class Vec4f implements IVecf<Vec4f> {
 
 	public float x;
 	public float y;
@@ -104,6 +104,7 @@ public class Vec4f {
 	 * @see #set(float, float, float, float)
 	 * @see #set(float)
 	 */
+	@Override
 	public Vec4f set(Vec4f other) {
 		x = other.x;
 		y = other.y;
@@ -125,6 +126,7 @@ public class Vec4f {
 	 * @see #set(float, float, float, float)
 	 * @see #set(Vec4f)
 	 */
+	@Override
 	public Vec4f set(float k) {
 		x = y = z = w = k;
 		return this;
@@ -166,6 +168,7 @@ public class Vec4f {
 	 * @see #add(float, float, float, float)
 	 * @see #add(float)
 	 */
+	@Override
 	public Vec4f add(Vec4f other) {
 		x += other.x;
 		y += other.y;
@@ -185,6 +188,7 @@ public class Vec4f {
 	 * @see #add(float, float, float, float)
 	 * @see #add(Vec4f)
 	 */
+	@Override
 	public Vec4f add(float k) {
 		x += k;
 		y += k;
@@ -229,6 +233,7 @@ public class Vec4f {
 	 * @see #sub(float, float, float, float)
 	 * @see #sub(float)
 	 */
+	@Override
 	public Vec4f sub(Vec4f other) {
 		x -= other.x;
 		y -= other.y;
@@ -248,6 +253,7 @@ public class Vec4f {
 	 * @see #sub(float, float, float, float)
 	 * @see #sub(Vec4f)
 	 */
+	@Override
 	public Vec4f sub(float k) {
 		x -= k;
 		y -= k;
@@ -293,6 +299,7 @@ public class Vec4f {
 	 * @see #mul(float, float, float, float)
 	 * @see #mul(float)
 	 */
+	@Override
 	public Vec4f mul(Vec4f other) {
 		x *= other.x;
 		y *= other.y;
@@ -312,6 +319,7 @@ public class Vec4f {
 	 * @see #mul(float, float, float, float)
 	 * @see #mul(Vec4f)
 	 */
+	@Override
 	public Vec4f mul(float k) {
 		x *= k;
 		y *= k;
@@ -357,6 +365,7 @@ public class Vec4f {
 	 * @see #div(float, float, float, float)
 	 * @see #div(float)
 	 */
+	@Override
 	public Vec4f div(Vec4f other) {
 		x /= other.x;
 		y /= other.y;
@@ -377,6 +386,7 @@ public class Vec4f {
 	 * @see #div(float, float, float, float)
 	 * @see #div(Vec4f)
 	 */
+	@Override
 	public Vec4f div(float k) {
 		x /= k;
 		y /= k;
@@ -393,6 +403,7 @@ public class Vec4f {
 	 * 
 	 * @return The dotted value as a float.
 	 */
+	@Override
 	public float dot(Vec4f other) {
 		return x * other.x + y * other.y + z * other.z + w * other.w;
 	}
@@ -405,6 +416,7 @@ public class Vec4f {
 	 * 
 	 * @see #length()
 	 */
+	@Override
 	public float lengthSqr() {
 		return x * x + y * y + z * z + w * w;
 	}
@@ -416,6 +428,7 @@ public class Vec4f {
 	 * 
 	 * @see #lengthSqr()
 	 */
+	@Override
 	public float length() {
 		return MathUtils.sqrt(lengthSqr());
 	}
@@ -428,6 +441,7 @@ public class Vec4f {
 	 * @see #div(float)
 	 * @see #length()
 	 */
+	@Override
 	public Vec4f normalize() {
 		return div(length());
 	}
@@ -435,6 +449,7 @@ public class Vec4f {
 	/**
 	 * @return	The sum of x, y, z and w
 	 */
+	@Override
 	public float sum() {
 		return x + y + z + w;
 	}
@@ -450,6 +465,7 @@ public class Vec4f {
 	 * @see #distSqr(Vec4f)
 	 * @see #dist(Vec4f)
 	 */
+	@Override
 	public float distManhattan(Vec4f other) {
 		return MathUtils.abs(other.x - x) + 
 		       MathUtils.abs(other.y - y) +
@@ -469,6 +485,7 @@ public class Vec4f {
 	 * @see #dist(Vec4f)
 	 * @see #distManhattan(Vec4f)
 	 */
+	@Override
 	public float distSqr(Vec4f other) {
 		return (other.x - x) * (other.x - x) + 
 		       (other.y - y) * (other.y - y) +
@@ -487,8 +504,14 @@ public class Vec4f {
 	 * @see #distSqr(Vec4f)
 	 * @see #distManhattan(Vec4f)
 	 */
+	@Override
 	public float dist(Vec4f other) {
 		return MathUtils.sqrt(distSqr(other));
+	}
+	
+	@Override
+	public Vec4f copy() {
+		return new Vec4f(this);
 	}
 	
 	public boolean equals(float x, float y, float z, float w) {
@@ -498,14 +521,13 @@ public class Vec4f {
 		       w == this.w;
 	}
 
+	@Override
 	public boolean equals(Vec4f other) {
 		if (other == null)
 			return false;
 		
-		return other.x == x &&
-		       other.y == y &&
-		       other.z == z &&
-		       other.w == w;
+		return equals(other.x, other.y,
+		              other.z, other.w);
 	}
 	
 	@Override
@@ -513,10 +535,6 @@ public class Vec4f {
 		if (!(other instanceof Vec4f))
 			return false;
 
-		Vec4f otherVec = ((Vec4f)other);
-		return otherVec.x == x && 
-		       otherVec.y == y &&
-		       otherVec.z == z &&
-		       otherVec.w == w;
+		return equals((Vec4f)other);
 	}
 }

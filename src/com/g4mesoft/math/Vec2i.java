@@ -8,7 +8,7 @@ package com.g4mesoft.math;
  * @see com.g4mesoft.math.Vec3i Vec3i
  * @see com.g4mesoft.math.Vec4i Vec4i
  */
-public class Vec2i {
+public class Vec2i implements IVeci<Vec2i> {
 
 	public int x;
 	public int y;
@@ -59,6 +59,7 @@ public class Vec2i {
 	 * @see #set(int, int)
 	 * @see #set(int)
 	 */
+	@Override
 	public Vec2i set(Vec2i other) {
 		x = other.x;
 		y = other.y;
@@ -78,6 +79,7 @@ public class Vec2i {
 	 * @see #set(int, int)
 	 * @see #set(Vec2i)
 	 */
+	@Override
 	public Vec2i set(int k) {
 		x = y = k;
 		return this;
@@ -113,6 +115,7 @@ public class Vec2i {
 	 * @see #add(int, int)
 	 * @see #add(int)
 	 */
+	@Override
 	public Vec2i add(Vec2i other) {
 		x += other.x;
 		y += other.y;
@@ -130,6 +133,7 @@ public class Vec2i {
 	 * @see #add(int, int)
 	 * @see #add(Vec2i)
 	 */
+	@Override
 	public Vec2i add(int k) {
 		x += k;
 		y += k;
@@ -166,6 +170,7 @@ public class Vec2i {
 	 * @see #sub(int, int)
 	 * @see #sub(int)
 	 */
+	@Override
 	public Vec2i sub(Vec2i other) {
 		x -= other.x;
 		y -= other.y;
@@ -183,6 +188,7 @@ public class Vec2i {
 	 * @see #sub(int, int)
 	 * @see #sub(Vec2i)
 	 */
+	@Override
 	public Vec2i sub(int k) {
 		x -= k;
 		y -= k;
@@ -220,6 +226,7 @@ public class Vec2i {
 	 * @see #mul(int, int)
 	 * @see #mul(int)
 	 */
+	@Override
 	public Vec2i mul(Vec2i other) {
 		x *= other.x;
 		y *= other.y;
@@ -237,6 +244,7 @@ public class Vec2i {
 	 * @see #mul(int, int)
 	 * @see #mul(Vec2i)
 	 */
+	@Override
 	public Vec2i mul(int k) {
 		x *= k;
 		y *= k;
@@ -274,6 +282,7 @@ public class Vec2i {
 	 * @see #div(int, int)
 	 * @see #div(int)
 	 */
+	@Override
 	public Vec2i div(Vec2i other) {
 		x /= other.x;
 		y /= other.y;
@@ -292,6 +301,7 @@ public class Vec2i {
 	 * @see #div(int, int)
 	 * @see #div(Vec2i)
 	 */
+	@Override
 	public Vec2i div(int k) {
 		x /= k;
 		y /= k;
@@ -306,6 +316,7 @@ public class Vec2i {
 	 * 
 	 * @return The dotted value as an integer.
 	 */
+	@Override
 	public int dot(Vec2i other) {
 		return x * other.x + y * other.y;
 	}
@@ -318,6 +329,7 @@ public class Vec2i {
 	 * 
 	 * @see #length()
 	 */
+	@Override
 	public int lengthSqr() {
 		return x * x + y * y;
 	}
@@ -329,6 +341,7 @@ public class Vec2i {
 	 * 
 	 * @see #lengthSqr()
 	 */
+	@Override
 	public int length() {
 		return (int)MathUtils.sqrt(lengthSqr());
 	}
@@ -341,6 +354,7 @@ public class Vec2i {
 	 * @see #div(int)
 	 * @see #length()
 	 */
+	@Override
 	public Vec2i normalize() {
 		return div(length());
 	}
@@ -348,6 +362,7 @@ public class Vec2i {
 	/**
 	 * @return	The sum of x and y
 	 */
+	@Override
 	public int sum() {
 		return x + y;
 	}
@@ -363,6 +378,7 @@ public class Vec2i {
 	 * @see #distSqr(Vec2i)
 	 * @see #dist(Vec2i)
 	 */
+	@Override
 	public int distManhattan(Vec2i other) {
 		return MathUtils.abs(other.x - x) + 
 		       MathUtils.abs(other.y - y);
@@ -380,6 +396,7 @@ public class Vec2i {
 	 * @see #dist(Vec2i)
 	 * @see #distManhattan(Vec2i)
 	 */
+	@Override
 	public int distSqr(Vec2i other) {
 		return (other.x - x) * (other.x - x) + 
 		       (other.y - y) * (other.y - y);
@@ -396,8 +413,14 @@ public class Vec2i {
 	 * @see #distSqr(Vec2i)
 	 * @see #distManhattan(Vec2i)
 	 */
+	@Override
 	public int dist(Vec2i other) {
 		return (int)MathUtils.sqrt(distSqr(other));
+	}
+	
+	@Override
+	public Vec2i copy() {
+		return new Vec2i(this);
 	}
 	
 	public boolean equals(int x, int y) {
@@ -405,21 +428,17 @@ public class Vec2i {
 		       y == this.y;
 	}
 
+	@Override
 	public boolean equals(Vec2i other) {
 		if (other == null)
 			return false;
-		
-		return other.x == x &&
-		       other.y == y;
+		return equals(other.x, other.y);
 	}
 	
 	@Override
 	public boolean equals(Object other) {
 		if (!(other instanceof Vec2i))
 			return false;
-
-		Vec2i otherVec = ((Vec2i)other);
-		return otherVec.x == x && 
-		       otherVec.y == y;
+		return equals((Vec2i)other);
 	}
 }

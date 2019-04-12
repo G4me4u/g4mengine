@@ -8,7 +8,7 @@ package com.g4mesoft.math;
  * @see com.g4mesoft.math.Vec3f Vec3f
  * @see com.g4mesoft.math.Vec4f Vec4f
  */
-public class Vec2f {
+public class Vec2f implements IVecf<Vec2f> {
 
 	public float x;
 	public float y;
@@ -59,6 +59,7 @@ public class Vec2f {
 	 * @see #set(float, float)
 	 * @see #set(float)
 	 */
+	@Override
 	public Vec2f set(Vec2f other) {
 		x = other.x;
 		y = other.y;
@@ -78,6 +79,7 @@ public class Vec2f {
 	 * @see #set(float, float)
 	 * @see #set(Vec2f)
 	 */
+	@Override
 	public Vec2f set(float k) {
 		x = y = k;
 		return this;
@@ -113,6 +115,7 @@ public class Vec2f {
 	 * @see #add(float, float)
 	 * @see #add(float)
 	 */
+	@Override
 	public Vec2f add(Vec2f other) {
 		x += other.x;
 		y += other.y;
@@ -130,6 +133,7 @@ public class Vec2f {
 	 * @see #add(float, float)
 	 * @see #add(Vec2f)
 	 */
+	@Override
 	public Vec2f add(float k) {
 		x += k;
 		y += k;
@@ -166,6 +170,7 @@ public class Vec2f {
 	 * @see #sub(float, float)
 	 * @see #sub(float)
 	 */
+	@Override
 	public Vec2f sub(Vec2f other) {
 		x -= other.x;
 		y -= other.y;
@@ -183,6 +188,7 @@ public class Vec2f {
 	 * @see #sub(float, float)
 	 * @see #sub(Vec2f)
 	 */
+	@Override
 	public Vec2f sub(float k) {
 		x -= k;
 		y -= k;
@@ -220,6 +226,7 @@ public class Vec2f {
 	 * @see #mul(float, float)
 	 * @see #mul(float)
 	 */
+	@Override
 	public Vec2f mul(Vec2f other) {
 		x *= other.x;
 		y *= other.y;
@@ -237,6 +244,7 @@ public class Vec2f {
 	 * @see #mul(float, float)
 	 * @see #mul(Vec2f)
 	 */
+	@Override
 	public Vec2f mul(float k) {
 		x *= k;
 		y *= k;
@@ -274,6 +282,7 @@ public class Vec2f {
 	 * @see #div(float, float)
 	 * @see #div(float)
 	 */
+	@Override
 	public Vec2f div(Vec2f other) {
 		x /= other.x;
 		y /= other.y;
@@ -292,6 +301,7 @@ public class Vec2f {
 	 * @see #div(float, float)
 	 * @see #div(Vec2f)
 	 */
+	@Override
 	public Vec2f div(float k) {
 		x /= k;
 		y /= k;
@@ -306,6 +316,7 @@ public class Vec2f {
 	 * 
 	 * @return The dotted value as a float.
 	 */
+	@Override
 	public float dot(Vec2f other) {
 		return x * other.x + y * other.y;
 	}
@@ -318,6 +329,7 @@ public class Vec2f {
 	 * 
 	 * @see #length()
 	 */
+	@Override
 	public float lengthSqr() {
 		return x * x + y * y;
 	}
@@ -329,6 +341,7 @@ public class Vec2f {
 	 * 
 	 * @see #lengthSqr()
 	 */
+	@Override
 	public float length() {
 		return MathUtils.sqrt(lengthSqr());
 	}
@@ -341,6 +354,7 @@ public class Vec2f {
 	 * @see #div(float)
 	 * @see #length()
 	 */
+	@Override
 	public Vec2f normalize() {
 		return div(length());
 	}
@@ -348,6 +362,7 @@ public class Vec2f {
 	/**
 	 * @return	The sum of x and y
 	 */
+	@Override
 	public float sum() {
 		return x + y;
 	}
@@ -363,6 +378,7 @@ public class Vec2f {
 	 * @see #distSqr(Vec2f)
 	 * @see #dist(Vec2f)
 	 */
+	@Override
 	public float distManhattan(Vec2f other) {
 		return MathUtils.abs(other.x - x) + 
 		       MathUtils.abs(other.y - y);
@@ -380,6 +396,7 @@ public class Vec2f {
 	 * @see #dist(Vec2f)
 	 * @see #distManhattan(Vec2f)
 	 */
+	@Override
 	public float distSqr(Vec2f other) {
 		return (other.x - x) * (other.x - x) + 
 		       (other.y - y) * (other.y - y);
@@ -396,8 +413,14 @@ public class Vec2f {
 	 * @see #distSqr(Vec2f)
 	 * @see #distManhattan(Vec2f)
 	 */
+	@Override
 	public float dist(Vec2f other) {
 		return MathUtils.sqrt(distSqr(other));
+	}
+	
+	@Override
+	public Vec2f copy() {
+		return new Vec2f(this);
 	}
 	
 	public boolean equals(float x, float y) {
@@ -405,21 +428,17 @@ public class Vec2f {
 		       y == this.y;
 	}
 
+	@Override
 	public boolean equals(Vec2f other) {
 		if (other == null)
 			return false;
-		
-		return other.x == x &&
-		       other.y == y;
+		return equals(other.x, other.y);
 	}
 	
 	@Override
 	public boolean equals(Object other) {
 		if (!(other instanceof Vec2f))
 			return false;
-
-		Vec2f otherVec = ((Vec2f)other);
-		return otherVec.x == x && 
-		       otherVec.y == y;
+		return equals((Vec2f)other);
 	}
 }

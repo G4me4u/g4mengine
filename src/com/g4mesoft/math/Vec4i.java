@@ -1,14 +1,14 @@
 package com.g4mesoft.math;
 
 /**
- * A 3D vector consisting of x, y and z.
+ * A 4D vector consisting of x, y, z and w.
  *
  * @author Christian
  * 
  * @see com.g4mesoft.math.Vec2i Vec2i
  * @see com.g4mesoft.math.Vec3i Vec3i
  */
-public class Vec4i {
+public class Vec4i implements IVeci<Vec4i> {
 
 	public int x;
 	public int y;
@@ -104,6 +104,7 @@ public class Vec4i {
 	 * @see #set(int, int, int, int)
 	 * @see #set(int)
 	 */
+	@Override
 	public Vec4i set(Vec4i other) {
 		x = other.x;
 		y = other.y;
@@ -125,6 +126,7 @@ public class Vec4i {
 	 * @see #set(int, int, int, int)
 	 * @see #set(Vec4i)
 	 */
+	@Override
 	public Vec4i set(int k) {
 		x = y = z = w = k;
 		return this;
@@ -166,6 +168,7 @@ public class Vec4i {
 	 * @see #add(int, int, int, int)
 	 * @see #add(int)
 	 */
+	@Override
 	public Vec4i add(Vec4i other) {
 		x += other.x;
 		y += other.y;
@@ -185,6 +188,7 @@ public class Vec4i {
 	 * @see #add(int, int, int, int)
 	 * @see #add(Vec4i)
 	 */
+	@Override
 	public Vec4i add(int k) {
 		x += k;
 		y += k;
@@ -229,6 +233,7 @@ public class Vec4i {
 	 * @see #sub(int, int, int, int)
 	 * @see #sub(int)
 	 */
+	@Override
 	public Vec4i sub(Vec4i other) {
 		x -= other.x;
 		y -= other.y;
@@ -248,6 +253,7 @@ public class Vec4i {
 	 * @see #sub(int, int, int, int)
 	 * @see #sub(Vec4i)
 	 */
+	@Override
 	public Vec4i sub(int k) {
 		x -= k;
 		y -= k;
@@ -293,6 +299,7 @@ public class Vec4i {
 	 * @see #mul(int, int, int, int)
 	 * @see #mul(int)
 	 */
+	@Override
 	public Vec4i mul(Vec4i other) {
 		x *= other.x;
 		y *= other.y;
@@ -312,6 +319,7 @@ public class Vec4i {
 	 * @see #mul(int, int, int, int)
 	 * @see #mul(Vec4i)
 	 */
+	@Override
 	public Vec4i mul(int k) {
 		x *= k;
 		y *= k;
@@ -357,6 +365,7 @@ public class Vec4i {
 	 * @see #div(int, int, int, int)
 	 * @see #div(int)
 	 */
+	@Override
 	public Vec4i div(Vec4i other) {
 		x /= other.x;
 		y /= other.y;
@@ -377,6 +386,7 @@ public class Vec4i {
 	 * @see #div(int, int, int, int)
 	 * @see #div(Vec4i)
 	 */
+	@Override
 	public Vec4i div(int k) {
 		x /= k;
 		y /= k;
@@ -393,6 +403,7 @@ public class Vec4i {
 	 * 
 	 * @return The dotted value as an integer.
 	 */
+	@Override
 	public int dot(Vec4i other) {
 		return x * other.x + y * other.y + z * other.z + w * other.w;
 	}
@@ -405,6 +416,7 @@ public class Vec4i {
 	 * 
 	 * @see #length()
 	 */
+	@Override
 	public int lengthSqr() {
 		return x * x + y * y + z * z + w * w;
 	}
@@ -416,6 +428,7 @@ public class Vec4i {
 	 * 
 	 * @see #lengthSqr()
 	 */
+	@Override
 	public int length() {
 		return (int)MathUtils.sqrt(lengthSqr());
 	}
@@ -428,6 +441,7 @@ public class Vec4i {
 	 * @see #div(int)
 	 * @see #length()
 	 */
+	@Override
 	public Vec4i normalize() {
 		return div(length());
 	}
@@ -435,6 +449,7 @@ public class Vec4i {
 	/**
 	 * @return	The sum of x, y, z and w
 	 */
+	@Override
 	public int sum() {
 		return x + y + z + w;
 	}
@@ -450,6 +465,7 @@ public class Vec4i {
 	 * @see #distSqr(Vec4i)
 	 * @see #dist(Vec4i)
 	 */
+	@Override
 	public int distManhattan(Vec4i other) {
 		return MathUtils.abs(other.x - x) + 
 		       MathUtils.abs(other.y - y) +
@@ -469,6 +485,7 @@ public class Vec4i {
 	 * @see #dist(Vec4i)
 	 * @see #distManhattan(Vec4i)
 	 */
+	@Override
 	public int distSqr(Vec4i other) {
 		return (other.x - x) * (other.x - x) + 
 		       (other.y - y) * (other.y - y) +
@@ -487,8 +504,14 @@ public class Vec4i {
 	 * @see #distSqr(Vec4i)
 	 * @see #distManhattan(Vec4i)
 	 */
+	@Override
 	public int dist(Vec4i other) {
 		return (int)MathUtils.sqrt(distSqr(other));
+	}
+	
+	@Override
+	public Vec4i copy() {
+		return new Vec4i(this);
 	}
 	
 	public boolean equals(int x, int y, int z, int w) {
@@ -498,14 +521,13 @@ public class Vec4i {
 		       w == this.w;
 	}
 
+	@Override
 	public boolean equals(Vec4i other) {
 		if (other == null)
 			return false;
 		
-		return other.x == x &&
-		       other.y == y &&
-		       other.z == z &&
-		       other.w == w;
+		return equals(other.x, other.y,
+		              other.z, other.w);
 	}
 	
 	@Override
@@ -513,10 +535,6 @@ public class Vec4i {
 		if (!(other instanceof Vec4i))
 			return false;
 
-		Vec4i otherVec = ((Vec4i)other);
-		return otherVec.x == x && 
-		       otherVec.y == y &&
-		       otherVec.z == z &&
-		       otherVec.w == w;
+		return equals((Vec4i)other);
 	}
 }
