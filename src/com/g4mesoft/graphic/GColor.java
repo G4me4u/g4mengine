@@ -258,6 +258,14 @@ public class GColor {
 		value = hasAlpha ? argb : (argb | 0xFF000000);
 	}
 
+	public GColor invert() {
+		int ri = 0xFF - getRed();
+		int gi = 0xFF - getGreen();
+		int bi = 0xFF - getBlue();
+		
+		return new GColor(ri, gi, bi, getAlpha());
+	}
+	
 	public int getAlpha() {
 		return (value >>> 24) & 0xFF;
 	}
