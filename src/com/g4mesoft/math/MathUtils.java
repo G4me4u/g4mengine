@@ -43,7 +43,7 @@ public final class MathUtils {
 		return a > b ? a : b;
 	}
 	
-	public int clamp(int v, int mn, int mx) {
+	public static int clamp(int v, int mn, int mx) {
 		return v > mx ? mx : (v < mn ? mn : v);
 	}
 	
@@ -58,7 +58,6 @@ public final class MathUtils {
 	public static long clamp(long v, long mn, long mx) {
 		return v > mx ? mx : (v < mn ? mn : v);
 	}
-	
 
 	public static float max(float[] arr) {
 		float max = Float.NEGATIVE_INFINITY;
