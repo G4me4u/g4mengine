@@ -1,6 +1,6 @@
 package com.g4mesoft.math;
 
-public class Mat2f {
+public class Mat2f implements IMatf<Mat2f> {
 
 	public float m00, m10,
 	             m01, m11;
@@ -20,10 +20,12 @@ public class Mat2f {
 		    m01, m11);
 	}
 
+	@Override
 	public Mat2f toIdentity() {
 		return toIdentity(1.0f);
 	}
 	
+	@Override
 	public Mat2f toIdentity(float d) {
 		return set( d  , 0.0f,
 		           0.0f,  d  );
@@ -41,6 +43,7 @@ public class Mat2f {
 		return this;
 	}
 	
+	@Override
 	public Mat2f set(Mat2f other) {
 		return set(other.m00, other.m10,
 		           other.m01, other.m11);
@@ -88,20 +91,25 @@ public class Mat2f {
 		return this;
 	}
 
+	@Override
 	public Mat2f mul(Mat2f right) {
+		return mul(right, this);
+	}
+
+	@Override
+	public Mat2f mul(Mat2f right, Mat2f dest) {
 		float n00 = m00 * right.m00 + m10 * right.m01;
 		float n01 = m01 * right.m00 + m11 * right.m01;
 
 		float n10 = m00 * right.m10 + m10 * right.m11;
-		float n11 = m01 * right.m10 + m11 * right.m11;
+		dest.m11 = m01 * right.m10 + m11 * right.m11;
 
-		m00 = n00;
-		m01 = n01;
-
-		m10 = n10;
-		m11 = n11;
-
-		return this;
+		dest.m00 = n00;
+		dest.m01 = n01;
+		
+		dest.m10 = n10;
+		
+		return dest;
 	}
 
 	public Vec2f mul(Vec2f vec) {
@@ -117,10 +125,17 @@ public class Mat2f {
 		return dest;
 	}
 	
+	@Override
+	public Mat2f invert() {
+		return inverseCopy(this);
+	}
+	
+	@Override
 	public Mat2f inverseCopy() {
 		return inverseCopy(new Mat2f());
 	}
 
+	@Override
 	public Mat2f inverseCopy(Mat2f dest) {
 		float det = m00 * m11 - m10 * m01;
 		if (MathUtils.nearZero(det))
@@ -132,18 +147,26 @@ public class Mat2f {
 		                -m01 * detInv,  m00 * detInv);
 	}
 
+	@Override
 	public Mat2f transpose() {
 		return transpose(this);
 	}
 
+	@Override
 	public Mat2f transpose(Mat2f dest) {
 		return dest.set(m00, m01,
 		                m10, m11);
 	}
-	
+
+	@Override
 	public Mat2f copy() {
-		return new Mat2f(m00, m10,
-		                 m01, m11);
+		return copy(new Mat2f());
+	}
+	
+	@Override
+	public Mat2f copy(Mat2f dest) {
+		return dest.set(m00, m10,
+		                m01, m11);
 	}
 
 	@Override

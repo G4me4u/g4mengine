@@ -1,6 +1,6 @@
 package com.g4mesoft.math;
 
-public class Mat3f {
+public class Mat3f implements IMatf<Mat3f> {
 
 	public float m00, m10, m20,
 	             m01, m11, m21,
@@ -23,10 +23,12 @@ public class Mat3f {
 		    m02, m12, m22);
 	}
 
+	@Override
 	public Mat3f toIdentity() {
 		return toIdentity(1.0f);
 	}
 	
+	@Override
 	public Mat3f toIdentity(float d) {
 		return set( d  , 0.0f, 0.0f,
 		           0.0f,  d  , 0.0f,
@@ -52,6 +54,7 @@ public class Mat3f {
 		return this;
 	}
 	
+	@Override
 	public Mat3f set(Mat3f other) {
 		return set(other.m00, other.m10, other.m20,
 		           other.m01, other.m11, other.m21,
@@ -163,7 +166,13 @@ public class Mat3f {
 		return this;
 	}
 
+	@Override
 	public Mat3f mul(Mat3f right) {
+		return mul(right, this);
+	}
+
+	@Override
+	public Mat3f mul(Mat3f right, Mat3f dest) {
 		float n00 = m00 * right.m00 + m10 * right.m01 + m20 * right.m02;
 		float n01 = m01 * right.m00 + m11 * right.m01 + m21 * right.m02;
 		float n02 = m02 * right.m00 + m12 * right.m01 + m22 * right.m02;
@@ -172,19 +181,13 @@ public class Mat3f {
 		float n11 = m01 * right.m10 + m11 * right.m11 + m21 * right.m12;
 		float n12 = m02 * right.m10 + m12 * right.m11 + m22 * right.m12;
 
-		m20 = m00 * right.m20 + m10 * right.m21 + m20 * right.m22;
-		m21 = m01 * right.m20 + m11 * right.m21 + m21 * right.m22;
-		m22 = m02 * right.m20 + m12 * right.m21 + m22 * right.m22;
+		float n20 = m00 * right.m20 + m10 * right.m21 + m20 * right.m22;
+		float n21 = m01 * right.m20 + m11 * right.m21 + m21 * right.m22;
+		float n22 = m02 * right.m20 + m12 * right.m21 + m22 * right.m22;
 
-		m00 = n00;
-		m01 = n01;
-		m02 = n02;
-
-		m10 = n10;
-		m11 = n11;
-		m12 = n12;
-
-		return this;
+		return dest.set(n00, n10, n20,
+		                n01, n11, n21,
+		                n02, n12, n22);
 	}
 
 	public Vec3f mul(Vec3f vec) {
@@ -202,10 +205,17 @@ public class Mat3f {
 		return dest;
 	}
 	
+	@Override
+	public Mat3f invert() {
+		return inverseCopy(this);
+	}
+	
+	@Override
 	public Mat3f inverseCopy() {
 		return inverseCopy(new Mat3f());
 	}
 	
+	@Override
 	public Mat3f inverseCopy(Mat3f dest) {
 		Vec3f al = new Vec3f(m00, m10, m20);
 		Vec3f bl = new Vec3f(m01, m11, m21);
@@ -288,20 +298,28 @@ public class Mat3f {
 		                cr.x, cr.y, cr.z);
 	}
 
+	@Override
 	public Mat3f transpose() {
 		return transpose(this);
 	}
 
+	@Override
 	public Mat3f transpose(Mat3f dest) {
 		return dest.set(m00, m01, m02,
 		                m10, m11, m12,
 		                m20, m21, m22);
 	}
 	
+	@Override
 	public Mat3f copy() {
-		return new Mat3f(m00, m10, m20,
-		                 m01, m11, m21,
-		                 m02, m12, m22);
+		return copy(new Mat3f());
+	}
+
+	@Override
+	public Mat3f copy(Mat3f dest) {
+		return dest.set(m00, m10, m20,
+		                m01, m11, m21,
+		                m02, m12, m22);
 	}
 
 	@Override

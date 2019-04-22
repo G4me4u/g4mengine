@@ -1,6 +1,6 @@
 package com.g4mesoft.math;
 
-public class Mat4f {
+public class Mat4f implements IMatf<Mat4f> {
 
 	/**
 	 * m[c][r], where c is column and r is row.
@@ -29,10 +29,12 @@ public class Mat4f {
 	    m03, m13, m23, m33);
 }
 
+	@Override
 	public Mat4f toIdentity() {
 		return toIdentity(1.0f);
 	}
 	
+	@Override
 	public Mat4f toIdentity(float d) {
 		return set( d  , 0.0f, 0.0f, 0.0f,
 		           0.0f,  d  , 0.0f, 0.0f,
@@ -68,6 +70,7 @@ public class Mat4f {
 		return this;
 	}
 	
+	@Override
 	public Mat4f set(Mat4f other) {
 		return set(other.m00, other.m10, other.m20, other.m30,
 		           other.m01, other.m11, other.m21, other.m31,
@@ -239,10 +242,12 @@ public class Mat4f {
 		return this;
 	}
 
+	@Override
 	public Mat4f mul(Mat4f right) {
 		return mul(right, this);
 	}
 
+	@Override
 	public Mat4f mul(Mat4f right, Mat4f dest) {
 		float n00 = m00 * right.m00 + m10 * right.m01 + m20 * right.m02 + m30 * right.m03;
 		float n01 = m01 * right.m00 + m11 * right.m01 + m21 * right.m02 + m31 * right.m03;
@@ -302,14 +307,17 @@ public class Mat4f {
 		return dest;
 	}
 	
+	@Override
 	public Mat4f invert() {
 		return inverseCopy(this);
 	}
 
+	@Override
 	public Mat4f inverseCopy() {
 		return inverseCopy(new Mat4f());
 	}
 
+	@Override
 	public Mat4f inverseCopy(Mat4f dest) {
 		Vec4f al = new Vec4f(m00, m10, m20, m30);
 		Vec4f bl = new Vec4f(m01, m11, m21, m31);
@@ -504,10 +512,12 @@ public class Mat4f {
 		              qa.z * ra + qb.z * rb);
 	}
 	
+	@Override
 	public Mat4f transpose() {
 		return transpose(this);
 	}
 
+	@Override
 	public Mat4f transpose(Mat4f dest) {
 		return dest.set(m00, m01, m02, m03,
 		                m10, m11, m12, m13,
@@ -515,18 +525,17 @@ public class Mat4f {
 		                m30, m31, m32, m33);
 	}
 
+	@Override
 	public Mat4f copy() {
-		return new Mat4f(m00, m10, m20, m30,
-		                 m01, m11, m21, m31,
-		                 m02, m12, m22, m32,
-		                 m03, m13, m23, m33);
+		return copy(new Mat4f());
 	}
 
-	public void copy(Mat4f dst) {
-		dst.set(m00, m10, m20, m30,
-		        m01, m11, m21, m31,
-		        m02, m12, m22, m32,
-		        m03, m13, m23, m33);
+	@Override
+	public Mat4f copy(Mat4f dest) {
+		return dest.set(m00, m10, m20, m30,
+		                m01, m11, m21, m31,
+		                m02, m12, m22, m32,
+		                m03, m13, m23, m33);
 	};
 	
 	@Override
