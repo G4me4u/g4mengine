@@ -9,7 +9,6 @@ import java.net.URL;
 import com.g4mesoft.composition.Composition;
 import com.g4mesoft.graphic.Display;
 import com.g4mesoft.graphic.DisplayConfig;
-import com.g4mesoft.graphic.IExitable;
 import com.g4mesoft.graphic.IRenderer2D;
 import com.g4mesoft.input.key.KeyInput;
 import com.g4mesoft.input.key.KeyInputListener;

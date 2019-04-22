@@ -1,4 +1,4 @@
-package com.g4mesoft.graphic;
+package com.g4mesoft;
 
 public interface IExitable {
 
