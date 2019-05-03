@@ -620,9 +620,24 @@ public abstract class Application implements IExitable {
 	 * 
 	 * @see com.g4mesoft.input.key.KeyInputListener#addKey(KeyInput)
 	 * @see #enableKeyInput()
+	 * @see #addKeys(KeyInput...)
 	 */
 	public static boolean addKey(KeyInput key) {
 		return KeyInputListener.getInstance().addKey(key);
+	}
+	
+	/**
+	 * Adds a series of keys to the KeyInputListener using the static function
+	 * {@link Application#addKey(KeyInput)}.
+	 * 
+	 * @param keys - The keys to add to the KeyInputListener. If the array is
+	 *               empty no keys will be added.
+	 * 
+	 * @see #addKey(KeyInput)
+	 */
+	public static void addKeys(KeyInput... keys) {
+		for (KeyInput key : keys)
+			Application.addKey(key);
 	}
 	
 	/**
@@ -652,9 +667,24 @@ public abstract class Application implements IExitable {
 	 *         
 	 * @see com.g4mesoft.input.key.KeyInputListener#addTypedKey(KeyTypedInput)
 	 * @see #enableKeyInput()
+	 * @see #addTypedKeys(KeyTypedInput...)
 	 */
 	public static boolean addTypedKey(KeyTypedInput typedKey) {
 		return KeyInputListener.getInstance().addTypedKey(typedKey);
+	}
+	
+	/**
+	 * Adds a series of typed keys to the KeyInputListener using the static 
+	 * function {@link Application#addTypedKey(KeyTypedInput)}.
+	 * 
+	 * @param typedKeys - The typed keys to add to the KeyInputListener. If the
+	 *                    array is empty no typed keys will be added.
+	 * 
+	 * @see #addTypedKey(KeyTypedInput)
+	 */
+	public static void addTypedKeys(KeyTypedInput... typedKeys) {
+		for (KeyTypedInput typedKey : typedKeys)
+			Application.addTypedKey(typedKey);
 	}
 	
 	/**
