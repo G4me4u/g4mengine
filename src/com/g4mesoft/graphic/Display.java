@@ -88,7 +88,7 @@ public class Display implements IViewport {
 		
 		frame = new JFrame(displayConfig.title);
 		frame.setResizable(displayConfig.resizable);
-
+		
 		canvas = new DisplayCanvas();
 		canvas.setPreferredSize(new Dimension(
 				displayConfig.preferredWidth, 
@@ -172,9 +172,12 @@ public class Display implements IViewport {
 	public void setDisplayMode(DisplayMode displayMode) {
 		if (frame == null || this.displayMode == displayMode) 
 			return;
-
+		
+		DisplayMode prevDisplayMode = this.displayMode;
+		this.displayMode = displayMode;
+		
 		// Disable fullscreen
-		if (this.displayMode == DisplayMode.FULLSCREEN) {
+		if (prevDisplayMode == DisplayMode.FULLSCREEN) {
 			GraphicsDevice device = getGraphicsDevice();
 			if (device != null)
 				device.setFullScreenWindow(null);
@@ -183,7 +186,7 @@ public class Display implements IViewport {
 		boolean disableExtended = false;
 		
 		// Disable borderless
-		if (this.displayMode == DisplayMode.FULLSCREEN_BORDERLESS) {
+		if (prevDisplayMode == DisplayMode.FULLSCREEN_BORDERLESS) {
 			frame.dispose();
 			frame.setUndecorated(false);
 			frame.setVisible(true);
@@ -191,7 +194,6 @@ public class Display implements IViewport {
 			if (displayMode == DisplayMode.FULLSCREEN_WINDOWED) {
 				// We're already in the correct
 				// display state.
-				this.displayMode = displayMode;
 				return;
 			}
 			
@@ -199,7 +201,7 @@ public class Display implements IViewport {
 		}
 		
 		// Disable fullscreen windowed
-		if (this.displayMode == DisplayMode.FULLSCREEN_WINDOWED || disableExtended) {
+		if (prevDisplayMode == DisplayMode.FULLSCREEN_WINDOWED || disableExtended) {
 			frame.setExtendedState(JFrame.NORMAL);
 			frame.setResizable(displayConfig.resizable);
 			
@@ -228,8 +230,6 @@ public class Display implements IViewport {
 				}
 			}
 		}
-		
-		this.displayMode = displayMode;
 		
 		if (canvas != null)
 			canvas.requestFocus();
