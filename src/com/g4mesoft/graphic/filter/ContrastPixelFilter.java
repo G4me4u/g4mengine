@@ -84,6 +84,8 @@ public class ContrastPixelFilter implements IPixelFilter {
 				// If the pixel-array contained alpha
 				// we should keep it's value
 				pixels[i] = (pixel & 0xFF000000) | (r << 16) | (g << 8) | b;
+				
+				i++;
 			}
 		}
 	}
