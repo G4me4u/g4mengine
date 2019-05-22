@@ -14,6 +14,8 @@ import com.g4mesoft.math.Vec2i;
 
 public class ButtonCompositionUI extends TextCompositionUI {
 
+	private static final int HORIZONTAL_PADDING = 10;
+	
 	protected ButtonComposition button;
 	
 	protected String trimmedText;
@@ -126,6 +128,6 @@ public class ButtonCompositionUI extends TextCompositionUI {
 
 	@Override
 	public Vec2i getPreferredSize(IRenderingContext2D context) {
-		return getPreferredSize(context, button.getText());
+		return getPreferredSize(context, button.getText()).add(HORIZONTAL_PADDING, 0);
 	}
 }
