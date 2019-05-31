@@ -1,5 +1,7 @@
 package com.g4mesoft.input.mouse;
 
+import java.awt.event.MouseEvent;
+
 import com.g4mesoft.input.Input;
 
 public class MouseButtonInput extends Input {
@@ -69,7 +71,15 @@ public class MouseButtonInput extends Input {
 	}
 
 	public void mouseDragged(int button, int x, int y) {
-		if (button != this.button)
+		// There is a bug with java.awt where the
+		// drag events wont carry a button field.
+		// Fix this by testing if button != NOBUTTON.
+		if (button != this.button && button != MouseEvent.NOBUTTON)
+			return;
+		
+		// Fix for missing button field. Just make sure
+		// this button is held.
+		if (!pressed)
 			return;
 		
 		if (!dragged) {
