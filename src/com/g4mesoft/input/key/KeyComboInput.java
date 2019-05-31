@@ -2,6 +2,8 @@ package com.g4mesoft.input.key;
 
 import java.util.Arrays;
 
+import com.g4mesoft.math.MathUtils;
+
 /**
  * Used as a multi-activated KeyInput extension. If either
  * of the given key-combinations are active, this KeyInput is 
@@ -35,8 +37,17 @@ public class KeyComboInput extends KeyInput {
 	private boolean pressed;
 	private boolean wasPressed;
 	
+	private int[][] repeatCounts;
+	
+	private boolean keyStatesChanged;
+	private int cachedRepeatCount;
+	
 	private long activationTime;
 	
+	public KeyComboInput(String name, int... keyCombo) {
+		this(name, new int[][] { keyCombo });
+	}
+
 	public KeyComboInput(String name, int[][] keyCombos) {
 		super(name);
 
@@ -44,14 +55,16 @@ public class KeyComboInput extends KeyInput {
 		this.keyCombos = new int[keyCombos.length][];
 		
 		// Create key-state arrays
-		this.keyStates = new boolean[keyCombos.length][];
+		keyStates = new boolean[keyCombos.length][];
+		repeatCounts = new int[keyCombos.length][];
 		
 		for (int i = 0; i < keyCombos.length; i++) {
 			int[] keyCombo = keyCombos[i];
 
 			this.keyCombos[i] = Arrays.copyOf(keyCombo, keyCombo.length);
 			
-			this.keyStates[i] = new boolean[keyCombo.length];
+			keyStates[i] = new boolean[keyCombo.length];
+			repeatCounts[i] = new int[keyCombo.length];
 		}
 		
 		reset();
@@ -59,33 +72,58 @@ public class KeyComboInput extends KeyInput {
 	
 	@Override
 	public void update() {
-		wasPressed = pressed;
-		pressed = isKeyStatePressed(keyStates);
+		if (keyStatesChanged) {
+			wasPressed = pressed;
+			pressed = isKeyStatePressed(keyStates);
+
+			resetRepeatCounts();
+		
+			keyStatesChanged = false;
+		}
 	}
 
 	@Override
 	public void reset() {
-		for (int i = 0, len = keyStates.length; i < len; i++) {
-			for (int j = 0; j < keyStates[i].length; j++) {
-				keyStates[i][j] = false;
+		pressed = false;
+		wasPressed = false;
+
+		if (keyStatesChanged) {
+			for (int i = 0, len = keyStates.length; i < len; i++) {
+				boolean[] comboKeyStates = keyStates[i];
+				for (int j = 0; j < comboKeyStates.length; j++) {
+					comboKeyStates[j] = false;
+				}
+			}
+	
+			resetRepeatCounts();
+
+			keyStatesChanged = false;
+		}
+	}
+	
+	private void resetRepeatCounts() {
+		for (int i = 0; i < repeatCounts.length; i++) {
+			int[] comboRepeatCounts = repeatCounts[i];
+			for (int j = 0; j < comboRepeatCounts.length; j++) {
+				comboRepeatCounts[j] = 0;
 			}
 		}
 		
-		pressed = false;
-		wasPressed = false;
+		cachedRepeatCount = 0;
 	}
 
 	/**
 	 * Used internally to set the state of a given key. If a key
 	 * with the given {@code keyCode} does not exist, this function
 	 * will change nothing, however it will still have to loop 
-	 * through all keys to know.
+	 * through all keys to know. Note that this also handles the
+	 * recording of key repeatCounts, if and only if state is true.
 	 * 
 	 * @param keyCode  -  The keyCode representing the key
 	 * @param state    -  The new state, which will be given to
 	 *                    the key in the {@code keyStates} array.
 	 * 
-	 * @return True, if the a key state changed, false otherwise.
+	 * @return True, if the a keyCode was found, false otherwise.
 	 * 
 	 * @see #keyPressed(int) keyPressed(keyCode)
 	 * @see #keyReleased(int) keyPressed(keyCode)
@@ -97,6 +135,9 @@ public class KeyComboInput extends KeyInput {
 			for (int j = 0; j < keyCombo.length; j++) {
 				if (keyCombo[j] == keyCode) {
 					keyStates[i][j] = state;
+					if (state)
+						repeatCounts[i][j]++;
+
 					changed = true;
 					
 					// Might exist as another part 
@@ -110,17 +151,24 @@ public class KeyComboInput extends KeyInput {
 	
 	@Override
 	public void keyPressed(int keyCode) {
-		if (setKeyState(keyCode, true) && !pressed) {
-			wasPressed = pressed;
-			pressed = isKeyStatePressed(keyStates);
-			if (pressed)
-				activationTime = System.currentTimeMillis();
+		if (setKeyState(keyCode, true)) {
+			// repeatCount may have changed
+			cachedRepeatCount = -1;
+			keyStatesChanged = true;
+			
+			if (!pressed) {
+				wasPressed = pressed;
+				pressed = isKeyStatePressed(keyStates);
+				if (pressed)
+					activationTime = System.currentTimeMillis();
+			}
 		}
 	}
 
 	@Override
 	public void keyReleased(int keyCode) {
-		setKeyState(keyCode, false);
+		if (setKeyState(keyCode, false))
+			keyStatesChanged = true;
 	}
 	
 	/**
@@ -135,20 +183,29 @@ public class KeyComboInput extends KeyInput {
 	 * 			otherwise.
 	 */
 	private boolean isKeyStatePressed(boolean[][] keyStates) {
-		nextCombination : for (int i = 0; i < keyStates.length; i++) {
-			for (int j = 0; j < keyStates[i].length; j++) {
-				// There's a missing key in this combination, 
-				// skip to next combo (i++).
-				if (!keyStates[i][j])
-					continue nextCombination; 
-			}
-			
-			// All keys are pressed in this combo (keyStates[i])
-			return true;
+		for (int i = 0; i < keyStates.length; i++) {
+			if (isKeyComboPressed(keyStates[i]))
+				return true;
 		}
 		
 		// None of the key-combinations were pressed
 		return false;
+	}
+
+	/**
+	 * Checks if all keyStates within the given combo are pressed.
+	 * 
+	 * @param comboStates - the keyStates of the given combo.
+	 * 
+	 * @return True, if all states are pressed, false otherwise.
+	 */
+	private boolean isKeyComboPressed(boolean[] comboStates) {
+		for (int i = 0; i < comboStates.length; i++) {
+			if (!comboStates[i])
+				return false;
+		}
+		
+		return true;
 	}
 	
 	@Override
@@ -164,5 +221,25 @@ public class KeyComboInput extends KeyInput {
 	@Override
 	public long getActivationTime() {
 		return activationTime;
+	}
+
+	@Override
+	public int getRepeatCount() {
+		if (cachedRepeatCount != -1)
+			return cachedRepeatCount;
+		
+		int repeatCount = cachedRepeatCount = 0;
+		for (int i = 0; i < repeatCounts.length; i++) {
+			if (isKeyComboPressed(keyStates[i]))
+				repeatCount += MathUtils.max(repeatCounts[i]);
+		}
+		
+		// If the key was repeated during the search, the
+		// cache may be invalid. Don't update the cache.
+		if (cachedRepeatCount == -1)
+			return repeatCount;
+
+		cachedRepeatCount = repeatCount;
+		return repeatCount;
 	}
 }

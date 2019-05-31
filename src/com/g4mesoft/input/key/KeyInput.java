@@ -144,4 +144,16 @@ public abstract class KeyInput extends Input {
 	public boolean isActive() {
 		return isPressed();
 	}
+
+	/**
+	 * Returns the amount of times that this key was repeated within the given
+	 * tick. Note that a key repeat is given either by the user releasing and
+	 * repressing the key, or in most cases by the user holding the key pressed.
+	 * The speed at which a key repeats is defined by the user's keyboard and
+	 * may therefore vary between use cases.
+	 * 
+	 * @return the amount of times this key was repeated within the given tick.
+	 */
+	public abstract int getRepeatCount();
+	
 }

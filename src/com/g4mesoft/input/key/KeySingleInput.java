@@ -31,7 +31,9 @@ public class KeySingleInput extends KeyInput {
 	private final boolean[] keyStates;
 	private boolean pressed;
 	private boolean wasPressed;
-
+	
+	private int repeatCount;
+	
 	private long activationTime;
 	
 	public KeySingleInput(String name, int... keyCodes) {
@@ -50,6 +52,8 @@ public class KeySingleInput extends KeyInput {
 	public void update() {
 		wasPressed = pressed;
 		pressed = isKeyStatePressed(keyStates);
+		
+		repeatCount = 0;
 	}
 	
 	@Override
@@ -59,6 +63,8 @@ public class KeySingleInput extends KeyInput {
 		
 		pressed = false;
 		wasPressed = false;
+		
+		repeatCount = 0;
 	}
 
 	/**
@@ -71,7 +77,7 @@ public class KeySingleInput extends KeyInput {
 	 * @param state    -  The new state, which will be given to
 	 *                    the key in the {@code keyStates} array.
 	 * 
-	 * @return True, if a key state changed, false otherwise.
+	 * @return True, if a keyCode was found, false otherwise.
 	 * 
 	 * @see #keyPressed(int) keyPressed(keyCode)
 	 * @see #keyReleased(int) keyPressed(keyCode)
@@ -92,13 +98,17 @@ public class KeySingleInput extends KeyInput {
 	
 	@Override
 	public void keyPressed(int keyCode) {
-		if (setKeyState(keyCode, true) && !pressed) {
-			// Make sure to keep the state, as it
-			// might change within the same tick
-			wasPressed = pressed;
-			pressed = isKeyStatePressed(keyStates);
-			if (pressed)
-				activationTime = System.currentTimeMillis();
+		if (setKeyState(keyCode, true)) {
+			repeatCount++;
+			
+			if (!pressed) {
+				// Make sure to keep the state, as it
+				// might change within the same tick
+				wasPressed = pressed;
+				pressed = isKeyStatePressed(keyStates);
+				if (pressed)
+					activationTime = System.currentTimeMillis();
+			}
 		}
 	}
 
@@ -140,5 +150,10 @@ public class KeySingleInput extends KeyInput {
 	@Override
 	public long getActivationTime() {
 		return activationTime;
+	}
+	
+	@Override
+	public int getRepeatCount() {
+		return repeatCount;
 	}
 }
