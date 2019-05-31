@@ -218,7 +218,7 @@ public class GColor {
 		TURQUOISE, MEDIUM_TURQUOISE, DARK_TURQUOISE, CADET_BLUE,
 		STEEL_BLUE, LIGHT_STEEL_BLUE, POWDER_BLUE, LIGHT_BLUE,
 		SKY_BLUE, LIGHT_SKY_BLUE, DEEP_SKY_BLUE, DODGER_BLUE,
-		CORNFLOWER_BLUE, ROYAL_BLUE, BLUE, MEDIUM_BLUE, JENIFER_BLUE /* <3 */, 
+		CORNFLOWER_BLUE, ROYAL_BLUE, BLUE, MEDIUM_BLUE, JENIFER_BLUE, 
 		DARK_BLUE, NAVY, MIDNIGHT_BLUE,
 		
 		/* BROWNS */
@@ -259,11 +259,15 @@ public class GColor {
 	}
 
 	public GColor invert() {
+		return invert(getAlpha());
+	}
+	
+	public GColor invert(int newAlpha) {
 		int ri = 0xFF - getRed();
 		int gi = 0xFF - getGreen();
 		int bi = 0xFF - getBlue();
 		
-		return new GColor(ri, gi, bi, getAlpha());
+		return new GColor(ri, gi, bi, newAlpha);
 	}
 	
 	public int getAlpha() {
