@@ -14,12 +14,12 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.SourceDataLine;
 
+import com.g4mesoft.math.MathUtils;
 import com.g4mesoft.math.Vec3f;
 import com.g4mesoft.sound.format.AudioFile;
-import com.g4mesoft.sound.format.IAudioFileProvider;
 import com.g4mesoft.sound.format.AudioParsingException;
+import com.g4mesoft.sound.format.IAudioFileProvider;
 import com.g4mesoft.sound.format.mpeg.MPEGFileProvider;
-import com.g4mesoft.sound.format.wav.WaveFile;
 import com.g4mesoft.sound.format.wav.WaveFileProvider;
 import com.g4mesoft.sound.processor.AudioChannel;
 import com.g4mesoft.sound.processor.AudioSource;
@@ -197,18 +197,22 @@ public final class SoundManager {
 		private final AudioSource audioSource;
 		private final SourceDataLine sdl;
 		
+		private final int numChannelsIn;
+		
 		private AudioThread(AudioSource audioSource) throws LineUnavailableException {
 			super("AudioThread");
 			
 			this.audioSource = audioSource;
 
 			sdl = getSourceDataLine();
+		
+			numChannelsIn = audioSource.getFormat().getChannels();
 		}
 		
-		private void processChannel(byte[] blockIn, byte[] blockOut, float[] samples, int framesIn, boolean monoIn, AudioChannel channel) {
+		private void processChannel(byte[] blockIn, byte[] blockOut, float[] samples, int framesIn, AudioChannel channel) {
 			int fp, i;
 
-			if (monoIn) {
+			if (numChannelsIn == 1) {
 				for (fp = 0, i = 0; fp < framesIn; fp++, i += 2)
 					samples[fp] = MemoryUtil.littleEndianToShort(blockIn, i) * SAMPLE_DIVIDER;
 			} else {
@@ -218,18 +222,29 @@ public final class SoundManager {
 
 			audioSource.preProcess(samples, framesIn, channel);
 
-			for (fp = 0, i = (channel == AudioChannel.LEFT) ? 0 : 2; fp < framesIn; fp++, i += 4)
-				MemoryUtil.writeLittleEndianShort(blockOut, (short)(samples[fp] * SAMPLE_MULTIPLIER), i);
+			if (blockOut != null) {
+				for (fp = 0, i = (channel == AudioChannel.LEFT) ? 0 : 2; fp < framesIn; fp++, i += 4)
+					MemoryUtil.writeLittleEndianShort(blockOut, (short)(samples[fp] * SAMPLE_MULTIPLIER), i);
+			}
+		}
+		
+		private int readAndProcessFrames(int framesToRead, byte[] blockIn, byte[] blockOut, float[] samples) {
+			int fr = audioSource.readRawFrames(blockIn, framesToRead);
+			if (fr <= 0) 
+				return -1;
+			
+			processChannel(blockIn, blockOut, samples, fr, AudioChannel.LEFT);
+			processChannel(blockIn, blockOut, samples, fr, AudioChannel.RIGHT);
+		
+			return fr;
 		}
 		
 		@Override
 		public void run() {
 			AudioFormat formatIn = audioSource.audioFile.getFormat();
 			
-			boolean monoIn = formatIn.getChannels() == 1;
-			
 			AudioFormat formatOut;
-			if (monoIn) { // Mono
+			if (numChannelsIn == 1) { // Mono
 				formatOut = new AudioFormat(formatIn.getEncoding(), 
 				                            formatIn.getSampleRate(), 
 				                            formatIn.getSampleSizeInBits(), 
@@ -259,14 +274,35 @@ public final class SoundManager {
 			
 			int frameSize = formatOut.getFrameSize();
 			int bytesToRead = framesToRead * frameSize;
+
+			int prevLatency = 0;
 			while (audioSource.isPlaying()) {
 				if (sdl.getBufferSize() - sdl.available() < bytesToRead) {
-					int fr = audioSource.readRawFrames(blockIn, framesToRead);
-					if (fr <= 0) 
-						break;
+					int latency = audioSource.getSampleProcessingLatency();
+					if (prevLatency < latency) {
+						// Convert from samples to frames. The frame size is
+						// defined in bytes (including both channels), so we
+						// have to also multiply the latency by the number of
+						// channels.
+						int byteLatency = 2 * (latency - prevLatency);
+						int frameLatency = (numChannelsIn * byteLatency) / frameSize;
+						prevLatency = latency;
+						
+						do {
+							int framesToSkip = MathUtils.min(frameLatency, framesToRead);
+							
+							// Make sure not to write to blockOut.
+							int fr = readAndProcessFrames(framesToSkip, blockIn, null, samples);
+							if (fr == -1)
+								break;
+
+							frameLatency -= fr;
+						} while (frameLatency != 0);
+					}
 					
-					processChannel(blockIn, blockOut, samples, fr, monoIn, AudioChannel.LEFT);
-					processChannel(blockIn, blockOut, samples, fr, monoIn, AudioChannel.RIGHT);
+					int fr = readAndProcessFrames(framesToRead, blockIn, blockOut, samples);
+					if (fr == -1)
+						break;
 					
 					sdl.write(blockOut, 0, fr * frameSize);
 				} else {
@@ -286,23 +322,5 @@ public final class SoundManager {
 			sdl.flush();
 			sdl.close();
 		}
-	}
-	
-	public static void main(String[] args) throws Exception {
-		int id = -1;
-		try {
-			InputStream is = WaveFile.class.getResourceAsStream("/assets/test.soundtest.wav");
-//			InputStream is = WaveFile.class.getResourceAsStream("/assets/test.soundtest_2big.wav");
-			//URL url = new URL("http://www.class-connection.com/dealers/8bit-ulaw/Female-Voice/Saturday%20Female%20Voice.wav");
-			id = SoundManager.getInstance().loadSound(is);
-		} catch(IOException e) {
-		}
-		
-		if (id == -1) {
-			System.out.println("Unsupported audio file!");
-			return;
-		}
-		
-		SoundManager.getInstance().playSound(id, false).setPitch(1.0f).setVolume(0.1f).setFrameLocation(48000 * 60);
 	}
 }

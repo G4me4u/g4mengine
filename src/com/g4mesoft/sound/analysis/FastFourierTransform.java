@@ -5,16 +5,25 @@ public final class FastFourierTransform {
 	private FastFourierTransform() {
 	}
 	
-	public static void transform(float[] data, float sign) {
+	public static void forwardTransform(float[] data) {
+		transform(data, false);
+	}
+
+	public static void inverseTransform(float[] data) {
+		transform(data, true);
+	}
+
+	public static void transform(float[] data, boolean inverse) {
 		int n = data.length;
 		
 		// No need for FFT
-		if (n <= 1) return;
+		if (n <= 1)
+			return;
 		
 		// Length is not power of two!
 		if ((n & (n - 1)) != 0) 
 			throw new IllegalArgumentException("data.length is not a power of two!");
-		
+
 		int i, j, m;
 		
 		float tmp;
@@ -37,11 +46,13 @@ public final class FastFourierTransform {
 			}
 			j += m;
 		}
+
+		float sign = inverse ? 1.0f : -1.0f;
 		
 		int mmax = 2;
 		while (n > mmax) {
 			int istep = mmax << 1;
-			double theta = Math.PI / (mmax >>> 1);
+			double theta = (2.0 * Math.PI) / mmax;
 			
 			float ur = 1.0f;
 			float ui = 0.0f;

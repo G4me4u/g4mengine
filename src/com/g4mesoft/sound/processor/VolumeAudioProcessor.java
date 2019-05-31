@@ -15,6 +15,11 @@ public class VolumeAudioProcessor implements IAudioProcessor {
 		for (int i = 0; i < numSamples; i++)
 			samples[i] = MathUtils.clamp(samples[i] * volume, -1.0f, 1.0f);
 	}
+	
+	@Override
+	public int getSampleLatency() {
+		return 0;
+	}
 
 	public void setVolume(float volume) {
 		this.volume = volume;
