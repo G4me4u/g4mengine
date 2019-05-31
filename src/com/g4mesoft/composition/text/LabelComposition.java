@@ -16,6 +16,10 @@ public class LabelComposition extends TextComposition {
 		// Set UI
 		setUI(new LabelCompositionUI());
 	}
+	
+	public void setUI(LabelCompositionUI ui) {
+		super.setUI(ui);
+	}
 
 	public void setText(String text) {
 		if (text == null)

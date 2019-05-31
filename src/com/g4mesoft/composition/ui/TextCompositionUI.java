@@ -6,6 +6,7 @@ import java.awt.geom.Rectangle2D;
 import com.g4mesoft.composition.text.LabelComposition;
 import com.g4mesoft.graphic.IRenderer2D;
 import com.g4mesoft.graphic.IRenderingContext2D;
+import com.g4mesoft.math.MathUtils;
 import com.g4mesoft.math.Vec2i;
 
 public abstract class TextCompositionUI extends CompositionUI {
@@ -40,10 +41,9 @@ public abstract class TextCompositionUI extends CompositionUI {
 	}
 	
 	/**
-	 * Trims the given text to fit within the given available 
-	 * width. If the text does not fit in the available width, 
-	 * it will be trimmed, and an ellipsis '...' will be added 
-	 * to the end of the text.
+	 * Trims the given text to fit within the given available width. If the text
+	 * does not fit in the available width, it will be trimmed, and an ellipsis
+	 * '...' will be added to the end of the text.
 	 * <br><br>
 	 * For example. Trimming 'Hello my world!' as follows:
 	 * <pre>
@@ -59,18 +59,17 @@ public abstract class TextCompositionUI extends CompositionUI {
 	 * |Hello my...|
 	 * |           |
 	 * </pre>
-	 * Trimming an empty string will result in an empty string. If
-	 * the given text does not allow for any characters within the
-	 * available width (i.e. the available width isn't sufficient 
-	 * to hold even a single character), the default ellipsis '...' 
-	 * will be returned.
+	 * Trimming an empty string will result in an empty string. If the given
+	 * text does not allow for any characters within the available width
+	 * (i.e. the available width isn't sufficient to hold even a single
+	 * character), the default ellipsis '...' will be returned.
 	 * 
 	 * @param context - The current rendering-context.
 	 * @param text - The text to be trimmed.
 	 * @param availableWidth - The specified available width.
 	 * 
-	 * @return A trimmed version of the text, which can be drawn within
-	 *         the specified availableWidth.
+	 * @return A trimmed version of the text, which can be drawn within the
+	 *         specified availableWidth.
 	 */
 	protected String trimText(IRenderingContext2D context, String text, int availableWidth) {
 		int len = text.length();
@@ -82,7 +81,7 @@ public abstract class TextCompositionUI extends CompositionUI {
 			return text;
 		
 		availableWidth -= context.getStringWidth(TRIMMED_TEXT_ELLIPSIS);
-		
+
 		// No space for any other
 		// characters. 
 		if (availableWidth < 0)
@@ -110,6 +109,9 @@ public abstract class TextCompositionUI extends CompositionUI {
 			return preferredSize;
 		
 		Rectangle2D textBounds = context.getStringBounds(text);
-		return preferredSize.set((int)textBounds.getWidth(), (int)textBounds.getHeight());
+		
+		int width = (int)MathUtils.ceil(textBounds.getWidth());
+		int height = (int)MathUtils.ceil(textBounds.getHeight());
+		return preferredSize.set(width, height);
 	}
 }

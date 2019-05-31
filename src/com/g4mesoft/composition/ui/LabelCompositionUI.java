@@ -65,11 +65,7 @@ public class LabelCompositionUI extends TextCompositionUI {
 
 	@Override
 	public void render(IRenderer2D renderer, float dt) {
-		GColor background = label.getBackground();
-		if (background != null) {
-			renderer.setColor(background);
-			renderer.fillRect(label.getX(), label.getY(), label.getWidth(), label.getHeight());
-		}
+		drawBackground(renderer, label, label.getBackground());
 		
 		if (trimmedText != null) {
 			renderer.setColor(label.getTextColor());

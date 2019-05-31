@@ -18,6 +18,11 @@ public abstract class LayoutComposition extends Composition {
 		
 		setUI(new LayoutCompositionUI());
 	}
+	
+	@Override
+	public LayoutCompositionUI getUI() {
+		return (LayoutCompositionUI)super.getUI();
+	}
 
 	public void addComposition(Composition composition) {
 		if (composition == null)

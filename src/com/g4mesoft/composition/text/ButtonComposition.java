@@ -36,6 +36,10 @@ public class ButtonComposition extends TextComposition {
 		setUI(new ButtonCompositionUI());
 	}
 	
+	public void setUI(ButtonCompositionUI ui) {
+		super.setUI(ui);
+	}
+	
 	public void setText(String text) {
 		if (text == null)
 			text = "";
@@ -111,7 +115,7 @@ public class ButtonComposition extends TextComposition {
 		buttonListeners.add(listener);
 	}
 	
-	public Set<IButtonCompositionListener> getButtonListener() {
+	public Set<IButtonCompositionListener> getButtonListeners() {
 		return Collections.unmodifiableSet(buttonListeners);
 	}
 

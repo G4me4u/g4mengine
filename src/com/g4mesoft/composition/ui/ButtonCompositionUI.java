@@ -115,7 +115,8 @@ public class ButtonCompositionUI extends TextCompositionUI {
 
 		if (background != null) {
 			renderer.setColor(background);
-			renderer.fillRect(button.getX(), button.getY(), button.getWidth(), button.getHeight());
+			renderer.fillRect(button.getX(), button.getY(), 
+			                  button.getWidth(), button.getHeight());
 		}
 		
 		if (trimmedText != null) {

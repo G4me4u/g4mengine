@@ -1,6 +1,7 @@
 package com.g4mesoft.composition.text;
 
 import com.g4mesoft.composition.Composition;
+import com.g4mesoft.composition.ui.TextCompositionUI;
 import com.g4mesoft.graphic.GColor;
 
 public abstract class TextComposition extends Composition {
@@ -21,8 +22,15 @@ public abstract class TextComposition extends Composition {
 		this.textColor = textColor;
 	}
 
+	@Override
+	public TextCompositionUI getUI() {
+		return (TextCompositionUI)super.getUI();
+	}
+	
 	public void setTextAlignment(int alignment) {
 		textAlignment = alignment;
+		
+		requestRelayout(false);
 	}
 	
 	public int getTextAlignment() {

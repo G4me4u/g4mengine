@@ -83,7 +83,7 @@ public abstract class Composition implements IViewport {
 		borderInsets = new BorderInsets();
 	}
 
-	public void setUI(CompositionUI ui) {
+	protected void setUI(CompositionUI ui) {
 		// Unbind current ui
 		CompositionUI oldUI = this.ui;
 		if (oldUI != null)
@@ -95,14 +95,17 @@ public abstract class Composition implements IViewport {
 		// We would have to re-layout
 		invalidate();
 	}
+	
+	public CompositionUI getUI() {
+		return ui;
+	}
 
 	/**
 	 * Layouts this composition. If the parent is null, this function will set
 	 * the size and position of the composition to fill the entire viewport of
 	 * the context.
 	 * 
-	 * @param context
-	 *            - The active rendering context of the application.
+	 * @param context - The active rendering context of the application.
 	 */
 	public final void layout(IRenderingContext2D context) {
 		if (parent == null) {
@@ -132,12 +135,11 @@ public abstract class Composition implements IViewport {
 	}
 
 	/**
-	 * Layouts this composition. This functions should be overriden by most
+	 * Layouts this composition. This functions should be overridden by most
 	 * sub-implementations, and should be in charge of laying out the different
 	 * components of this composition.
 	 * 
-	 * @param context
-	 *            - The active rendering context of the application.
+	 * @param context - The active rendering context of the application.
 	 */
 	protected void doLayout(IRenderingContext2D context) {
 	}
@@ -188,7 +190,7 @@ public abstract class Composition implements IViewport {
 	public Vec2i getPreferredSize(IRenderingContext2D context) {
 		if (preferredSizeInvalid) {
 			if (!preferredSizeSet)
-				calculatePreferredSize(preferredSize, context);
+				calculatePreferredSize(context, preferredSize);
 			preferredSizeInvalid = false;
 		}
 		return preferredSize;
@@ -198,7 +200,7 @@ public abstract class Composition implements IViewport {
 		preferredSizeInvalid = true;
 	}
 
-	protected void calculatePreferredSize(Vec2i preferredSize, IRenderingContext2D context) {
+	protected void calculatePreferredSize(IRenderingContext2D context, Vec2i preferredSize) {
 		preferredSize.set(0);
 
 		if (ui != null) {
@@ -386,9 +388,8 @@ public abstract class Composition implements IViewport {
 	}
 
 	protected void requestRelayout(boolean preferredSizeChanged) {
-		// We've already requested
-		// a re-layout.
-		if (layoutRequested)
+		// We've already requested a re-layout.
+		if (layoutRequested && (!preferredSizeChanged || preferredSizeInvalid))
 			return;
 
 		layoutRequested = true;

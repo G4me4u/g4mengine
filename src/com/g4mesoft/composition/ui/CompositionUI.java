@@ -19,6 +19,14 @@ public abstract class CompositionUI {
 
 	public abstract void render(IRenderer2D renderer, float dt);
 	
+	public void drawBackground(IRenderer2D renderer, Composition composition, GColor background) {
+		if (background != null) {
+			renderer.setColor(background);
+			renderer.fillRect(composition.getX(), composition.getY(), 
+			                  composition.getWidth(), composition.getHeight());
+		}
+	}
+	
 	public void drawBorder(IRenderer2D renderer, Composition composition) {
 		int borderFlags = composition.getBorderFlags();
 		// No need to draw an empty border.
