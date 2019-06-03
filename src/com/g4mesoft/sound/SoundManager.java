@@ -125,7 +125,7 @@ public final class SoundManager {
 		AudioFile audioFile = audioFiles[id];
 		if (audioFile != null) {
 			audioFiles[id] = null;
-			// audioFile.dispose()
+			audioFile.dispose();
 			numAudioFiles--;
 			return true;
 		}

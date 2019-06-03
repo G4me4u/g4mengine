@@ -32,5 +32,7 @@ public abstract class AudioFile {
 	public abstract int getData(byte[] dst, int srcPos, int dstPos, int len);
 	
 	public abstract int getLengthInFrames();
-	
+
+	public void dispose() {
+	}
 }
