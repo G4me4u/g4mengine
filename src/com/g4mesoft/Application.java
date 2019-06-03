@@ -66,25 +66,35 @@ public abstract class Application implements IExitable {
 	}
 
 	protected Application(String displayConfigFile, boolean internal) {
-		InputStream is = FileUtil.getInputStream(displayConfigFile, internal);
-
-		DisplayConfig config = null;
-		if (is != null) {
-			try {
-				config = Display.readDisplayConfig(is);
-			} catch (IOException e) {
-				Application.errorOccurred(e);
-			} finally {
-				FileUtil.closeInputStreamSilent(is);
-			}
-		}
-		
-		displayConfig = (config == null) ? 
-				DisplayConfig.DEFAULT_DISPLAY_CONFIG : config;
+		displayConfig = loadDisplayConfig(displayConfigFile, internal);
 	}
 	
 	protected Application() {
-		this(DISPLAY_CONFIG_LOCATION);
+		DisplayConfig config = DisplayConfig.DEFAULT_DISPLAY_CONFIG;
+		try {
+			config = loadDisplayConfig(DISPLAY_CONFIG_LOCATION, true);
+		} catch (ConfigReadException e) {
+			// Avoid errors when the configuration
+			// file was not found.
+			if (e.getCause() instanceof IOException)
+				Application.errorOccurred(e);
+		}
+		
+		displayConfig = config;
+	}
+	
+	private DisplayConfig loadDisplayConfig(String displayConfigFile, boolean internal) {
+		InputStream is = FileUtil.getInputStream(displayConfigFile, internal);
+		if (is == null)
+			throw new ConfigReadException("Unable to find config file");
+
+		try {
+			return Display.readDisplayConfig(is);
+		} catch (IOException e) {
+			throw new ConfigReadException(e);
+		} finally {
+			FileUtil.closeInputStreamSilent(is);
+		}
 	}
 
 // Abstract functions //
