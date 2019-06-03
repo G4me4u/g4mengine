@@ -3,6 +3,8 @@ package com.g4mesoft.util;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -295,5 +297,24 @@ public final class FileUtil {
 		
 		if (!file.exists())
 			file.createNewFile();
+	}
+
+	public static InputStream getInputStream(String filename, boolean internal) {
+		if (internal)
+			return FileUtil.class.getResourceAsStream(filename);
+
+		try {
+			return new FileInputStream(new File(filename));
+		} catch (FileNotFoundException e) {
+		}
+
+		return null;
+	}
+
+	public static void closeInputStreamSilent(InputStream is) {
+		try {
+			is.close();
+		} catch (IOException e) {
+		}
 	}
 }
