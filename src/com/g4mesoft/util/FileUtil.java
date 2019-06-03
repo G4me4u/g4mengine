@@ -25,6 +25,8 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Vector;
 
+import com.g4mesoft.Application;
+
 public final class FileUtil {
 
 	private static final String COMMENT_START = "#";
@@ -306,15 +308,18 @@ public final class FileUtil {
 		try {
 			return new FileInputStream(new File(filename));
 		} catch (FileNotFoundException e) {
+			Application.errorOccurred(e);
 		}
 
 		return null;
 	}
 
 	public static void closeInputStreamSilent(InputStream is) {
-		try {
-			is.close();
-		} catch (IOException e) {
+		if (is != null) {
+			try {
+				is.close();
+			} catch (IOException e) {
+			}
 		}
 	}
 }
