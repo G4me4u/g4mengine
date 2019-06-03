@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
 
 import com.g4mesoft.composition.Composition;
 import com.g4mesoft.graphic.Display;
@@ -15,6 +14,7 @@ import com.g4mesoft.input.key.KeyInputListener;
 import com.g4mesoft.input.key.KeyTypedInput;
 import com.g4mesoft.input.mouse.MouseButtonInput;
 import com.g4mesoft.input.mouse.MouseInputListener;
+import com.g4mesoft.util.FileUtil;
 
 public abstract class Application implements IExitable {
 
@@ -62,14 +62,20 @@ public abstract class Application implements IExitable {
 	}
 	
 	protected Application(String displayConfigFile) {
-		URL configURL = Application.class.getResource(displayConfigFile);
+		this(displayConfigFile, true);
+	}
+
+	protected Application(String displayConfigFile, boolean internal) {
+		InputStream is = FileUtil.getInputStream(displayConfigFile, internal);
 
 		DisplayConfig config = null;
-		if (configURL != null) {
-			try (InputStream is = configURL.openStream()){
+		if (is != null) {
+			try {
 				config = Display.readDisplayConfig(is);
 			} catch (IOException e) {
 				Application.errorOccurred(e);
+			} finally {
+				FileUtil.closeInputStreamSilent(is);
 			}
 		}
 		
