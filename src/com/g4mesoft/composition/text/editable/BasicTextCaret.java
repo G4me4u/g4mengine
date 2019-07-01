@@ -1,6 +1,7 @@
 package com.g4mesoft.composition.text.editable;
 
 import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
 
 import com.g4mesoft.Application;
 import com.g4mesoft.composition.CompositionUtils;
@@ -14,7 +15,6 @@ import com.g4mesoft.input.key.KeySingleInput;
 import com.g4mesoft.input.mouse.MouseButtonInput;
 import com.g4mesoft.input.mouse.MouseInputListener;
 import com.g4mesoft.math.MathUtils;
-import com.sun.glass.events.KeyEvent;
 
 /**
  * A basic text caret used by the user to navigate the text area on which this
