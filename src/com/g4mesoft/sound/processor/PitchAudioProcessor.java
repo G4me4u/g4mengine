@@ -5,18 +5,18 @@ import com.g4mesoft.sound.analysis.FastFourierTransform;
 
 public class PitchAudioProcessor implements IAudioProcessor {
 
-	private static final int FRAME_SIZE = 1024;
+	private static final int FRAME_SIZE = 2048;
 	private static final int HALF_FRAME_SIZE = FRAME_SIZE / 2;
 	private static final int OVERLAP_FACTOR = 8;
 	private static final int STEP_SIZE = FRAME_SIZE / OVERLAP_FACTOR;
 	private static final int SAMPLES_LATENCY = FRAME_SIZE - STEP_SIZE;
 
-	private static final float EXPECTED_PHASE = 2.0f * MathUtils.PI / OVERLAP_FACTOR;
+	private static final double EXPECTED_PHASE = 2.0 * MathUtils.PI_D / OVERLAP_FACTOR;
 	
 	private static final float[] WINDOW_FUNC;
 	
 	private float pitch;
-	private final float freqPerBin;
+	private final double freqPerBin;
 	
 	private final PitchShifter[] pitchShifters;
 	
@@ -26,7 +26,7 @@ public class PitchAudioProcessor implements IAudioProcessor {
 	
 	public PitchAudioProcessor(float pitch, float sampleRate) {
 		this.pitch = pitch;
-		this.freqPerBin = sampleRate / FRAME_SIZE;
+		this.freqPerBin = (double)sampleRate / FRAME_SIZE;
 		
 		pitchShifters = new PitchShifter[2];
 		pitchShifters[0] = new PitchShifter();
@@ -54,8 +54,8 @@ public class PitchAudioProcessor implements IAudioProcessor {
 		
 		private final float[] fftSamples;
 		
-		private final float[] lastPhase;
-		private final float[] sumPhase;
+		private final double[] lastPhase;
+		private final double[] sumPhase;
 		
 		private final float[] synMagn;
 		private final float[] synFreq;
@@ -68,8 +68,8 @@ public class PitchAudioProcessor implements IAudioProcessor {
 		
 			fftSamples = new float[FRAME_SIZE * 2];
 			
-			lastPhase = new float[HALF_FRAME_SIZE];
-			sumPhase = new float[HALF_FRAME_SIZE];
+			lastPhase = new double[HALF_FRAME_SIZE];
+			sumPhase = new double[HALF_FRAME_SIZE];
 			
 			synMagn = new float[HALF_FRAME_SIZE];
 			synFreq = new float[HALF_FRAME_SIZE];
@@ -95,49 +95,50 @@ public class PitchAudioProcessor implements IAudioProcessor {
 				FastFourierTransform.forwardTransform(fftSamples);
 
 				for (int k = 0; k < HALF_FRAME_SIZE; k++) {
-					float real = fftSamples[(k << 1) + 0];
-					float imag = fftSamples[(k << 1) + 1];
-					float phase = MathUtils.atan2(imag, real);
+					double real = fftSamples[(k << 1) + 0];
+					double imag = fftSamples[(k << 1) + 1];
+					double phase = MathUtils.atan2(imag, real);
 					
-					float tmp = phase - lastPhase[k];
+					double tmp = phase - lastPhase[k];
 					lastPhase[k] = phase;
 					
 					int index = (int)(k * pitch);
 					if (index >= HALF_FRAME_SIZE)
 						break;
 					
-					float magn = MathUtils.sqrt(real * real + imag * imag);
+					float magn = (float)MathUtils.sqrt(real * real + imag * imag);
 					if (magn > synMagn[index]) {
 						tmp -= (double)k * EXPECTED_PHASE;
 						
-						long qpd = (long)(tmp / MathUtils.PI);
-						tmp -= MathUtils.PI * (qpd + (qpd < 0 ? (qpd & 1L) : -(qpd & 1L)));
+						long qpd = (long)(tmp / MathUtils.PI_D);
+						tmp -= MathUtils.PI_D * (qpd + (qpd > 0 ? (qpd & 1L) : -(qpd & 1L)));
 						
-						tmp *= OVERLAP_FACTOR / (2.0f * MathUtils.PI);
+						tmp *= OVERLAP_FACTOR / (2.0 * MathUtils.PI_D);
 						tmp = k * freqPerBin + tmp * freqPerBin;
 
-						synFreq[index] = tmp * pitch;
+						synFreq[index] = (float)(tmp * pitch);
 					}
+					
 					synMagn[index] += magn;
 				}
 
 				for (int k = 0; k < HALF_FRAME_SIZE; k++) {
 					float magn = synMagn[k];
-					float tmp = synFreq[k];
+					double tmp = synFreq[k];
 					synMagn[k] = 0.0f;
 					synFreq[k] = 0.0f;
 					
 					tmp -= freqPerBin * k;
 					tmp /= freqPerBin;
-					tmp *= 2.0f * MathUtils.PI / OVERLAP_FACTOR;
+					tmp *= 2.0 * MathUtils.PI_D / OVERLAP_FACTOR;
 					tmp += k * EXPECTED_PHASE;
 					
 					sumPhase[k] += tmp;
-					sumPhase[k] %= MathUtils.PI * 2.0f;
-					float phase = sumPhase[k];
+					sumPhase[k] %= MathUtils.PI_D * 2.0;
+					double phase = sumPhase[k];
 
-					fftSamples[(k << 1) + 0] = magn * MathUtils.cos(phase);
-					fftSamples[(k << 1) + 1] = magn * MathUtils.sin(phase);
+					fftSamples[(k << 1) + 0] = (float)(magn * MathUtils.cos(phase));
+					fftSamples[(k << 1) + 1] = (float)(magn * MathUtils.sin(phase));
 					
 					fftSamples[(k << 1) + FRAME_SIZE + 0] = 0.0f;
 					fftSamples[(k << 1) + FRAME_SIZE + 1] = 0.0f;
