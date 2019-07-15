@@ -1,12 +1,10 @@
 package com.g4mesoft.sound.format.info.id3;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Vector;
 
-import com.g4mesoft.sound.format.AudioHelper;
+import com.g4mesoft.sound.format.AudioBitInputStream;
 import com.g4mesoft.sound.format.TagParsingException;
 import com.g4mesoft.sound.format.info.AudioInfo;
 import com.g4mesoft.sound.format.info.AudioInfo.AudioInfoType;
@@ -14,7 +12,10 @@ import com.g4mesoft.sound.format.info.AudioTag;
 
 public class ID3v2Tag extends AudioTag {
 	
-	public static final String ID3 = "ID3";
+	private static final int ID3_MARKER_DEC = 0x494433;
+	private static final int ID3_MARKER_BIT_SIZE = 3 * 8;
+	
+	public static final String ID3_NAME = "ID3v2";
 	public static final byte MAX_VERSION = 0x04;
 	
 	public static final int UNSYNCHRONISATION = 0x80;
@@ -26,7 +27,7 @@ public class ID3v2Tag extends AudioTag {
 	private final AudioInfo[] information;
 	
 	private ID3v2Tag(AudioInfo[] information) {
-		super(ID3);
+		super(ID3_NAME);
 
 		this.information = information;
 	}
@@ -49,23 +50,22 @@ public class ID3v2Tag extends AudioTag {
 		}
 		return null;
 	}
-	
-	public static ID3v2Tag loadTag(InputStream is) throws IOException, TagParsingException {
-		byte[] buffer = new byte[4];
-		
-		if (!ID3.equals(AudioHelper.readString(is, buffer, 3, 0, StandardCharsets.ISO_8859_1)))
+
+	public static ID3v2Tag loadTag(AudioBitInputStream abis) throws IOException, TagParsingException {
+		if (!abis.findBitPattern(ID3_MARKER_DEC, ID3_MARKER_BIT_SIZE))
 			return null;
-		
-		ID3Helper.readBytesSafe(is, buffer, 2, 0);
+
+		byte[] buffer = new byte[4];
+		ID3Helper.readBytesSafe(abis, buffer, 2, 0);
 		if (buffer[0] > MAX_VERSION) // Major version
 			ID3Helper.unsupported();
 		
-		ID3Helper.readByteSafe(is, buffer, 0);
+		ID3Helper.readByteSafe(abis, buffer, 0);
 		byte flags = buffer[0];
 		if ((flags & 0xF) != 0) // Unsupported flags must be zero
 			ID3Helper.corrupted();
 		
-		int size = ID3Helper.readSynchsafeInt(is, buffer);
+		int size = ID3Helper.readSynchsafeInt(abis, buffer);
 		
 		int br = 0;
 		
@@ -73,27 +73,37 @@ public class ID3v2Tag extends AudioTag {
 			ID3Helper.unsupported();
 		
 		if ((flags & EXTENDED_HEADER) != 0) {
-			int ehSize = ID3Helper.readSynchsafeInt(is, buffer);
+			int ehSize = ID3Helper.readSynchsafeInt(abis, buffer);
 			br += 4;
 			
 			// Check if number of flag bytes is
 			// as written in the definition (1).
-			br += ID3Helper.readByteSafe(is, buffer, 0);
+			br += ID3Helper.readByteSafe(abis, buffer, 0);
 			if (buffer[0] != 0x01)
 				ID3Helper.corrupted();
 			
-			br += ID3Helper.readByteSafe(is, buffer, 0);
+			br += ID3Helper.readByteSafe(abis, buffer, 0);
 			if ((buffer[0] & 0x8F) != 0) // Invalid flags
 				ID3Helper.corrupted();
 
 			// Skip extended header
-			br += is.skip(ehSize - 6);
+			br += abis.skip(ehSize - 6);
 		}
+		
+		// Make sure we're not at the end of
+		// the stream.
+		if (abis.isEndOfStream())
+			ID3Helper.corrupted();
+		
+		// The ID3 tag can still be invalid
+		// but at this point we can be pretty
+		// sure that the tag is valid.
+		abis.invalidateReadLimit();
 		
 		Vector<AudioInfo> information = new Vector<AudioInfo>();
 		while (br < size) {
 			try {
-				br += FrameParserManager.readFrame(is, buffer, information, true);
+				br += FrameParserManager.readFrame(abis, buffer, information, true);
 			} catch (TagParsingException tpe) {
 				// We found an invalid frame.. try to
 				// continue either way. Make sure we
@@ -112,7 +122,7 @@ public class ID3v2Tag extends AudioTag {
 			// footer, as it is simply a copy.
 			
 			// Skip footer (10 bytes always)
-			is.skip(10);
+			abis.skip(10);
 		}
 		
 		return new ID3v2Tag(information.toArray(new AudioInfo[information.size()]));

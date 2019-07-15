@@ -1,204 +1,54 @@
 package com.g4mesoft.sound.format.mpeg;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioFormat.Encoding;
 
-import com.g4mesoft.sound.format.AudioFile;
+import com.g4mesoft.sound.format.AudioBitInputStream;
 import com.g4mesoft.sound.format.AudioParsingException;
-import com.g4mesoft.sound.format.TagParsingException;
-import com.g4mesoft.sound.format.info.TextAudioInfo;
-import com.g4mesoft.sound.format.info.TextAudioInfo.TextAudioInfoType;
-import com.g4mesoft.sound.format.info.id3.ID3v2Tag;
-import com.g4mesoft.util.MemoryUtil;
+import com.g4mesoft.sound.format.BasicAudioFile;
 
-public class MPEGFile extends AudioFile {
+public class MPEGFile extends BasicAudioFile {
 
 	/**
-	 * The minimum number of frames in a valid mpeg file
+	 * The minimum number of frames in the MPEG file for it to be considered as
+	 * a valid MPEG file. If this number of frames is not reached before the
+	 * read limit set by the {@code SoundManager}, then the audio file is not
+	 * considered as an MPEG file.
 	 */
 	private static final int MIN_FRAMES = 3;
 	
-	/**
-	 * The maximum number of bytes able to get reset
-	 * by the InputStream.
-	 */
-	private static final int MAX_TOLERANCE_DEPTH = 1024;
-
-	/**
-	 * The file type specified in ID3 tags for MPEG.
-	 */
-	private static final String MPEG_FILE_TYPE = "MPG";
-	
-	private final byte[] data;
-	private final AudioFormat format;
-	private final ID3v2Tag audioTag;
-	
-	MPEGFile(byte[] data, AudioFormat format, ID3v2Tag audioTag) {
-		this.data = data;
-		this.format = format;
-		this.audioTag = audioTag;
+	private MPEGFile(byte[] data, AudioFormat format) {
+		super(data, format);
 	}
 	
-	public static MPEGFile loadMPEG(InputStream is) throws IOException, AudioParsingException {
-		if (!is.markSupported())
-			return null;
-		is.mark(Integer.MAX_VALUE);
+	public static MPEGFile loadMPEG(AudioBitInputStream abis) throws IOException, AudioParsingException {
+		MPEGFrameDecoder frameDecoder = new MPEGFrameDecoder();
 		
-		ID3v2Tag tag = null;
-		try {
-			tag = ID3v2Tag.loadTag(is);
-		} catch(TagParsingException e) {
-		}
-
-		if (tag != null) {
-			TextAudioInfo type = (TextAudioInfo)tag.getFirstOccuringInformation(TextAudioInfoType.FILE_TYPE);
-			if (type != null && !type.getValue()[0].startsWith(MPEG_FILE_TYPE)) {
-				is.reset();
+		while (frameDecoder.getNumValidFrames() < MIN_FRAMES) {
+			if (!frameDecoder.readNextFrame(abis))
 				return null;
-			}
-		} else {
-			is.reset(); // We need to reset
-			is.mark(MAX_TOLERANCE_DEPTH);
 		}
 		
-		MPEGBitStream bitStream = new MPEGBitStream(is);
-		MPEGFrame frame = new MPEGFrame();
+		abis.invalidateReadLimit();
 		
-		int numSamples = 0;
-		List<float[]> data = new ArrayList<float[]>();
+		while (frameDecoder.readNextFrame(abis)) { }
 		
-		int numFrames = 0;
+		frameDecoder.flushCachedSamples();
 		
-		long oldByteLocation = 0;
+		AudioFormat format = new AudioFormat(Encoding.PCM_SIGNED, 
+		                                     frameDecoder.getSampleRate(),
+		                                     16,
+		                                     2, 
+		                                     4, 
+		                                     frameDecoder.getSampleRate(),
+		                                     false);
 		
-		while (true) {
-			if (!frame.readFrame(bitStream))
-				break; // End of stream
-			
-			System.out.println("Last frame was approx. " + (frame.header.byteLocation - oldByteLocation) + " bytes long");
-			System.out.println("\nFrame at position: " + Long.toString(bitStream.getBytesRead()));
-			oldByteLocation = frame.header.byteLocation;
-			
-			switch(frame.header.version) {
-			case MPEGHeader.MPEG_V10:
-				System.out.println("Frame is mpeg 1");
-				break;
-			case MPEGHeader.MPEG_V20:
-				System.out.println("Frame is mpeg 2");
-				break;
-			case MPEGHeader.MPEG_V25:
-				System.out.println("Frame is mpeg 2.5");
-				break;
-			}
-			
-			switch(frame.header.layer) {
-			case MPEGHeader.LAYER_I:
-				System.out.println("Frame is layer 1");
-				break;
-			case MPEGHeader.LAYER_II:
-				System.out.println("Frame is layer 2");
-				break;
-			case MPEGHeader.LAYER_III:
-				System.out.println("Frame is layer 3");
-				break;
-			}
-			
-			switch(frame.header.mode) {
-			case MPEGHeader.SINGLE_CHANNEL:
-				System.out.println("Mono");
-				break;
-			case MPEGHeader.STEREO:
-				System.out.println("Stereo");
-				break;
-			case MPEGHeader.DUAL_CHANNEL:
-				System.out.println("Dual channel");
-				break;
-			case MPEGHeader.JOINT_STEREO:
-				System.out.println("Joint stereo");
-				break;
-			}
-			
-			System.out.println(frame.bitrate + " bits per second");
-			System.out.println(frame.frequency + " Hz");
-
-			if (frame.header.layer != MPEGHeader.LAYER_III) {
-				float[] samples = frame.header.layer == MPEGHeader.LAYER_I ? frame.audioLayer1.getSamples() : frame.audioLayer2.getSamples();
-				numSamples += samples.length;
-				data.add(samples);
-			}
-			
-			if (numFrames++ > 30000) break;
-		}
-		
-		if (numFrames < MIN_FRAMES || !bitStream.isEndOfStream()) {
-			is.reset();
-			return null;
-		}
-		
-		System.out.println("\nNumber of valid frames: " + Integer.toString(numFrames));
-		
-		float mx = 0.0f, mn = 0.0f;
-		
-		int clips = 0;
-		
-		int br = 0;
-		byte[] dat = new byte[numSamples * 2];
-		for (float[] samples : data) {
-			for (float sample : samples) {
-				if (sample > mx)
-					mx = sample;
-				if (sample < mn)
-					mn = sample;
-				sample *= Short.MAX_VALUE;
-				if (sample > Short.MAX_VALUE) {
-					sample = Short.MAX_VALUE;
-					clips++;
-				} else if (sample < Short.MIN_VALUE) {
-					sample = Short.MIN_VALUE;
-					clips++;
-				}
-				MemoryUtil.writeLittleEndianShort(dat, (short)sample, br);
-				br += 2;
-			}
-		}
-		System.out.println(mx + ", " + mn);
-		System.out.println(clips + " clips");
-		System.out.println((float)clips / numSamples * 100.0f + "%");
-		data.clear();
-		data = null;
-		
-		is.mark(-1);
-		
-		return new MPEGFile(dat, getAudioFormat(AudioFormat.Encoding.PCM_SIGNED, frame.frequency, 16, 2, 4, false), tag);
+		return new MPEGFile(frameDecoder.getCompiledSamples(), format);
 	}
 
 	public static AudioFormat getAudioFormat(AudioFormat.Encoding encoding, int sampleRate, int sampleSizeInBits, int channels, int frameSize, boolean bigEndian) {
 		return new AudioFormat(encoding, sampleRate, sampleSizeInBits, channels, frameSize, sampleRate * (sampleSizeInBits >>> 3) * channels / frameSize, bigEndian);
-	}
-
-	@Override
-	public AudioFormat getFormat() {
-		return format;
-	}
-
-	@Override
-	public int getData(byte[] dst, int srcPos, int dstPos, int len) {
-		if (len > data.length - srcPos)
-			len = data.length - srcPos;
-		System.arraycopy(data, srcPos, dst, dstPos, len);
-		return len;
-	}
-	
-	@Override
-	public int getLengthInFrames() {
-		return data.length / format.getFrameSize();
-	}
-
-	public ID3v2Tag getAudioTag() {
-		return audioTag;
 	}
 }

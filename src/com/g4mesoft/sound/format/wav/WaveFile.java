@@ -1,41 +1,43 @@
 package com.g4mesoft.sound.format.wav;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 
 import javax.sound.sampled.AudioFormat;
 
 import com.g4mesoft.sound.format.AlawDecoder;
-import com.g4mesoft.sound.format.AudioFile;
+import com.g4mesoft.sound.format.AudioBitInputStream;
 import com.g4mesoft.sound.format.AudioHelper;
 import com.g4mesoft.sound.format.AudioParsingException;
+import com.g4mesoft.sound.format.BasicAudioFile;
 import com.g4mesoft.sound.format.UlawDecoder;
 import com.g4mesoft.util.MemoryUtil;
 
-public class WaveFile extends AudioFile {
+public class WaveFile extends BasicAudioFile {
 
 	/**
-	 * The maximum number of bytes able to get reset
-	 * by the InputStream.
+	 * The number of bits that make up the marker pattern
 	 */
-	private static final int MAX_TOLERANCE_DEPTH = 1024;
+	private static final int MARKER_SIZE = 4 * 8;
+	
+	/**
+	 * The maximum search depth for markers (1 kB)
+	 */
+	private static final int MARKER_SEARCH_DEPTH = 1024;
 	
 	/*
-	 * The wave audio format contains multiple headers
-	 * with string indicators. Ex. "RIFF", "WAVE" etc.
+	 * The wave audio format contains multiple headers with string indicators.
+	 * Ex. "RIFF", "WAVE" etc.
 	 */
 	
 	/**
-	 * RIFF chunk indicator at the beginning of a wave
-	 * file.
+	 * RIFF chunk indicator at the beginning of a wave file.
 	 */
 	private static final int RIFF_DEC = 0x52494646;
 	// private static final String RIFF = "RIFF";
 	
 	/**
-	 * WAVE chunk indicator at the beginning after file
-	 * size.
+	 * WAVE chunk indicator at the beginning after file size.
 	 */
 	private static final int WAVE_DEC = 0x57415645;
 	// private static final String WAVE = "WAVE";
@@ -53,9 +55,9 @@ public class WaveFile extends AudioFile {
 	// private static final String DATA = "data";
 	
 	/*
-	 * The audio data can be stored in different encodings.
-	 * The following are the encodings specified in the
-	 * definition of the wave format: PCM, A-LAW & U-LAW.
+	 * The audio data can be stored in different encodings. The following are
+	 * the encodings specified in the definition of the wave format: PCM, A-LAW
+	 * & U-LAW.
 	 */
 	
 	/**
@@ -71,29 +73,23 @@ public class WaveFile extends AudioFile {
 	 */
 	private static final int ULAW_ENCODING = 0x7;
 	
-	private final byte[] data;
-	private final AudioFormat format;
-	
 	private WaveFile(byte[] data, AudioFormat format) {
-		this.data = data;
-		this.format = format;
+		super(data, format);
 	}
 
 	/**
-	 * Loads wave header and audio data from an {@code InputStream}.
-	 * If the {@code InputStream} does not supply a valid wave header, 
-	 * the returned result will be null and the {@code InputStream} 
-	 * will be reset. If {@link java.io.InputStream#markSupported() 
-	 * is.markSupported} returns false, and marking is not supported,
-	 * the returned result will be null. If the header is valid and
-	 * the WaveFile is loaded successfully, the WaveFile will be
-	 * returned.
+	 * Loads wave header and audio data from an {@code InputStream}. If the
+	 * {@code InputStream} does not supply a valid wave header, the returned
+	 * result will be null and the {@code InputStream} will be reset. If
+	 * {@link java.io.InputStream#markSupported() is.markSupported} returns
+	 * false, and marking is not supported, the returned result will be null. If
+	 * the header is valid and the WaveFile is loaded successfully, the WaveFile
+	 * will be returned.
 	 * <br><br>
-	 * The default wave file header is a total of 44 bytes, or more 
-	 * if storing extra parameters. This WaveFile loader will however 
-	 * skip over these custom parameters, as they are currently not 
-	 * supported. The following table shows how a typical header might 
-	 * be formatted.
+	 * The default wave file header is a total of 44 bytes, or more if storing
+	 * extra parameters. This WaveFile loader will however skip over these
+	 * custom parameters, as they are currently not supported. The following
+	 * table shows how a typical header might be formatted.
 	 * <br><br>
 	 * <center><table WIDTH=500 BORDER=1>
 	 *   <tr>
@@ -109,8 +105,8 @@ public class WaveFile extends AudioFile {
 	 *   <tr>
 	 *     <td>5-8</td>
 	 *     <td>File size (Integer)</td>
-	 *     <td>Size of overall file (minus 8) in bytes. Stored 
-	 *         as a 4 byte integer with little endian byte-order</td>
+	 *     <td>Size of overall file (minus 8) in bytes. Stored  as a 4 byte
+	 *         integer with little endian byte-order</td>
 	 *   </tr>
 	 *   <tr>
 	 *     <td>9-12</td>
@@ -185,69 +181,56 @@ public class WaveFile extends AudioFile {
 	 *   </tr>
 	 * </table></center>
 	 * <br>
-	 * <i>Note: WAV format uses little-endian byte order to store values,
-	 * so they have to be converted in code to make sense. Strings are
-	 * stored in big-endian byte order (1 byte per character)</i>
+	 * <i>Note: WAV format uses little-endian byte order to store values, so
+	 * they have to be converted in code to make sense. Strings are stored in
+	 * big-endian byte order (1 byte per character)</i>
 	 * <br><br>
 	 * @param is - The {@code InputStream} streaming the wave data.
-	 * @return null, if the {@code InputStream} does not contain a valid 
-	 *         wave format, or if marking/resetting is not supported. 
-	 *         Otherwise this method will return a WaveFile containing 
-	 *         all information needed for playback.
+	 * @return null, if the {@code InputStream} does not contain a valid wave
+	 *         format, or if marking/resetting is not supported. Otherwise this
+	 *         method will return a WaveFile containing all information needed
+	 *         for playback.
 	 * 
 	 * @throws IOException if an I/O error occurs.
-	 * @throws AudioParsingException if header is valid, but audio data 
-	 *                               is corrupted or nonexistent. Note that
-	 *                               the stream cannot be reset when this
-	 *                               exception is thrown.
+	 * @throws AudioParsingException if header is valid, but audio data is
+	 *                               corrupted or nonexistent. Note that the
+	 *                               stream cannot be reset when this exception
+	 *                               is thrown.
 	 * 
 	 * @see java.io.InputStream
 	 */
-	public static WaveFile loadWave(InputStream is) throws IOException, AudioParsingException {
-		// We need to be able to reset the 
-		// InputStream if header is not a 
-		// wave file format.
-		if (!is.markSupported())
+	public static WaveFile loadWave(AudioBitInputStream abis) throws IOException, AudioParsingException {
+		// Search for RIFF marker (start of wave)
+		if (!abis.findBitPattern(RIFF_DEC, MARKER_SIZE, MARKER_SEARCH_DEPTH))
 			return null;
-		is.mark(MAX_TOLERANCE_DEPTH);
 		
 		byte[] buffer = new byte[4];
-		
-		int br = findMarker(is, RIFF_DEC, 0, buffer);
-		if (br == -1) { // riff marker
-			is.reset();
-			return null;
-		}
-		
-		br += AudioHelper.readBytes(is, buffer, 4, 0);
+		AudioHelper.readBytes(abis, buffer, 4, 0);
 		// long fileSize = MemoryUtil.littleEndianToInt(buffer, 0);
 		
-		br = findMarker(is, WAVE_DEC, br, buffer);
-		if (br == -1) { // wave marker
-			is.reset();
+		// Make sure this RIFF file is actually
+		// a WAVE file.
+		if (!abis.findBitPattern(WAVE_DEC, MARKER_SIZE, MARKER_SEARCH_DEPTH))
 			return null;
-		}
 		
-		br = findMarker(is, FMT_DEC, br, buffer);
-		if (br == -1) { // fmt chunk marker
-			is.reset();
+		// Search for FMT chunk.
+		if (!abis.findBitPattern(FMT_DEC, MARKER_SIZE, MARKER_SEARCH_DEPTH))
 			return null;
-		}
 		
-		br += AudioHelper.readBytes(is, buffer, 4, 0);
-		int fmtEnd = MemoryUtil.littleEndianToInt(buffer, 0) + br;
+		AudioHelper.readBytes(abis, buffer, 4, 0);
+		long fmtEnd = MemoryUtil.littleEndianToInt(buffer, 0) + abis.getBytesRead();
 		
-		br += AudioHelper.readBytes(is, buffer, 2, 0);
+		AudioHelper.readBytes(abis, buffer, 2, 0);
 		int formatType = MemoryUtil.littleEndianToShortUnsignedInt(buffer, 0);
-		br += AudioHelper.readBytes(is, buffer, 2, 0);
+		AudioHelper.readBytes(abis, buffer, 2, 0);
 		int channels = MemoryUtil.littleEndianToShortUnsignedInt(buffer, 0);
-		br += AudioHelper.readBytes(is, buffer, 4, 0);
+		AudioHelper.readBytes(abis, buffer, 4, 0);
 		int sampleRate = MemoryUtil.littleEndianToInt(buffer, 0);
-		br += AudioHelper.readBytes(is, buffer, 4, 0);
+		AudioHelper.readBytes(abis, buffer, 4, 0);
 		int byteRate = MemoryUtil.littleEndianToInt(buffer, 0);
-		br += AudioHelper.readBytes(is, buffer, 2, 0);
+		AudioHelper.readBytes(abis, buffer, 2, 0);
 		int blockAlign = MemoryUtil.littleEndianToShortUnsignedInt(buffer, 0);
-		br += AudioHelper.readBytes(is, buffer, 2, 0);
+		AudioHelper.readBytes(abis, buffer, 2, 0);
 		int bitsPerSample = MemoryUtil.littleEndianToShortUnsignedInt(buffer, 0);
 		
 		AudioFormat.Encoding encoding;
@@ -263,48 +246,45 @@ public class WaveFile extends AudioFile {
 			break;
 		default:
 			// Format is not supported (or end of stream)
-			is.reset();
 			return null;
 		}
+		
+		long bytesToSkip = fmtEnd - abis.getBytesRead();
+		// The FMT chunk size is invalid
+		if (bytesToSkip < 0)
+			return null;
 		
 		// Skip over unsupported parameters
-		while (fmtEnd > br) {
-			if (is.read() == -1) {
-				is.reset();
-				return null;
-			}
-			
-			br++;
-		}
-		
-		br = findMarker(is, DATA_DEC, br, buffer);
-		if (br == -1) { // data chunk marker
-			is.reset();
+		abis.skip(bytesToSkip);
+
+		// Search for DATA chunk marker
+		if (!abis.findBitPattern(DATA_DEC, MARKER_SIZE, MARKER_SEARCH_DEPTH))
 			return null;
-		}
 		
-		// If we are working with a BufferedInputStream, 
-		// the buffer will allocate extra memory if it has 
-		// a valid mark. As the header was valid, we assume, 
-		// that the user doesn't want to read from the stream
-		// afterwards.
-		is.mark(-1);
-		
-		br += AudioHelper.readBytes(is, buffer, 4, 0);
+		AudioHelper.readBytes(abis, buffer, 4, 0);
 		int dataChunkSize = MemoryUtil.littleEndianToInt(buffer, 0);
 
+		// Invalid data chunk size or end of stream
+		if (dataChunkSize <= 0 || abis.isEndOfStream())
+			return null;
+		
+		// Invalidate the current read limit. This is the
+		// point of no return. We're already sure that
+		// the header is valid. Continue.
+		abis.invalidateReadLimit();
+		
 		// Read main audio data
 		buffer = new byte[dataChunkSize];
 		if (dataChunkSize > 0) {
-			br = 0;
+			int br = 0;
 			while (br < dataChunkSize) {
-				int nbr = is.read(buffer, br, dataChunkSize - br);
+				int nbr = abis.read(buffer, br, dataChunkSize - br);
 				if (nbr == -1)
 					break;
 				br += nbr;
 			}
 			
-			if (br <= 0)
+			if (br == 0)
 				throw new AudioParsingException("Audio file is corrupted");
 			
 			// Make sure we have a valid amount of frames
@@ -349,68 +329,5 @@ public class WaveFile extends AudioFile {
 		                                     false);
 
 		return new WaveFile(buffer, format);
-	}
-	
-	private static int findMarker(InputStream is, int expectedMarker, int br, byte[] buffer) throws IOException {
-		br += AudioHelper.readBytes(is, buffer, 4, 0);
-		int marker = MemoryUtil.bigEndianToInt(buffer, 0);
-		
-		// Search for marker
-		while (marker != expectedMarker) {
-			if (br++ >= MAX_TOLERANCE_DEPTH)
-				return -1;
-			
-			int b = AudioHelper.readByte(is);
-			if (b == -1)
-				return -1;
-			marker = (marker << 8) | b;
-		}
-		
-		return br;
-	}
-	
-	/**
-	 * @return The audio format of the audio data.
-	 * @see #getData(byte[], int, int, int)
-	 */
-	@Override
-	public AudioFormat getFormat() {
-		return format;
-	}
-
-	/**
-	 * Copies the raw PCM audio data from this WaveFile into the 
-	 * destination array.
-	 * 
-	 * @param dst - The destination array
-	 * @param srcPos - The starting position in the raw audio data array.
-	 * @param dstPos - The destination start position
-	 * @param len - The number of bytes to be copied.
-	 * 
-	 * @return The amount of bytes actually copied to
-	 * 	       the destination.
-	 * @throws IndexOutOfBoundsException If copying would cause 
-	 *                                   access of data outside 
-	 *                                   array bounds.
-	 * 
-	 * @see #getFormat()
-	 */
-	@Override
-	public int getData(byte[] dst, int srcPos, int dstPos, int len) {
-		if (len > data.length - srcPos)
-			len = data.length - srcPos;
-		System.arraycopy(data, srcPos, dst, dstPos, len);
-		return len;
-	}
-	
-	/**
-	 * Calculates the number of frames in this wave file.
-	 * 
-	 * @return The number of playable frames stored in this
-	 *         wave file.
-	 */
-	@Override
-	public int getLengthInFrames() {
-		return data.length / format.getFrameSize();
 	}
 }

@@ -2,7 +2,9 @@ package com.g4mesoft.sound.format.mpeg;
 
 import java.io.IOException;
 
-public class MPEGAudioDataLayer3 {
+import com.g4mesoft.sound.format.AudioBitInputStream;
+
+public class MPEGAudioDataLayer3 implements IMPEGAudioData {
 
 	private final MPEGSideInformationLayer3 sideInformation;
 	private final MPEGMainDataLayer3 mainData;
@@ -12,17 +14,24 @@ public class MPEGAudioDataLayer3 {
 		mainData = new MPEGMainDataLayer3();
 	}
 	
-	public boolean readAudioData(MPEGBitStream bitStream, MPEGFrame frame) throws IOException {
-		if (!sideInformation.readSideInformation(bitStream, frame))
-			return false;
-		
+	@Override
+	public void readAudioData(AudioBitInputStream abis, MPEGFrame frame) throws IOException, CorruptedMPEGFrameException {
+		sideInformation.readSideInformation(abis, frame);
+
 		// Offset by negative main_data_begin (currently not supported)
 		if (sideInformation.main_data_begin != 0)
-			return false;
-		
-		if (!mainData.readMainData(bitStream, frame, sideInformation))
-			return false;
+			throw new CorruptedMPEGFrameException("Unsupported main data pointer");
+			
+		mainData.readMainData(abis, frame, sideInformation);
+	}
+
+	@Override
+	public float[] getSamples() {
+		return new float[0];
+	}
 	
-		return true;
+	@Override
+	public int getSupportedLayer() {
+		return MPEGHeader.LAYER_III;
 	}
 }

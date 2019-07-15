@@ -84,6 +84,10 @@ public class AudioSource extends AudioLine {
 		frameLocation = nFrameLocation;
 	}
 
+	public int getFrameLocation() {
+		return frameLocation;
+	}
+	
 	public void setLoopAmount(int nLoopAmount) {
 		loopAmount = nLoopAmount;
 	}

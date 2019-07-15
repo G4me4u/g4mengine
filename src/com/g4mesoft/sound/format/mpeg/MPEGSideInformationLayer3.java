@@ -2,6 +2,8 @@ package com.g4mesoft.sound.format.mpeg;
 
 import java.io.IOException;
 
+import com.g4mesoft.sound.format.AudioBitInputStream;
+
 public class MPEGSideInformationLayer3 {
 
 	static final int NUM_SCFSI_BANDS = 4;
@@ -52,34 +54,34 @@ public class MPEGSideInformationLayer3 {
 		
 	}
 	
-	public boolean readSideInformation(MPEGBitStream bitStream, MPEGFrame frame) throws IOException {
-		main_data_begin = bitStream.readBits(9);
-		/* private_bits = */ bitStream.readBits(frame.nch == 1 ? 5 : 3);
+	public void readSideInformation(AudioBitInputStream abis, MPEGFrame frame) throws IOException, CorruptedMPEGFrameException {
+		main_data_begin = abis.readBits(9);
+		/* private_bits = */ abis.readBits(frame.nch == 1 ? 5 : 3);
 		
-		int ch, scfsi_band;
+		for (int ch = 0; ch < frame.nch; ch++) {
+			for (int scfsi_band = 0; scfsi_band < NUM_SCFSI_BANDS; scfsi_band++)
+				scfsi[ch][scfsi_band] = abis.readBits(1);
+		}
 		
-		for (ch = 0; ch < frame.nch; ch++)
-			for (scfsi_band = 0; scfsi_band < NUM_SCFSI_BANDS; scfsi_band++)
-				scfsi[ch][scfsi_band] = bitStream.readBits(1);
 		for (int gr = 0; gr < NUM_GRANULES; gr++) {
-			for (ch = 0; ch < frame.nch; ch++) {
-				part2_3_length[gr][ch] = bitStream.readBits(12);
-				big_values[gr][ch] = bitStream.readBits(9);
-				global_gain[gr][ch] = bitStream.readBits(8);
-				scalefac_compress[gr][ch] = bitStream.readBits(4);
-				if ((window_switching_flag[gr][ch] = bitStream.readBits(1)) != 0) {
-					if ((block_type[gr][ch] = bitStream.readBits(2)) == 0)
-						return false; // Invalid block_type
-					mixed_block_flag[gr][ch] = bitStream.readBits(1);
+			for (int ch = 0; ch < frame.nch; ch++) {
+				part2_3_length[gr][ch] = abis.readBits(12);
+				big_values[gr][ch] = abis.readBits(9);
+				global_gain[gr][ch] = abis.readBits(8);
+				scalefac_compress[gr][ch] = abis.readBits(4);
+				if ((window_switching_flag[gr][ch] = abis.readBits(1)) != 0) {
+					if ((block_type[gr][ch] = abis.readBits(2)) == 0)
+						throw new CorruptedMPEGFrameException("Invalid block_type");
+					mixed_block_flag[gr][ch] = abis.readBits(1);
 					
 					// region = [0, 1]
-					table_select[gr][ch][0] = bitStream.readBits(5);
-					table_select[gr][ch][1] = bitStream.readBits(5);
+					table_select[gr][ch][0] = abis.readBits(5);
+					table_select[gr][ch][1] = abis.readBits(5);
 
 					// window = [0, 1, 2]
-					subblock_gain[gr][ch][0] = bitStream.readBits(3);
-					subblock_gain[gr][ch][1] = bitStream.readBits(3);
-					subblock_gain[gr][ch][2] = bitStream.readBits(3);
+					subblock_gain[gr][ch][0] = abis.readBits(3);
+					subblock_gain[gr][ch][1] = abis.readBits(3);
+					subblock_gain[gr][ch][2] = abis.readBits(3);
 					
 					// Set default values
 					if (mixed_block_flag[gr][ch] != 0) {
@@ -94,20 +96,23 @@ public class MPEGSideInformationLayer3 {
 					block_type[gr][ch] = 0;
 
 					// region = [0, 1, 2]
-					table_select[gr][ch][0] = bitStream.readBits(5);
-					table_select[gr][ch][1] = bitStream.readBits(5);
-					table_select[gr][ch][2] = bitStream.readBits(5);
+					table_select[gr][ch][0] = abis.readBits(5);
+					table_select[gr][ch][1] = abis.readBits(5);
+					table_select[gr][ch][2] = abis.readBits(5);
 
-					region0_count[gr][ch] = bitStream.readBits(4);
-					region1_count[gr][ch] = bitStream.readBits(3);
+					region0_count[gr][ch] = abis.readBits(4);
+					region1_count[gr][ch] = abis.readBits(3);
 				}
 				
-				preflag[gr][ch] = bitStream.readBits(1);
-				scalefac_scale[gr][ch] = bitStream.readBits(1);
-				count1table_select[gr][ch] = bitStream.readBits(1);
+				preflag[gr][ch] = abis.readBits(1);
+				scalefac_scale[gr][ch] = abis.readBits(1);
+				count1table_select[gr][ch] = abis.readBits(1);
 			}
 		}
 		
-		return bitStream.getBitsLeft() == 0 && !bitStream.isEndOfStream();
+		if (abis.getBitsRemaining() != 0)
+			throw new CorruptedMPEGFrameException("Side information is not byte aligned");
+		if (abis.isEndOfStream())
+			throw new CorruptedMPEGFrameException("End of stream");
 	}
 }

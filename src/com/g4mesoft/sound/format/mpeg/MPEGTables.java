@@ -2,10 +2,30 @@ package com.g4mesoft.sound.format.mpeg;
 
 public class MPEGTables {
 
-	// -1 is invalid values
+	/**
+	 * A table to lookup the bitrate of an MPEG 1/2/2.5 file in kilo bits per
+	 * second (1000 bits / second). The lookup index can be derived from the
+	 * MPEG version and layer. In combination the table index can be calculated
+	 * as follows:
+	 * <pre>
+	 *     int bitrateIndex = <0:3>;    // (4 bit unsigned int)
+	 *     int layer        = <0:1>;    // (2 bit unsigned int)
+	 *     int version      = <0:1>;    // (2 bit unsigned int)
+	 *     
+	 *     int tableIndex = layer | ((version & 0x1) << 2) | (bitrateIndex << 3);
+	 * </pre>
+	 * The given by this array are either an unsigned integer representing the 
+	 * actual bitrate in kbits / sec, 0 representing free format, or -1
+	 * representing an invalid value.
+	 * <br><br>
+	 * It is recommended to use the {@link #getBitrate(int, int, int)} function
+	 * instead of the above code-snippet.
+	 * 
+	 * @see #getBitrate(int, int, int)
+	 */
 	public static final int[] BITRATE_TABLE = new int[] {
 		// L3V2 L2V2 L1V2      L3V1 L2V1 L1V1
-		-1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, // bitrate_index = 0000
+		-1,   0,   0,   0,  -1,   0,   0,   0, // bitrate_index = 0000
 		-1,   8,  32,  32,  -1,  32,  32,  32, // ...             0001
 		-1,  16,  48,  64,  -1,  40,  48,  64, // etc.
 		-1,  24,  56,  96,  -1,  48,  56,  96,
@@ -23,7 +43,40 @@ public class MPEGTables {
 		-1,  -1,  -1,  -1,  -1,  -1,  -1,  -1  // ...           = 1111
 	};
 	
-	// Table used to decode the frequency of a frame
+	/**
+	 * Fetches the bitrate by performing a lookup in the {@link #BITRATE_TABLE}
+	 * array.
+	 * 
+	 * @param bitrateIndex - An unsigned 4 bit value representing the bitrate
+	 *                       index of the MPEG file.
+	 * @param version - An unsigned 2 bit value representing the MPEG-version.
+	 * @param layer - An unsigned 2 bit value representing the MPEG-layer.
+	 * 
+	 * @return The bitrate of the MPEG file in kilo bits per second.
+	 * 
+	 * @see #BITRATE_TABLE
+	 */
+	public static final int getBitrate(int bitrateIndex, int version, int layer) {
+		return BITRATE_TABLE[layer | ((version & 0x1) << 2) | (bitrateIndex << 3)];
+	}
+	
+	/**
+	 * A table to lookup the frequency of an MPEG 1/2/2.5 file in samples per
+	 * second. The lookup can be performed by calculating the table index which
+	 * is derived from the frequency index and version of the MPEG frame. The
+	 * following code snipped will calculate the table index:
+	 * <pre>
+	 *     int frequencyIndex = <0:1>;    // (2 bit unsigned int)
+	 *     int version        = <0:1>;    // (2 bit unsigned int)
+	 *     
+	 *     int tableIndex = version | (frequencyIndex << 2);
+	 * </pre>
+	 * The values that are fetched using this table are an unsigned integer
+	 * representing the frequency of the table or -1 if the lookup was invalid.
+	 * <br><br>
+	 * It is recommended to use the method {@link #getFrequency(int, int)} to
+	 * obtain the frequency instead.
+	 */
 	public static final int[] FREQUENCY_TABLE = new int[] {
 		// V25         V2      V1
 		11025,    -1, 22050, 44100, // frequency_index = 00
@@ -31,6 +84,22 @@ public class MPEGTables {
 		 8000,    -1, 16000, 32000, 
 		   -1,    -1,    -1,    -1  // ...             = 11
 	};
+	
+	/**
+	 * Fetches the sampling frequency by performing a lookup in the 
+	 * {@link #FREQUENCY_TABLE} array.
+	 * 
+	 * @param frequencyIndex - An unsigned 2 bit value representing the sampling
+	 *                         frequency index of the MPEG file.
+	 * @param version - An unsigned 2 bit value representing the MPEG-version.
+	 * 
+	 * @return The sampling frequency of the MPEG file in samples per second.
+	 * 
+	 * @see #FREQUENCY_TABLE
+	 */
+	public static int getFrequency(int frequencyIndex, int version) {
+		return FREQUENCY_TABLE[version | (frequencyIndex << 2)];
+	}
 	
 	// Table used to determine if a mode is allowed for
 	// a specific bitrate in layer 2

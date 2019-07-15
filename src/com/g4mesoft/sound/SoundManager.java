@@ -1,6 +1,5 @@
 package com.g4mesoft.sound;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -16,9 +15,14 @@ import javax.sound.sampled.SourceDataLine;
 
 import com.g4mesoft.math.MathUtils;
 import com.g4mesoft.math.Vec3f;
+import com.g4mesoft.sound.format.AudioBitInputStream;
 import com.g4mesoft.sound.format.AudioFile;
 import com.g4mesoft.sound.format.AudioParsingException;
 import com.g4mesoft.sound.format.IAudioFileProvider;
+import com.g4mesoft.sound.format.ReadLimitReachedException;
+import com.g4mesoft.sound.format.TagParsingException;
+import com.g4mesoft.sound.format.info.AudioTag;
+import com.g4mesoft.sound.format.info.id3.ID3v2Tag;
 import com.g4mesoft.sound.format.mpeg.MPEGFileProvider;
 import com.g4mesoft.sound.format.wav.WaveFileProvider;
 import com.g4mesoft.sound.processor.AudioChannel;
@@ -32,6 +36,10 @@ public final class SoundManager {
 	private static final float SAMPLE_MULTIPLIER = 32768;
 	private static final float SAMPLE_DIVIDER = 1.0f / SAMPLE_MULTIPLIER;
 	public static final int SAMPLES_PER_PLAYBACK = 4096;
+	
+	private static final int INPUT_BUFFER_SIZE = 1024 * 16;
+	private static final int AUDIO_TAG_READ_LIMIT = 1024;
+	private static final int AUDIO_READ_LIMIT = INPUT_BUFFER_SIZE;
 	
 	private static SoundManager instance;
 	
@@ -48,7 +56,7 @@ public final class SoundManager {
 		audioFiles = new AudioFile[AUDIO_FILE_CAPACITY];
 		numAudioFiles = 0;
 		
-		initProviders();
+		initDefaultProviders();
 	}
 
 	private Mixer getOpenDefaultMixer() {
@@ -60,7 +68,7 @@ public final class SoundManager {
 		return mixer;
 	}
 	
-	private void initProviders() {
+	private void initDefaultProviders() {
 		addAudioFileProvider(new WaveFileProvider());
 		addAudioFileProvider(new MPEGFileProvider());
 	}
@@ -74,7 +82,7 @@ public final class SoundManager {
 	public int loadSound(InputStream is) throws IOException, AudioParsingException {
 		AudioFile audioFile = loadAudioFile(is);
 		if (audioFile == null)
-			throw new AudioParsingException("Audio not supported!");
+			throw new AudioParsingException("Unsupported audio format!");
 		
 		ensureAudioFileCapacity();
 		
@@ -103,19 +111,65 @@ public final class SoundManager {
 	}
 	
 	private AudioFile loadAudioFile(InputStream is) throws IOException, AudioParsingException {
-		if (!is.markSupported())
-			is = new BufferedInputStream(is);
-		
 		AudioFile audioFile = null;
-		try {
-			for (IAudioFileProvider provider : providers)
-				if ((audioFile = provider.loadAudioFile(is)) != null)
+		try (AudioBitInputStream abis = new AudioBitInputStream(is, INPUT_BUFFER_SIZE)) {
+			abis.prereadBytes(INPUT_BUFFER_SIZE);
+			AudioTag tag = loadAudioTag(abis, true);
+
+			long tagSize = abis.getBytesRead();
+			if (tag != null && tagSize != 0)
+				abis.prereadBytes(INPUT_BUFFER_SIZE);
+			
+			for (IAudioFileProvider provider : providers) {
+				abis.setReadLimit(AUDIO_READ_LIMIT);
+				
+				try {
+					audioFile = provider.loadAudioFile(abis);
+				} catch (ReadLimitReachedException e) {
+				}
+
+				if (audioFile != null)
 					break;
-		} finally {
-			is.close();
+				
+				long bytesToRestore = abis.getBytesRead() - tagSize;
+				if (bytesToRestore > INPUT_BUFFER_SIZE)
+					return null;
+				
+				abis.restoreBytes((int)bytesToRestore);
+			}
+			
+			if (audioFile != null && audioFile.getAudioTag() == null) {
+				if (tag == null)
+					tag = loadAudioTag(abis, false);
+
+				if (tag != null)
+					audioFile.setAudioTag(tag);
+			}
 		}
 		
 		return audioFile;
+	}
+	
+	private AudioTag loadAudioTag(AudioBitInputStream abis, boolean resetOnError) throws IOException, AudioParsingException {
+		AudioTag tag = null;
+
+		long bytesRead = abis.getBytesRead();
+		abis.setReadLimit(AUDIO_TAG_READ_LIMIT);
+		
+		try {
+			tag = ID3v2Tag.loadTag(abis);
+		} catch (TagParsingException | ReadLimitReachedException e) {
+		}
+		
+		if (tag == null && resetOnError) {
+			long bytesToRestore = abis.getBytesRead() - bytesRead;
+			if (bytesToRestore > INPUT_BUFFER_SIZE)
+				throw new AudioParsingException("Invalid audio tag");
+			
+			abis.restoreBytes((int)bytesToRestore);
+		}
+		
+		return tag;
 	}
 	
 	public boolean unloadSound(int id) {

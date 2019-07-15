@@ -12,8 +12,11 @@ import com.g4mesoft.sound.format.info.AudioInfo;
 import com.g4mesoft.sound.format.info.PictureAudioInfo.PictureAudioInfoType;
 import com.g4mesoft.sound.format.info.TextAudioInfo.TextAudioInfoType;
 
-public class FrameParserManager {
+public final class FrameParserManager {
 
+	private FrameParserManager() {
+	}
+	
 	private static final Map<String, FrameParser> PARSERS = new HashMap<String, FrameParser>();
 	
 	public static int readFrame(InputStream is, byte[] buffer, Vector<AudioInfo> information, boolean allowPadding) throws IOException, TagParsingException {
@@ -36,10 +39,9 @@ public class FrameParserManager {
 		if (parser == null || !parser.isSupported(status, format)) {
 			if (is.skip(frameSize) != frameSize)
 				ID3Helper.corrupted();
-			return frameSize + 10;
+		} else {
+			information.addElement(parser.loadFrame(is, frameSize, status, format));
 		}
-
-		information.addElement(parser.loadFrame(is, frameSize, status, format));
 		
 		return frameSize + 10;
 	}
@@ -53,7 +55,7 @@ public class FrameParserManager {
 	}
 	
 	private static void addParser(String id, FrameParser parser) {
-		if (PARSERS.containsKey(id))
+		if (isSupportedFrame(id))
 			throw new IllegalArgumentException("Duplicate id " + id);
 		PARSERS.put(id, parser);
 	}
