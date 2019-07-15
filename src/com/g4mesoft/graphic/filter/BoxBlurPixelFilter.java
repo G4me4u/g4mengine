@@ -40,6 +40,9 @@ public class BoxBlurPixelFilter implements IPixelFilter {
 	}
 	
 	protected void horizontalBoxBlur(int[] pixels, int offset, int width, int height, int stride) {
+		if (radius <= 0)
+			return;
+		
 		int bufferLength = radius + radius + 1;
 
 		float c = 1.0f / bufferLength;
@@ -163,6 +166,9 @@ public class BoxBlurPixelFilter implements IPixelFilter {
 	}
 
 	protected void verticalBoxBlur(int[] pixels, int offset, int width, int height, int stride) {
+		if (radius <= 0)
+			return;
+		
 		int bufferLength = radius + radius + 1;
 		
 		float c = 1.0f / bufferLength;
