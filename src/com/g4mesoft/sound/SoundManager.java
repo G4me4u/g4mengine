@@ -18,9 +18,10 @@ import com.g4mesoft.math.Vec3f;
 import com.g4mesoft.sound.format.AudioBitInputStream;
 import com.g4mesoft.sound.format.AudioFile;
 import com.g4mesoft.sound.format.AudioParsingException;
-import com.g4mesoft.sound.format.IAudioFileProvider;
 import com.g4mesoft.sound.format.ReadLimitReachedException;
+import com.g4mesoft.sound.format.IAudioFileProvider;
 import com.g4mesoft.sound.format.TagParsingException;
+import com.g4mesoft.sound.format.aiff.AiffFileProvider;
 import com.g4mesoft.sound.format.info.AudioTag;
 import com.g4mesoft.sound.format.info.id3.ID3v2Tag;
 import com.g4mesoft.sound.format.mpeg.MPEGFileProvider;
@@ -70,6 +71,7 @@ public final class SoundManager {
 	
 	private void initDefaultProviders() {
 		addAudioFileProvider(new WaveFileProvider());
+		addAudioFileProvider(new AiffFileProvider());
 		addAudioFileProvider(new MPEGFileProvider());
 	}
 	

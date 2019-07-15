@@ -298,4 +298,12 @@ public final class MathUtils {
 	public static double pow(double a, double b) {
 		return Math.pow(a, b);
 	}
+
+	public static double scalb(double d, int scaleFactor) {
+		return Math.scalb(d, scaleFactor);
+	}
+
+	public static float scalb(float d, int scaleFactor) {
+		return Math.scalb(d, scaleFactor);
+	}
 }
