@@ -10,7 +10,7 @@ import com.g4mesoft.math.MathUtils;
  * <pre>
  *     // Extract channel from pixel
  *     int r = (pixel >> 16) & 0xFF;
- *     r = clamp((pixel - 0x7F) * c + 0x7F, 0x00, 0xFF);
+ *     r = clamp((r - 0x7F) * c + 0x7F, 0x00, 0xFF);
  * </pre>
  * Where pixel is the raw pixel in the pixel-array, and c is the contrast as
  * a floating point number.<br>
