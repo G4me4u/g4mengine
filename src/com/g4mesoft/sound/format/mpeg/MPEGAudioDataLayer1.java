@@ -35,7 +35,7 @@ public class MPEGAudioDataLayer1 implements IMPEGAudioData {
 	public MPEGAudioDataLayer1() {
 		allocation = new int[2][SUBBANDS_PER_CH];
 		scalefactor = new int[2][SUBBANDS_PER_CH];
-		samples = new float[2 * SAMPLES_PER_SB_CH * SUBBANDS_PER_CH];
+		samples = new float[getNumSamples()];
 	}
 	
 	@Override
@@ -62,7 +62,7 @@ public class MPEGAudioDataLayer1 implements IMPEGAudioData {
 		if (frame.nch == 1) {
 			// If single channel, copy the samples to
 			// the right channel.
-			for (int i = 0; i < 2 * SAMPLES_PER_SB_CH * SUBBANDS_PER_CH; i += 2)
+			for (int i = 0; i < getNumSamples(); i += 2)
 				samples[i + 1] = samples[i];
 		}
 	}
@@ -154,12 +154,23 @@ public class MPEGAudioDataLayer1 implements IMPEGAudioData {
 		fraction += L1_QUANTIZATION_D_TABLE[nb];
 		return fraction * L1_QUANTIZATION_C_TABLE[nb];
 	}
+
+	@Override
+	public void silence() {
+		for (int i = 0; i < getNumSamples(); i++)
+			samples[i] = 0.0f;
+	}
 	
 	@Override
 	public float[] getSamples() {
 		return samples;
 	}
 
+	@Override
+	public int getNumSamples() {
+		return 2 * SAMPLES_PER_SB_CH * SUBBANDS_PER_CH;
+	}
+	
 	@Override
 	public int getSupportedLayer() {
 		return MPEGHeader.LAYER_I;

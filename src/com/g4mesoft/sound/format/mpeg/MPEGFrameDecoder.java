@@ -69,16 +69,18 @@ public class MPEGFrameDecoder {
 			
 				try {
 					frame.readAudioData(abis);
+					numValidFrames++;
 				} catch (CorruptedMPEGFrameException e) {
 					// We've read the frame header successfully.
 					// We assume there was supposed to be a valid
 					// frame at this location but it was corrupted.
 
-					// TODO: replace frame by silence
-					continue;
+					if (numValidFrames == 0)
+						continue;
+					
+					frame.silenceFrame();
 				}
 
-				numValidFrames++;
 				numCachedSamples += frame.getNumSamples();
 				break;
 			}

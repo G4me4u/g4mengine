@@ -52,7 +52,7 @@ public class MPEGAudioDataLayer2 implements IMPEGAudioData {
 		scfsi       = new int[2][MAX_SUBBANDS_PER_CH];
 		scalefactor = new int[2][MAX_SUBBANDS_PER_CH][SAMPLES_PER_TRIPLET];
 		fractions   = new float[2][MAX_SUBBANDS_PER_CH][NUM_GRANULES * SAMPLES_PER_TRIPLET];
-		samples     = new float[2 * NUM_GRANULES * MAX_SUBBANDS_PER_CH * SAMPLES_PER_TRIPLET];
+		samples     = new float[getNumSamples()];
 	}
 	
 	@Override
@@ -89,7 +89,7 @@ public class MPEGAudioDataLayer2 implements IMPEGAudioData {
 		// If single channel, copy the
 		// samples to the right channel.
 		if (frame.nch == 1) {
-			for (int i = 0; i < 2 * NUM_GRANULES * MAX_SUBBANDS_PER_CH * SAMPLES_PER_TRIPLET; i += 2)
+			for (int i = 0; i < getNumSamples(); i += 2)
 				samples[i + 1] = samples[i];
 		}
 	}
@@ -262,6 +262,12 @@ public class MPEGAudioDataLayer2 implements IMPEGAudioData {
 	}
 
 	@Override
+	public void silence() {
+		for (int i = 0; i < getNumSamples(); i++)
+			samples[i] = 0.0f;
+	}
+	
+	@Override
 	public float[] getSamples() {
 		return samples;
 	}
@@ -269,5 +275,10 @@ public class MPEGAudioDataLayer2 implements IMPEGAudioData {
 	@Override
 	public int getSupportedLayer() {
 		return MPEGHeader.LAYER_II;
+	}
+
+	@Override
+	public int getNumSamples() {
+		return 2 * NUM_GRANULES * MAX_SUBBANDS_PER_CH * SAMPLES_PER_TRIPLET;
 	}
 }

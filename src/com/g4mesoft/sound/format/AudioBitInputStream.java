@@ -561,7 +561,7 @@ public class AudioBitInputStream extends InputStream {
 	
 	/**
 	 * Invalidates the current read limit. Doing this will no longer throw an
-	 * exception when is is attempted to read beyond the limit. If there was no
+	 * exception when it is attempted to read beyond the limit. If there was no
 	 * read limit set prior to calling this function, no action will occur.
 	 */
 	public void invalidateReadLimit() {

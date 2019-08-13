@@ -26,8 +26,17 @@ public class MPEGAudioDataLayer3 implements IMPEGAudioData {
 	}
 
 	@Override
+	public void silence() {
+	}
+	
+	@Override
 	public float[] getSamples() {
 		return new float[0];
+	}
+
+	@Override
+	public int getNumSamples() {
+		return 0;
 	}
 	
 	@Override

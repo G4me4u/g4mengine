@@ -11,8 +11,10 @@ public class MPEGFrame {
 	private final MPEGFrameDecoder frameDecoder;
 	
 	private final MPEGHeader header;
-	private IMPEGAudioData audioData;
 	public int crc;
+	
+	private IMPEGAudioData audioData;
+	private boolean isValidAudioData;
 
 	public int bitrate;
 	public int frequency;
@@ -24,6 +26,8 @@ public class MPEGFrame {
 		
 		header = new MPEGHeader();
 		audioData = null;
+		
+		isValidAudioData = false;
 	}
 	
 	public boolean readFrameHeader(AudioBitInputStream abis) throws IOException {
@@ -58,15 +62,14 @@ public class MPEGFrame {
 	}
 	
 	public void readAudioData(AudioBitInputStream abis) throws IOException, CorruptedMPEGFrameException {
-		IMPEGAudioData audioData = this.audioData;
-		if (audioData == null)
+		if (!isValidAudioData)
 			audioData = getAppropriateDecoder();
 	
 		if (audioData.getSupportedLayer() != header.layer)
 			throw new CorruptedMPEGFrameException("MPEG layer changed");
 		audioData.readAudioData(abis, this);
 		
-		this.audioData = audioData;
+		isValidAudioData = true;
 	}
 	
 	public void restoreFrame(AudioBitInputStream abis, int offset) throws IOException {
@@ -112,11 +115,20 @@ public class MPEGFrame {
 	}
 
 	public int getNumSamples() {
-		return (audioData == null) ? 0 : audioData.getSamples().length;
+		if (audioData == null)
+			return 0;
+		return audioData.getNumSamples();
 	}
 	
 	public float[] getSamples() {
-		return (audioData == null) ? null : audioData.getSamples();
+		if (audioData == null) 
+			return new float[0];
+		return audioData.getSamples();
+	}
+	
+	public void silenceFrame() {
+		if (audioData != null)
+			audioData.silence();
 	}
 
 	public MPEGSynthesisSubbandFilter getSynthesisSubbandFilter() {
