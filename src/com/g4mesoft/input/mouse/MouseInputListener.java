@@ -3,6 +3,7 @@ package com.g4mesoft.input.mouse;
 import java.awt.AWTException;
 import java.awt.Canvas;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Robot;
@@ -49,15 +50,18 @@ public final class MouseInputListener {
 	}
 	
 	private void mouseMoved(Component origin, int x, int y) {
-		deltaX += x - mouseX;
-		deltaY += y - mouseY;
-		mouseX = x;
-		mouseY = y;
-		
-		checkDisplayFocus(x, y);
-		
-		if (grabbed && focused) {
-			ensureCursorIsInCenter();
+		if (mouseX != x || mouseY != y) {
+			deltaX += x - mouseX;
+			deltaY += y - mouseY;
+			
+			mouseX = x;
+			mouseY = y;
+			
+			checkDisplayFocus(x, y);
+			
+			if (grabbed && focused) {
+				ensureCursorIsInCenter();
+			}
 		}
 	}
 	
@@ -83,11 +87,11 @@ public final class MouseInputListener {
 			
 			Point screenLocation = canvas.getLocationOnScreen();
 			
-			int xc = canvas.getWidth() / 2;
-			int yc = canvas.getHeight() / 2;
+			int cx = canvas.getWidth() / 2;
+			int cy = canvas.getHeight() / 2;
 
-			int sx = xc + screenLocation.x;
-			int sy = yc + screenLocation.y;
+			int sx = cx + screenLocation.x;
+			int sy = cy + screenLocation.y;
 
 			// We would use mouseX and mouseY as our
 			// primary cursor coordinates. But when
@@ -99,16 +103,23 @@ public final class MouseInputListener {
 			int dx = sx - currentLocation.x;
 			int dy = sy - currentLocation.y;
 			if (Math.abs(dx) >= MAX_GRAB_DISTANCE || Math.abs(dy) >= MAX_GRAB_DISTANCE) {
-				// Ensure the mouse moved event from the
-				// robot wont change the deltaX / deltaY
-				// values.
-				mouseX = xc;
-				mouseY = yc;
-				
-				for (MouseButtonInput mouseButton : mouseButtons)
-					mouseButton.mouseGrapMoved(xc, yc);
-				
-				robot.mouseMove(sx, sy);
+				if (EventQueue.isDispatchThread()) {
+					// Ensure the mouse moved event from the
+					// robot wont change the deltaX / deltaY
+					// values.
+					mouseX = cx;
+					mouseY = cy;
+					
+					for (MouseButtonInput mouseButton : mouseButtons)
+						mouseButton.mouseGrapMoved(cx, cy);
+					
+					robot.mouseMove(sx, sy);
+				} else {
+					// We have a hint that the cursor is outside
+					// the center square, but we have to use the
+					// AWT thread to ensure this is the case.
+					EventQueue.invokeLater(() -> ensureCursorIsInCenter());
+				}
 			}
 		}
 	}
@@ -127,6 +138,9 @@ public final class MouseInputListener {
 	}
 	
 	public void updateMouseButtons() {
+		deltaX = 0;
+		deltaY = 0;
+
 		if (display == null || !display.isFocused()) {
 			setDisplayFocused(false);
 		} else if (focused && grabbed) {
@@ -138,9 +152,6 @@ public final class MouseInputListener {
 			// solution, if the tick-rate is low.
 			ensureCursorIsInCenter();
 		}
-		
-		deltaX = 0;
-		deltaY = 0;
 		
 		for (MouseButtonInput mouseButton : mouseButtons)
 			mouseButton.update();
