@@ -30,7 +30,7 @@ public class AiffFile extends BasicAudioFile {
 
 	public static AiffFile loadAIFF(AudioBitInputStream abis) throws IOException, AudioParsingException {
 		// Search for FORM marker
-		if (!abis.findBitPattern(AiffConstants.FORM_DEC, AiffConstants.ID_BIT_SIZE, ID_SEARCH_DEPTH))
+		if (!abis.findBytePattern(AiffConstants.FORM_DEC, AiffConstants.ID_SIZE, ID_SEARCH_DEPTH))
 			return null;
 		
 		// Buffer has to be big enough to contain

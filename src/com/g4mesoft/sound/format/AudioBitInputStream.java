@@ -15,12 +15,17 @@ public class AudioBitInputStream extends InputStream {
 	/**
 	 * The size of a single byte in bits.
 	 */
-	private static final int BYTE_SIZE = 8;
+	private static final int BYTE_SIZE_IN_BITS = 8;
+
+	/**
+	 * The size of an integer in bytes
+	 */
+	private static final int INTEGER_SIZE_IN_BYTES = 4;
 
 	/**
 	 * The size of an integer in bits (4 bytes).
 	 */
-	private static final int INTEGER_SIZE = 4 * BYTE_SIZE;
+	private static final int INTEGER_SIZE_IN_BITS = INTEGER_SIZE_IN_BYTES * BYTE_SIZE_IN_BITS;
 	
 	/**
 	 * A mask table used for reading bits. When masking using MASK_TABLE[i],
@@ -36,6 +41,15 @@ public class AudioBitInputStream extends InputStream {
 		   0x001FFFFF, 0x003FFFFF, 0x007FFFFF, 0x00FFFFFF,
 		   0x01FFFFFF, 0x03FFFFFF, 0x07FFFFFF, 0x0FFFFFFF,
 		   0x1FFFFFFF, 0x3FFFFFFF, 0x7FFFFFFF, 0xFFFFFFFF
+	};
+
+	/**
+	 * A mask table used for finding byte patterns. When masking using the 
+	 * MASK_BYTE_TABLE[i], only the least {@code i * BYTE_SIZE} significant bits
+	 * will be ones and the rest will be zeroes.
+	 */
+	private static final int[] MASK_BYTE_TABLE = new int[] {
+		0, 0x000000FF, 0x0000FFFF, 0x00FFFFFF, 0xFFFFFFFF
 	};
 	
 	/**
@@ -355,7 +369,7 @@ public class AudioBitInputStream extends InputStream {
 		if (bitsRemaining <= 0) {
 			if (read() == -1)
 				return -1;
-			bitsRemaining = BYTE_SIZE;
+			bitsRemaining = BYTE_SIZE_IN_BITS;
 		}
 		
 		if (bitsRemaining >= bitsToRead) {
@@ -374,12 +388,12 @@ public class AudioBitInputStream extends InputStream {
 				return -1;
 			}
 			
-			if (BYTE_SIZE >= bitsToRead) {
-				bitsRemaining = BYTE_SIZE - bitsToRead;
+			if (BYTE_SIZE_IN_BITS >= bitsToRead) {
+				bitsRemaining = BYTE_SIZE_IN_BITS - bitsToRead;
 				return res | ((bufferedByte >>> bitsRemaining) & MASK_TABLE[bitsToRead]);
 			}
 			
-			bitsToRead -= BYTE_SIZE;
+			bitsToRead -= BYTE_SIZE_IN_BITS;
 			res |= bufferedByte << bitsToRead;
 		}
 	}
@@ -482,7 +496,6 @@ public class AudioBitInputStream extends InputStream {
 	 * 
 	 * @param expectedPattern
 	 * @param numBits
-	 * @param bufferOnly
 	 * @param searchLimit
 	 * 
 	 * @throws IOException
@@ -494,13 +507,13 @@ public class AudioBitInputStream extends InputStream {
 		if (searchLimit < 0)
 			throw new IllegalArgumentException("searchLimit < 0");
 			
-		if (numBits > INTEGER_SIZE)
-			numBits = INTEGER_SIZE;
+		if (numBits > INTEGER_SIZE_IN_BITS)
+			numBits = INTEGER_SIZE_IN_BITS;
 		
 		// Make sure we're byte-aligned.
 		invalidateBufferedBits();
 		
-		searchLimit -= (numBits + BYTE_SIZE - 1) / BYTE_SIZE;
+		searchLimit -= (numBits + BYTE_SIZE_IN_BITS - 1) / BYTE_SIZE_IN_BITS;
 		if (searchLimit < 0)
 			return false;
 		
@@ -521,9 +534,60 @@ public class AudioBitInputStream extends InputStream {
 			if (searchLimit < 0)
 				return false;
 			
-			pattern <<= BYTE_SIZE;
-			pattern |= readBits(BYTE_SIZE);
+			pattern <<= BYTE_SIZE_IN_BITS;
+			pattern |= readBits(BYTE_SIZE_IN_BITS);
 			pattern &= MASK_TABLE[numBits];
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * TODO: Documentation
+	 * 
+	 * @param expectedPattern
+	 * @param numBytes
+	 * @param searchLimit
+	 * 
+	 * @throws IOException
+	 * @throws ReadLimitReachedException
+	 */
+	public boolean findBytePattern(int expectedPattern, int numBytes, long searchLimit) throws IOException, ReadLimitReachedException {
+		if (numBytes < 0)
+			throw new IllegalArgumentException("numBytes < 0");
+		if (searchLimit < 0)
+			throw new IllegalArgumentException("searchLimit < 0");
+			
+		if (numBytes > INTEGER_SIZE_IN_BYTES)
+			numBytes = INTEGER_SIZE_IN_BYTES;
+
+		// Make sure we're byte-aligned.
+		invalidateBufferedBits();
+		
+		searchLimit -= numBytes;
+		if (searchLimit < 0)
+			return false;
+		
+		int pattern = readBits(numBytes * BYTE_SIZE_IN_BITS);
+		
+		// Make sure the expected pattern is
+		// correctly masked.
+		expectedPattern &= MASK_BYTE_TABLE[numBytes];
+		
+		while (true) {
+			if (isEndOfStream())
+				return false;
+				
+			if (pattern == expectedPattern)
+				break;
+			
+			searchLimit--;
+			if (searchLimit < 0)
+				return false;
+			
+			pattern <<= BYTE_SIZE_IN_BITS;
+			pattern |= read();
+			pattern &= MASK_BYTE_TABLE[numBytes];
 		}
 		
 		return true;

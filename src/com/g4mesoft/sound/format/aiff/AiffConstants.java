@@ -49,11 +49,6 @@ public final class AiffConstants {
 	public static final int ID_SIZE = 4;
 
 	/**
-	 * The number of bits that define a ID data type (32 bits)
-	 */
-	public static final int ID_BIT_SIZE = 32;
-	
-	/**
 	 * The size of the buffer whilst reading the AIFF file. This buffer
 	 * has to be at least 10 bytes to fit all the data types.
 	 */

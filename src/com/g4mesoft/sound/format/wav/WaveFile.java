@@ -16,9 +16,9 @@ import com.g4mesoft.util.MemoryUtil;
 public class WaveFile extends BasicAudioFile {
 
 	/**
-	 * The number of bits that make up the marker pattern
+	 * The number of bytes that make up the marker pattern
 	 */
-	private static final int MARKER_SIZE = 4 * 8;
+	private static final int MARKER_SIZE_IN_BYTES = 4;
 	
 	/**
 	 * The maximum search depth for markers (1 kB)
@@ -201,7 +201,7 @@ public class WaveFile extends BasicAudioFile {
 	 */
 	public static WaveFile loadWave(AudioBitInputStream abis) throws IOException, AudioParsingException {
 		// Search for RIFF marker (start of wave)
-		if (!abis.findBitPattern(RIFF_DEC, MARKER_SIZE, MARKER_SEARCH_DEPTH))
+		if (!abis.findBytePattern(RIFF_DEC, MARKER_SIZE_IN_BYTES, MARKER_SEARCH_DEPTH))
 			return null;
 		
 		byte[] buffer = new byte[4];
@@ -210,11 +210,11 @@ public class WaveFile extends BasicAudioFile {
 		
 		// Make sure this RIFF file is actually
 		// a WAVE file.
-		if (!abis.findBitPattern(WAVE_DEC, MARKER_SIZE, MARKER_SEARCH_DEPTH))
+		if (!abis.findBytePattern(WAVE_DEC, MARKER_SIZE_IN_BYTES, MARKER_SEARCH_DEPTH))
 			return null;
 		
 		// Search for FMT chunk.
-		if (!abis.findBitPattern(FMT_DEC, MARKER_SIZE, MARKER_SEARCH_DEPTH))
+		if (!abis.findBytePattern(FMT_DEC, MARKER_SIZE_IN_BYTES, MARKER_SEARCH_DEPTH))
 			return null;
 		
 		AudioHelper.readBytes(abis, buffer, 4, 0);
@@ -258,7 +258,7 @@ public class WaveFile extends BasicAudioFile {
 		abis.skip(bytesToSkip);
 
 		// Search for DATA chunk marker
-		if (!abis.findBitPattern(DATA_DEC, MARKER_SIZE, MARKER_SEARCH_DEPTH))
+		if (!abis.findBytePattern(DATA_DEC, MARKER_SIZE_IN_BYTES, MARKER_SEARCH_DEPTH))
 			return null;
 		
 		AudioHelper.readBytes(abis, buffer, 4, 0);
