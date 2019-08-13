@@ -99,11 +99,11 @@ public class Mat4f implements IMatf<Mat4f> {
 
 		m00 = q / aspect;
 		m11 = q;
-		m22 = (near + far) / (near - far);
+		m22 = -(far + near) / (far - near);
 		m33 = 0.0f;
 
 		m23 = -1.0f;
-		m32 = (2.0f * near * far) / (near - far);
+		m32 = -2.0f * far * near / (far - near);
 
 		return this;
 	}
