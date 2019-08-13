@@ -18,52 +18,66 @@ public class PixelRenderer3D extends AbstractPixelRenderer3D {
 	}
 	
 	@Override
-	public void drawVertices(Vertex3D[] vertices, int offset, int length) {
-		if (length % 3 != 0)
-			throw new IllegalArgumentException("Number of vertices is not a multiple of 3");
-		
-		if (offset < 0)
-			throw new ArrayIndexOutOfBoundsException(offset);
-		
-		int end = length + offset;
-		if (end > vertices.length)
-			throw new ArrayIndexOutOfBoundsException(vertices.length);
-		
+	public void drawVertices(IVertexProvider vertexProvider) {
 		shader.prepareShader();
 		
 		TriangleCache triangleCache = new TriangleCache(shader.getOutputSize());
+		vertexProvider.prepareDraw();
 		
-		int i = offset;
-		while (i < end) {
-			Vertex3D v0 = vertices[i++];
-			Vertex3D v1 = vertices[i++];
-			Vertex3D v2 = vertices[i++];
-			
-			Triangle3D triangle = triangleCache.getTriangle();
-			shader.projectVertices(triangle, v0, v1, v2);
-			if (cullEnabled && canPreCullTriangle(triangle)) {
-				triangleCache.storeTriangle(triangle);
-				continue;
-			}
-			
-			trianglesToClip.add(triangle);
-			triangle = null;
-
-			Queue<Triangle3D> trianglesToDraw = clipTriangle(triangleCache, trianglesToClip, clippedTriangles);
-			transformAndCullTriangles(trianglesToDraw, triangleCache);
-
-			if (!trianglesToDraw.isEmpty()) {
-				renderTriangles(trianglesToDraw, triangleCache);
+		switch (vertexProvider.getShape()) {
+		case TRIANGLES:
+			while (vertexProvider.hasNext()) {
+				Vertex3D v0 = vertexProvider.getNextVertex();
+				Vertex3D v1 = vertexProvider.getNextVertex();
+				Vertex3D v2 = vertexProvider.getNextVertex();
 				
-				for (Triangle3D t : trianglesToDraw)
-					triangleCache.storeTriangle(t);
-				trianglesToDraw.clear();
+				drawTriangleVertices(triangleCache, v0, v1, v2);
 			}
+			
+			break;
+		case QUADS:
+			while (vertexProvider.hasNext()) {
+				Vertex3D v0 = vertexProvider.getNextVertex();
+				Vertex3D v1 = vertexProvider.getNextVertex();
+				Vertex3D v2 = vertexProvider.getNextVertex();
+				Vertex3D v3 = vertexProvider.getNextVertex();
+
+				drawTriangleVertices(triangleCache, v0, v1, v2);
+				drawTriangleVertices(triangleCache, v0, v2, v3);
+			}
+			
+			break;
+		
+		default:
+			throw new IllegalArgumentException("Shape not supported!");
 		}
 		
 		triangleCache.clear();
 	}
 	
+	private void drawTriangleVertices(TriangleCache triangleCache, Vertex3D v0, Vertex3D v1, Vertex3D v2) {
+		Triangle3D triangle = triangleCache.getTriangle();
+		shader.projectVertices(triangle, v0, v1, v2);
+		if (cullEnabled && canPreCullTriangle(triangle)) {
+			triangleCache.storeTriangle(triangle);
+			return;
+		}
+		
+		trianglesToClip.add(triangle);
+		triangle = null;
+
+		Queue<Triangle3D> trianglesToDraw = clipTriangle(triangleCache, trianglesToClip, clippedTriangles);
+		transformAndCullTriangles(trianglesToDraw, triangleCache);
+
+		if (!trianglesToDraw.isEmpty()) {
+			renderTriangles(trianglesToDraw, triangleCache);
+			
+			for (Triangle3D t : trianglesToDraw)
+				triangleCache.storeTriangle(t);
+			trianglesToDraw.clear();
+		}
+	}
+
 	@Override
 	public void dispose() {
 		super.dispose();
