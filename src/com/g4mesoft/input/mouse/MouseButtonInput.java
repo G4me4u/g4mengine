@@ -9,15 +9,17 @@ public class MouseButtonInput extends Input {
 	private int button;
 
 	private boolean pressed;
+	private boolean dragged;
+
 	private boolean wasPressed;
+	private boolean wasDragged;
+	
+	private boolean shouldRelease;
 	
 	private long activationTime;
 	
 	private int clickX;
 	private int clickY;
-	
-	private boolean dragged;
-	private boolean wasDragged;
 	
 	private int dragX;
 	private int dragY;
@@ -31,14 +33,26 @@ public class MouseButtonInput extends Input {
 	public void update() {
 		wasPressed = pressed;
 		wasDragged = dragged;
+
+		if (shouldRelease) {
+			pressed = false;
+			dragged = false;
+
+			dragX = 0;
+			dragY = 0;
+			
+			shouldRelease = false;
+		}
 	}
 
 	public void reset() {
 		pressed = false;
-		wasPressed = false;
-		
 		dragged = false;
+
+		wasPressed = false;
 		wasDragged = false;
+	
+		shouldRelease = false;
 	}
 	
 	public void mousePressed(int button, int x, int y) {
@@ -63,11 +77,7 @@ public class MouseButtonInput extends Input {
 		if (button != this.button)
 			return;
 		
-		pressed = false;
-		dragged = false;
-
-		dragX = 0;
-		dragY = 0;
+		shouldRelease = true;
 	}
 
 	public void mouseDragged(int button, int x, int y) {
