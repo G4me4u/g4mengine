@@ -137,25 +137,25 @@ public class AiffFile extends BasicAudioFile {
 	private static byte[] extractSoundDataFromChunks(AiffSSNDChunk ssndChunk, AiffCOMMChunk commChunk, SoundFormat format) {
 		int numDataBytes = (int)commChunk.getSampleFrames() * format.getFrameSize();
 		
+		int offset = (int)ssndChunk.getOffset();
+		byte[] soundData = ssndChunk.getSoundData();
+
 		// It is possible that the SSND chunk was
 		// corrupted and ended abruptly. We have
 		// to make sure that the data is actually
 		// present.
-		if (ssndChunk.getSoundDataLength() < numDataBytes) {
-			numDataBytes = ssndChunk.getSoundDataLength();
+		if (ssndChunk.getSoundDataLength() < numDataBytes + offset) {
+			numDataBytes = ssndChunk.getSoundDataLength() - offset;
 		
 			// We have to make sure that the last
 			// frame is not cut off or broken.
 			numDataBytes -= numDataBytes % format.getFrameSize();
 		}
-		
-		int offset = (int)ssndChunk.getOffset();
-		byte[] soundData = ssndChunk.getSoundData();
-		
+
+		if (numDataBytes < 0 || offset > soundData.length)
+			return new byte[0];
 		if (offset == 0 && soundData.length == numDataBytes)
 			return soundData;
-		if (offset > soundData.length)
-			return new byte[0];
 		
 		if (offset + numDataBytes > soundData.length)
 			numDataBytes = soundData.length - offset;
