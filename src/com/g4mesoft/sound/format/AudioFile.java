@@ -1,7 +1,5 @@
 package com.g4mesoft.sound.format;
 
-import javax.sound.sampled.AudioFormat;
-
 import com.g4mesoft.sound.format.info.AudioTag;
 
 public abstract class AudioFile {
@@ -9,7 +7,7 @@ public abstract class AudioFile {
 	public AudioFile() {
 	}
 	
-	public abstract AudioFormat getFormat();
+	public abstract SoundFormat getFormat();
 	
 	/**
 	 * Copies the raw PCM audio data in this AudioFile into the destination

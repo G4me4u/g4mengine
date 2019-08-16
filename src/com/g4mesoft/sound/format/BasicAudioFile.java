@@ -1,17 +1,15 @@
 package com.g4mesoft.sound.format;
 
-import javax.sound.sampled.AudioFormat;
-
 import com.g4mesoft.sound.format.info.AudioTag;
 
 public abstract class BasicAudioFile extends AudioFile {
 
 	protected final byte[] data;
-	protected final AudioFormat format;
+	protected final SoundFormat format;
 	
 	protected AudioTag audioTag;
 	
-	public BasicAudioFile(byte[] data, AudioFormat format) {
+	public BasicAudioFile(byte[] data, SoundFormat format) {
 		this.data = data;
 		this.format = format;
 	
@@ -24,7 +22,7 @@ public abstract class BasicAudioFile extends AudioFile {
 	 * @see #getData(byte[], int, int, int)
 	 */
 	@Override
-	public AudioFormat getFormat() {
+	public SoundFormat getFormat() {
 		return format;
 	}
 

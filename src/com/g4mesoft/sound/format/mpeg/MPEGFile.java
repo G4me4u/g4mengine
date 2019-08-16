@@ -2,10 +2,9 @@ package com.g4mesoft.sound.format.mpeg;
 
 import java.io.IOException;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioFormat.Encoding;
-
 import com.g4mesoft.sound.format.AudioBitInputStream;
+import com.g4mesoft.sound.format.SoundEncoding;
+import com.g4mesoft.sound.format.SoundFormat;
 import com.g4mesoft.sound.format.AudioParsingException;
 import com.g4mesoft.sound.format.BasicAudioFile;
 
@@ -19,7 +18,7 @@ public class MPEGFile extends BasicAudioFile {
 	 */
 	private static final int MIN_FRAMES = 3;
 	
-	private MPEGFile(byte[] data, AudioFormat format) {
+	private MPEGFile(byte[] data, SoundFormat format) {
 		super(data, format);
 	}
 	
@@ -37,18 +36,14 @@ public class MPEGFile extends BasicAudioFile {
 		
 		frameDecoder.flushCachedSamples();
 		
-		AudioFormat format = new AudioFormat(Encoding.PCM_SIGNED, 
+		SoundFormat format = new SoundFormat(SoundEncoding.PCM_SIGNED, 
 		                                     frameDecoder.getSampleRate(),
 		                                     16,
-		                                     2, 
-		                                     4, 
-		                                     frameDecoder.getSampleRate(),
-		                                     false);
+		                                     false,
+		                                     false,
+		                                     4,
+		                                     2);
 		
 		return new MPEGFile(frameDecoder.getCompiledSamples(), format);
-	}
-
-	public static AudioFormat getAudioFormat(AudioFormat.Encoding encoding, int sampleRate, int sampleSizeInBits, int channels, int frameSize, boolean bigEndian) {
-		return new AudioFormat(encoding, sampleRate, sampleSizeInBits, channels, frameSize, sampleRate * (sampleSizeInBits >>> 3) * channels / frameSize, bigEndian);
 	}
 }

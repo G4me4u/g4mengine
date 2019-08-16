@@ -1,9 +1,8 @@
 package com.g4mesoft.sound.processor;
 
-import javax.sound.sampled.AudioFormat;
-
 import com.g4mesoft.math.Vec3f;
 import com.g4mesoft.sound.format.AudioFile;
+import com.g4mesoft.sound.format.SoundFormat;
 
 public class AudioSource extends AudioLine {
 
@@ -100,7 +99,7 @@ public class AudioSource extends AudioLine {
 		return frameLocation != -1;
 	}
 	
-	public AudioFormat getFormat() {
+	public SoundFormat getFormat() {
 		return audioFile.getFormat();
 	}
 	

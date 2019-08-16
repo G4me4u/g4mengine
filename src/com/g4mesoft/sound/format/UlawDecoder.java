@@ -1,7 +1,5 @@
 package com.g4mesoft.sound.format;
 
-import javax.sound.sampled.AudioFormat;
-
 import com.g4mesoft.util.MemoryUtil;
 
 public final class UlawDecoder {
@@ -12,13 +10,13 @@ public final class UlawDecoder {
 	private static final int SEG_SHIFT = 4;
 	private static final int QUANT_MASK = 0x0F;
 	
-	private static final short[] ulawTable;
+	private static final short[] ULAW_TABLE;
 	
 	static {
-		ulawTable = new short[256];
+		ULAW_TABLE = new short[256];
 		
 		for (int i = 0; i < 256; i++)
-			ulawTable[i] = preDecode(i);
+			ULAW_TABLE[i] = preDecode(i);
 	}
 	
 	private UlawDecoder() {
@@ -53,10 +51,10 @@ public final class UlawDecoder {
 	}
 	
 	public static short decode(byte ulaw) {
-		return ulawTable[((int)ulaw) & 0xFF];
+		return ULAW_TABLE[((int)ulaw) & 0xFF];
 	}
 	
-	public static AudioFormat.Encoding getDecodedEncoding() {
-		return AudioFormat.Encoding.PCM_SIGNED;
+	public static SoundEncoding getDecodedEncoding() {
+		return SoundEncoding.PCM_SIGNED;
 	}
 }

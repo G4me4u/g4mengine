@@ -3,10 +3,10 @@ package com.g4mesoft.sound.format.wav;
 import java.io.IOException;
 import java.util.Arrays;
 
-import javax.sound.sampled.AudioFormat;
-
 import com.g4mesoft.sound.format.AlawDecoder;
 import com.g4mesoft.sound.format.AudioBitInputStream;
+import com.g4mesoft.sound.format.SoundEncoding;
+import com.g4mesoft.sound.format.SoundFormat;
 import com.g4mesoft.sound.format.AudioHelper;
 import com.g4mesoft.sound.format.AudioParsingException;
 import com.g4mesoft.sound.format.BasicAudioFile;
@@ -73,7 +73,7 @@ public class WaveFile extends BasicAudioFile {
 	 */
 	private static final int ULAW_ENCODING = 0x7;
 	
-	private WaveFile(byte[] data, AudioFormat format) {
+	private WaveFile(byte[] data, SoundFormat format) {
 		super(data, format);
 	}
 
@@ -227,22 +227,22 @@ public class WaveFile extends BasicAudioFile {
 		AudioHelper.readBytes(abis, buffer, 4, 0);
 		int sampleRate = MemoryUtil.littleEndianToInt(buffer, 0);
 		AudioHelper.readBytes(abis, buffer, 4, 0);
-		int byteRate = MemoryUtil.littleEndianToInt(buffer, 0);
+		// int avgByteRate = MemoryUtil.littleEndianToInt(buffer, 0);
 		AudioHelper.readBytes(abis, buffer, 2, 0);
 		int blockAlign = MemoryUtil.littleEndianToShortUnsignedInt(buffer, 0);
 		AudioHelper.readBytes(abis, buffer, 2, 0);
 		int bitsPerSample = MemoryUtil.littleEndianToShortUnsignedInt(buffer, 0);
 		
-		AudioFormat.Encoding encoding;
+		SoundEncoding encoding;
 		switch(formatType) {
 		case PCM_ENCODING:
-			encoding = AudioFormat.Encoding.PCM_SIGNED;
+			encoding = SoundEncoding.PCM_SIGNED;
 			break;
 		case ALAW_ENCODING:
-			encoding = AudioFormat.Encoding.ALAW;
+			encoding = SoundEncoding.ALAW;
 			break;
 		case ULAW_ENCODING:
-			encoding = AudioFormat.Encoding.ULAW;
+			encoding = SoundEncoding.ULAW;
 			break;
 		default:
 			// Format is not supported (or end of stream)
@@ -302,31 +302,38 @@ public class WaveFile extends BasicAudioFile {
 		// and ALAW decoding will be little endian
 		// byte order, so no need to change the
 		// format accordingly.
-		if (encoding == AudioFormat.Encoding.ULAW || encoding == AudioFormat.Encoding.ALAW) {
-			if (encoding == AudioFormat.Encoding.ULAW) {
+		if (encoding == SoundEncoding.ULAW || encoding == SoundEncoding.ALAW) {
+			if (encoding == SoundEncoding.ULAW) {
 				buffer = UlawDecoder.decode(buffer);
 				encoding = UlawDecoder.getDecodedEncoding();
 			}
-			if (encoding == AudioFormat.Encoding.ALAW) {
+			if (encoding == SoundEncoding.ALAW) {
 				buffer = AlawDecoder.decode(buffer);
 				encoding = AlawDecoder.getDecodedEncoding();
 			}
 			
 			blockAlign <<= 1;
 			bitsPerSample <<= 1;
-			byteRate <<= 1;
+		} else if (bitsPerSample <= 8) {
+			// Samples with 8 bits or less are stored in
+			// an unsigned PCM format. Convert to signed.
+			int mask = (0xFF << (8 - bitsPerSample)) & 0xFF;
+			for (int i = 0; i < buffer.length; i++) {
+				int sample = (int)buffer[i] & 0xFF;
+				buffer[i] = (byte)((sample - 0x80) & mask);
+			}
 		}
 
 		// The format is read from the header.
-		// NOTE: all data is stored in 
-		// little_endian byte order in wave files.
-		AudioFormat format = new AudioFormat(encoding,
+		// NOTE: all data is stored as little_endian
+		// byte order, with left_shifted bits in wave.
+		SoundFormat format = new SoundFormat(encoding,
 		                                     sampleRate, 
 		                                     bitsPerSample, 
-		                                     channels, 
-		                                     blockAlign, 
-		                                     byteRate / blockAlign, 
-		                                     false);
+		                                     true,
+		                                     false,
+		                                     blockAlign,
+		                                     channels);
 
 		return new WaveFile(buffer, format);
 	}

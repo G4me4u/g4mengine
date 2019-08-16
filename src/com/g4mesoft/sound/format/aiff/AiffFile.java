@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.sound.sampled.AudioFormat;
-
 import com.g4mesoft.sound.format.AudioBitInputStream;
+import com.g4mesoft.sound.format.SoundEncoding;
+import com.g4mesoft.sound.format.SoundFormat;
 import com.g4mesoft.sound.format.AudioHelper;
 import com.g4mesoft.sound.format.AudioParsingException;
 import com.g4mesoft.sound.format.BasicAudioFile;
@@ -24,7 +24,7 @@ public class AiffFile extends BasicAudioFile {
 	 */
 	private static final int ID_SEARCH_DEPTH = 1024;
 	
-	private AiffFile(byte[] data, AudioFormat format) {
+	private AiffFile(byte[] data, SoundFormat format) {
 		super(data, format);
 	}
 
@@ -84,16 +84,16 @@ public class AiffFile extends BasicAudioFile {
 		if (commChunk == null || ssndChunk == null)
 			return null;
 		
-		int bytesPerFrame = (commChunk.getSampleSize() + 7) / 8 * commChunk.getChannels();
-		AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED,
+		int frameSize = (commChunk.getSampleSize() + 7) / 8 * commChunk.getChannels();
+		SoundFormat format = new SoundFormat(SoundEncoding.PCM_SIGNED,
 		                                     commChunk.getSampleRate(),
 		                                     commChunk.getSampleSize(),
-		                                     commChunk.getChannels(),
-		                                     bytesPerFrame,
-		                                     commChunk.getSampleRate(),
-		                                     false);
+		                                     false,
+		                                     true,
+		                                     frameSize,
+		                                     commChunk.getChannels());
 
-		byte[] data = extractSoundDataFromChunks(ssndChunk, commChunk, bytesPerFrame);
+		byte[] data = extractSoundDataFromChunks(ssndChunk, commChunk, format);
 		
 		AiffFile audioFile = new AiffFile(data, format);
 		
@@ -134,8 +134,8 @@ public class AiffFile extends BasicAudioFile {
 		return true;
 	}
 
-	private static byte[] extractSoundDataFromChunks(AiffSSNDChunk ssndChunk, AiffCOMMChunk commChunk, int bytesPerFrame) {
-		int numDataBytes = (int)commChunk.getSampleFrames() * bytesPerFrame;
+	private static byte[] extractSoundDataFromChunks(AiffSSNDChunk ssndChunk, AiffCOMMChunk commChunk, SoundFormat format) {
+		int numDataBytes = (int)commChunk.getSampleFrames() * format.getFrameSize();
 		
 		// It is possible that the SSND chunk was
 		// corrupted and ended abruptly. We have
@@ -146,71 +146,22 @@ public class AiffFile extends BasicAudioFile {
 		
 			// We have to make sure that the last
 			// frame is not cut off or broken.
-			numDataBytes -= numDataBytes % bytesPerFrame;
+			numDataBytes -= numDataBytes % format.getFrameSize();
 		}
 		
 		int offset = (int)ssndChunk.getOffset();
 		byte[] soundData = ssndChunk.getSoundData();
 		
-		byte[] data;
-		if (offset == 0 && soundData.length == numDataBytes) {
-			data = soundData;
-		} else {
-			data = new byte[numDataBytes];
-		}
+		if (offset == 0 && soundData.length == numDataBytes)
+			return soundData;
+		if (offset > soundData.length)
+			return new byte[0];
+		
+		if (offset + numDataBytes > soundData.length)
+			numDataBytes = soundData.length - offset;
+		byte[] data = new byte[numDataBytes];
+		System.arraycopy(soundData, offset, data, 0, numDataBytes);
 
-		int sampleSizeInBits = commChunk.getSampleSize();
-		
-		// Sound data is in big endian. We should convert 
-		// it to little endian. There are 4 different cases
-		// we have to handle to make this possible. When
-		// there is 1, 2, 3 or 4 bytes per frame. In case
-		// of 1 byte per frame we can just copy the data
-		// directly.
-		
-		// Data is left shifted, so no need to shift the
-		// bits when converting. It will simply become
-		// right shifted afterwards.
-		if (sampleSizeInBits <= 8) {
-			if (soundData != data)
-				System.arraycopy(soundData, offset, data, 0, numDataBytes);
-		} else {
-			int soundDataEnd = offset + numDataBytes;
-
-			if (sampleSizeInBits <= 16) {
-				byte tmp;
-				for (int i = offset; i < soundDataEnd; i += 2) {
-					// 1 2 swap 1,2 -> 2 1
-					tmp = soundData[i];
-					data[i + 0] = soundData[i + 1];
-					data[i + 1] = tmp;
-				}
-			} else if (sampleSizeInBits <= 24) {
-				byte tmp;
-				for (int i = offset; i < soundDataEnd; i += 3) {
-					// 1 2 3 swap 1,3 -> 3 2 1
-					tmp = soundData[i];
-					data[i + 0] = soundData[i + 2];
-					data[i + 2] = tmp;
-	
-					data[i + 1] = soundData[i + 1];
-				}
-			} else {
-				byte tmp;
-				for (int i = offset; i < soundDataEnd; i += 4) {
-					// 1 2 3 4 swap 1,4 -> 4 2 3 1
-					tmp = soundData[i];
-					data[i + 0] = soundData[i + 3];
-					data[i + 3] = tmp;
-					
-					// 4 2 3 1 swap 2,3 -> 4 3 2 1
-					tmp = soundData[i + 1];
-					data[i + 1] = soundData[i + 2];
-					data[i + 2] = tmp;
-				}
-			}
-		}
-		
 		return data;
 	}
 	

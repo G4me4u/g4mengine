@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
-import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Line;
 import javax.sound.sampled.LineUnavailableException;
@@ -18,25 +18,20 @@ import com.g4mesoft.math.Vec3f;
 import com.g4mesoft.sound.format.AudioBitInputStream;
 import com.g4mesoft.sound.format.AudioFile;
 import com.g4mesoft.sound.format.AudioParsingException;
-import com.g4mesoft.sound.format.ReadLimitReachedException;
 import com.g4mesoft.sound.format.IAudioFileProvider;
+import com.g4mesoft.sound.format.ReadLimitReachedException;
+import com.g4mesoft.sound.format.SoundFormat;
 import com.g4mesoft.sound.format.TagParsingException;
 import com.g4mesoft.sound.format.aiff.AiffFileProvider;
 import com.g4mesoft.sound.format.info.AudioTag;
 import com.g4mesoft.sound.format.info.id3.ID3v2Tag;
 import com.g4mesoft.sound.format.mpeg.MPEGFileProvider;
 import com.g4mesoft.sound.format.wav.WaveFileProvider;
-import com.g4mesoft.sound.processor.AudioChannel;
 import com.g4mesoft.sound.processor.AudioSource;
-import com.g4mesoft.util.MemoryUtil;
 
 public final class SoundManager {
 
 	private static final int AUDIO_FILE_CAPACITY = 16;
-	
-	private static final float SAMPLE_MULTIPLIER = 32768;
-	private static final float SAMPLE_DIVIDER = 1.0f / SAMPLE_MULTIPLIER;
-	public static final int SAMPLES_PER_PLAYBACK = 4096;
 	
 	private static final int INPUT_BUFFER_SIZE = 1024 * 16;
 	private static final int AUDIO_TAG_READ_LIMIT = 1024;
@@ -46,6 +41,8 @@ public final class SoundManager {
 	
 	private final Mixer mixer;
 	private final List<IAudioFileProvider> providers;
+	
+	private final List<SoundThread> soundThreads;
 
 	private AudioFile[] audioFiles;
 	private int numAudioFiles;
@@ -54,6 +51,8 @@ public final class SoundManager {
 		mixer = getOpenDefaultMixer();
 		providers = new ArrayList<IAudioFileProvider>();
 
+		soundThreads = new LinkedList<SoundThread>();
+		
 		audioFiles = new AudioFile[AUDIO_FILE_CAPACITY];
 		numAudioFiles = 0;
 		
@@ -220,14 +219,36 @@ public final class SoundManager {
 		if (audioFile == null)
 			return null;
 		
-		AudioSource source = new AudioSource(audioFile, new Vec3f());
+		AudioSource audioSource = new AudioSource(audioFile, new Vec3f());
+
+		while (true) {
+			SoundThread soundThread = getAppropriateSoundThread(audioSource.getFormat());
+			if (soundThread.addAudioSource(audioSource))
+				break;
+			
+			try {
+				soundThread.join();
+			} catch (InterruptedException e) {
+			}
+
+			soundThreads.remove(soundThread);
+		};
+
+		return audioSource;
+	}
+	
+	private SoundThread getAppropriateSoundThread(SoundFormat format) throws LineUnavailableException {
+		float sampleRate = format.getSampleRate();
 		
-		AudioThread audioThread = new AudioThread(source);
+		for (SoundThread soundThread : soundThreads) {
+			if (MathUtils.nearZero(soundThread.getSampleRate() - sampleRate))
+				return soundThread;
+		}
 		
-		audioThread.setDaemon(daemon);
-		audioThread.start();
+		SoundThread thread = new SoundThread(getSourceDataLine(), sampleRate);
+		soundThreads.add(thread);
 		
-		return source;
+		return thread;
 	}
 
 	private SourceDataLine getSourceDataLine() throws LineUnavailableException {
@@ -246,137 +267,5 @@ public final class SoundManager {
 		if (instance == null)
 			instance = new SoundManager();
 		return instance;
-	}
-	
-	private class AudioThread extends Thread {
-		
-		private final AudioSource audioSource;
-		private final SourceDataLine sdl;
-		
-		private final int numChannelsIn;
-		
-		private AudioThread(AudioSource audioSource) throws LineUnavailableException {
-			super("AudioThread");
-			
-			this.audioSource = audioSource;
-
-			sdl = getSourceDataLine();
-		
-			numChannelsIn = audioSource.getFormat().getChannels();
-		}
-		
-		private void processChannel(byte[] blockIn, byte[] blockOut, float[] samples, int framesIn, AudioChannel channel) {
-			int fp, i;
-
-			if (numChannelsIn == 1) {
-				for (fp = 0, i = 0; fp < framesIn; fp++, i += 2)
-					samples[fp] = MemoryUtil.littleEndianToShort(blockIn, i) * SAMPLE_DIVIDER;
-			} else {
-				for (fp = 0, i = (channel == AudioChannel.LEFT) ? 0 : 2; fp < framesIn; fp++, i += 4)
-					samples[fp] = MemoryUtil.littleEndianToShort(blockIn, i) * SAMPLE_DIVIDER;
-			}
-
-			audioSource.preProcess(samples, framesIn, channel);
-
-			if (blockOut != null) {
-				for (fp = 0, i = (channel == AudioChannel.LEFT) ? 0 : 2; fp < framesIn; fp++, i += 4)
-					MemoryUtil.writeLittleEndianShort(blockOut, (short)(samples[fp] * SAMPLE_MULTIPLIER), i);
-			}
-		}
-		
-		private int readAndProcessFrames(int framesToRead, byte[] blockIn, byte[] blockOut, float[] samples) {
-			int fr = audioSource.readRawFrames(blockIn, framesToRead);
-			if (fr <= 0) 
-				return -1;
-			
-			processChannel(blockIn, blockOut, samples, fr, AudioChannel.LEFT);
-			processChannel(blockIn, blockOut, samples, fr, AudioChannel.RIGHT);
-		
-			return fr;
-		}
-		
-		@Override
-		public void run() {
-			AudioFormat formatIn = audioSource.audioFile.getFormat();
-			
-			AudioFormat formatOut;
-			if (numChannelsIn == 1) { // Mono
-				formatOut = new AudioFormat(formatIn.getEncoding(), 
-				                            formatIn.getSampleRate(), 
-				                            formatIn.getSampleSizeInBits(), 
-				                            2, 
-				                            formatIn.getFrameSize() << 1, 
-				                            formatIn.getFrameRate(), 
-				                            false);
-			} else {
-				formatOut = formatIn;
-			}
-			
-			try {
-				sdl.open(formatOut);
-			} catch (LineUnavailableException e) {
-				return;
-			}
-
-			int framesToRead = SAMPLES_PER_PLAYBACK;
-			byte[] blockIn = new byte[framesToRead * formatIn.getFrameSize()];
-			byte[] blockOut = new byte[framesToRead * formatOut.getFrameSize()];
-			
-			// A single frame will contain samples for both channels.
-			// NOTE: We reuse 'samples' for both channels.
-			float[] samples = new float[framesToRead];
-			
-			sdl.start();
-			
-			int frameSize = formatOut.getFrameSize();
-			int bytesToRead = framesToRead * frameSize;
-
-			int prevLatency = 0;
-			while (audioSource.isPlaying()) {
-				if (sdl.getBufferSize() - sdl.available() < bytesToRead) {
-					int latency = audioSource.getSampleProcessingLatency();
-					if (prevLatency < latency) {
-						// Convert from samples to frames. The frame size is
-						// defined in bytes (including both channels), so we
-						// have to also multiply the latency by the number of
-						// channels.
-						int byteLatency = 2 * (latency - prevLatency);
-						int frameLatency = (numChannelsIn * byteLatency) / frameSize;
-						prevLatency = latency;
-						
-						do {
-							int framesToSkip = MathUtils.min(frameLatency, framesToRead);
-							
-							// Make sure not to write to blockOut.
-							int fr = readAndProcessFrames(framesToSkip, blockIn, null, samples);
-							if (fr == -1)
-								break;
-
-							frameLatency -= fr;
-						} while (frameLatency != 0);
-					}
-					
-					int fr = readAndProcessFrames(framesToRead, blockIn, blockOut, samples);
-					if (fr == -1)
-						break;
-					
-					sdl.write(blockOut, 0, fr * frameSize);
-				} else {
-					try {
-						Thread.sleep(1L);
-					} catch (InterruptedException e) {
-					}
-				}
-			}
-			
-			try {
-				Thread.sleep(1000L);
-			} catch (InterruptedException e) {
-			}
-			
-			sdl.stop();
-			sdl.flush();
-			sdl.close();
-		}
 	}
 }
