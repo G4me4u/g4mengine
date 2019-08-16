@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.g4mesoft.sound.convert.Audio16BitSampleConverter;
+import com.g4mesoft.sound.convert.ISampleConverter;
 import com.g4mesoft.sound.format.AudioBitInputStream;
-import com.g4mesoft.util.MemoryUtil;
+import com.g4mesoft.sound.format.SoundEncoding;
+import com.g4mesoft.sound.format.SoundFormat;
 
 public class MPEGFrameDecoder {
 
@@ -19,11 +22,10 @@ public class MPEGFrameDecoder {
 	private static final int FRAME_CACHE_COUNT = 4;
 	
 	/**
-	 * A sample multiplier for converting the floating point samples to signed
-	 * integer samples (2 bytes).
+	 * The number of channels in the output sample array.
 	 */
-	private static final float SAMPLE_MULTIPLIER = 32768;
-
+	private static final int NUM_CHANNELS_OUT = 2;
+	
 	private int numCachedSamples;
 	private final MPEGFrame[] frameCache;
 	
@@ -41,6 +43,8 @@ public class MPEGFrameDecoder {
 	private List<byte[]> bufferedSamples;
 	private int numBufferedBytes;
 	
+	private final ISampleConverter sampleConverter;
+	
 	public MPEGFrameDecoder() {
 		frameCache = new MPEGFrame[FRAME_CACHE_COUNT];
 		for (int i = 0; i < FRAME_CACHE_COUNT; i++)
@@ -52,6 +56,8 @@ public class MPEGFrameDecoder {
 		
 		bufferedSamples = new ArrayList<byte[]>();
 		numBufferedBytes = 0;
+		
+		sampleConverter = new Audio16BitSampleConverter();
 	}
 
 	public boolean readNextFrame(AudioBitInputStream abis) throws IOException {
@@ -133,22 +139,9 @@ public class MPEGFrameDecoder {
 
 		int offset = 0;
 		for (int i = 0; i < currentFrame; i++) {
-			MPEGFrame frame = frameCache[i];
-			
-			for (float sample : frame.getSamples()) {
-				short value;
-				
-				if (sample >= 1.0f) {
-					value = Short.MAX_VALUE;
-				} else if (sample <= -1.0f) {
-					value = Short.MIN_VALUE;
-				} else {
-					value = (short)(sample * SAMPLE_MULTIPLIER);
-				}
-				
-				MemoryUtil.writeLittleEndianShort(samples, value, offset);
-				offset += 2;
-			}
+			float[] buffer = frameCache[i].getSamples();
+			sampleConverter.fromFloatSample(buffer, samples, offset, buffer.length);
+			offset += buffer.length;
 		}
 
 		bufferedSamples.add(samples);
@@ -166,10 +159,6 @@ public class MPEGFrameDecoder {
 		return numValidFrames;
 	}
 
-	public float getSampleRate() {
-		return commonFrequency;
-	}
-
 	public byte[] getCompiledSamples() {
 		byte[] data = new byte[numBufferedBytes];
 		
@@ -183,5 +172,15 @@ public class MPEGFrameDecoder {
 		numBufferedBytes = 0;
 		
 		return data;
+	}
+	
+	public SoundFormat getFormat() {
+		return new SoundFormat(SoundEncoding.PCM_SIGNED, 
+		                       commonFrequency,
+		                       sampleConverter.getBitsPerSample(),
+		                       sampleConverter.isLeftShifted(),
+		                       sampleConverter.isBigEndian(),
+		                       sampleConverter.getBytesPerSample() * NUM_CHANNELS_OUT,
+		                       NUM_CHANNELS_OUT);
 	}
 }

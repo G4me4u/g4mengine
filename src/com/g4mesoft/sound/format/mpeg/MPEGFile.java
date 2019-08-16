@@ -3,10 +3,9 @@ package com.g4mesoft.sound.format.mpeg;
 import java.io.IOException;
 
 import com.g4mesoft.sound.format.AudioBitInputStream;
-import com.g4mesoft.sound.format.SoundEncoding;
-import com.g4mesoft.sound.format.SoundFormat;
 import com.g4mesoft.sound.format.AudioParsingException;
 import com.g4mesoft.sound.format.BasicAudioFile;
+import com.g4mesoft.sound.format.SoundFormat;
 
 public class MPEGFile extends BasicAudioFile {
 
@@ -36,14 +35,8 @@ public class MPEGFile extends BasicAudioFile {
 		
 		frameDecoder.flushCachedSamples();
 		
-		SoundFormat format = new SoundFormat(SoundEncoding.PCM_SIGNED, 
-		                                     frameDecoder.getSampleRate(),
-		                                     16,
-		                                     false,
-		                                     false,
-		                                     4,
-		                                     2);
-		
-		return new MPEGFile(frameDecoder.getCompiledSamples(), format);
+		byte[] samples = frameDecoder.getCompiledSamples();
+		SoundFormat format = frameDecoder.getFormat();
+		return new MPEGFile(samples, format);
 	}
 }
