@@ -315,10 +315,10 @@ public class TextFieldCompositionUI extends EditableTextCompositionUI {
 		if (!hasSelection || selectStart > clippedModelStart || selectEnd < clippedModelEnd) {
 			renderer.setColor(textField.getTextColor());
 			if (hasSelection) {
-				drawVisibleTextSegment(renderer, 0, selectStart);
+				drawVisibleTextSegment(renderer, clippedModelStart, selectStart);
 				drawVisibleTextSegment(renderer, selectEnd, clippedModelEnd);
 			} else {
-				drawVisibleTextSegment(renderer, 0, clippedModelEnd);
+				drawVisibleTextSegment(renderer, clippedModelStart, clippedModelEnd);
 			}
 		}
 		
