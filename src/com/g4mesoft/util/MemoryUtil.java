@@ -11,21 +11,21 @@ public final class MemoryUtil {
 	
 	public static long littleEndianToLong(byte[] buffer, int offset) {
 		int l = ((buffer[offset + 0] & 0xFF) <<  0) |
-                ((buffer[offset + 1] & 0xFF) <<  8) |
-                ((buffer[offset + 2] & 0xFF) << 16) |
-                ((buffer[offset + 3] & 0xFF) << 24);
-        int h = ((buffer[offset + 4] & 0xFF) <<  0) |
-                ((buffer[offset + 5] & 0xFF) <<  8) |
-                ((buffer[offset + 6] & 0xFF) << 16) |
-                ((buffer[offset + 7] & 0xFF) << 24);
-        return (((long) h) << 32L) | (((long) l) & 0xFFFFFFFFL);
+		        ((buffer[offset + 1] & 0xFF) <<  8) |
+		        ((buffer[offset + 2] & 0xFF) << 16) |
+		        ((buffer[offset + 3] & 0xFF) << 24);
+		int h = ((buffer[offset + 4] & 0xFF) <<  0) |
+		        ((buffer[offset + 5] & 0xFF) <<  8) |
+		        ((buffer[offset + 6] & 0xFF) << 16) |
+		        ((buffer[offset + 7] & 0xFF) << 24);
+		return (((long) h) << 32L) | (((long) l) & 0xFFFFFFFFL);
 	}
 	
 	public static int littleEndianToInt(byte[] buffer, int offset) {
 		return (buffer[offset + 0] & 0xFF) | 
-			  ((buffer[offset + 1] & 0xFF) <<  8) | 
-			  ((buffer[offset + 2] & 0xFF) << 16) | 
-			  ((buffer[offset + 3] & 0xFF) << 24);
+		      ((buffer[offset + 1] & 0xFF) <<  8) | 
+		      ((buffer[offset + 2] & 0xFF) << 16) | 
+		      ((buffer[offset + 3] & 0xFF) << 24);
 	}
 
 	public static long littleEndianToIntUnsignedLong(byte[] buffer, int offset) {
@@ -34,8 +34,8 @@ public final class MemoryUtil {
 	
 	public static int littleEndianTo24BitUnsignedInt(byte[] buffer, int offset) {
 		return (buffer[offset + 0] & 0xFF) | 
-              ((buffer[offset + 1] & 0xFF) <<  8) | 
-              ((buffer[offset + 2] & 0xFF) << 16);
+		      ((buffer[offset + 1] & 0xFF) <<  8) | 
+		      ((buffer[offset + 2] & 0xFF) << 16);
 	}
 	
 	public static int littleEndianTo24BitInt(byte[] buffer, int offset) {
@@ -45,7 +45,7 @@ public final class MemoryUtil {
 	
 	public static short littleEndianToShort(byte[] buffer, int offset) {
 		return (short)((buffer[offset + 0] & 0xFF) | 
-					  ((buffer[offset + 1] & 0xFF) << 8));
+		              ((buffer[offset + 1] & 0xFF) << 8));
 	}
 	
 	public static int littleEndianToShortUnsignedInt(byte[] buffer, int offset) {
@@ -54,21 +54,21 @@ public final class MemoryUtil {
 	
 	public static long bigEndianToLong(byte[] buffer, int offset) {
 		int h = ((buffer[offset + 0] & 0xFF) << 24) |
-                ((buffer[offset + 1] & 0xFF) << 16) |
-                ((buffer[offset + 2] & 0xFF) <<  8) |
-                ((buffer[offset + 3] & 0xFF) <<  0);
-        int l = ((buffer[offset + 4] & 0xFF) << 24) |
-                ((buffer[offset + 5] & 0xFF) << 16) |
-                ((buffer[offset + 6] & 0xFF) <<  8) |
-                ((buffer[offset + 7] & 0xFF) <<  0);
-        return (((long) h) << 32L) | (((long) l) & 0xFFFFFFFFL);
+		        ((buffer[offset + 1] & 0xFF) << 16) |
+		        ((buffer[offset + 2] & 0xFF) <<  8) |
+		        ((buffer[offset + 3] & 0xFF) <<  0);
+		int l = ((buffer[offset + 4] & 0xFF) << 24) |
+		        ((buffer[offset + 5] & 0xFF) << 16) |
+		        ((buffer[offset + 6] & 0xFF) <<  8) |
+		        ((buffer[offset + 7] & 0xFF) <<  0);
+		return (((long) h) << 32L) | (((long) l) & 0xFFFFFFFFL);
 	}
 	
 	public static int bigEndianToInt(byte[] buffer, int offset) {
 		return (buffer[offset + 3] & 0xFF) | 
-			  ((buffer[offset + 2] & 0xFF) <<  8) | 
-			  ((buffer[offset + 1] & 0xFF) << 16) | 
-			  ((buffer[offset + 0] & 0xFF) << 24);
+		      ((buffer[offset + 2] & 0xFF) <<  8) | 
+		      ((buffer[offset + 1] & 0xFF) << 16) | 
+		      ((buffer[offset + 0] & 0xFF) << 24);
 	}
 	
 	public static long bigEndianToIntUnsignedLong(byte[] buffer, int offset) {
@@ -77,8 +77,8 @@ public final class MemoryUtil {
 	
 	public static int bigEndianTo24BitUnsignedInt(byte[] buffer, int offset) {
 		return (buffer[offset + 2] & 0xFF) | 
-              ((buffer[offset + 1] & 0xFF) <<  8) | 
-              ((buffer[offset + 0] & 0xFF) << 16);
+		      ((buffer[offset + 1] & 0xFF) <<  8) | 
+		      ((buffer[offset + 0] & 0xFF) << 16);
 	}
 	
 	public static int bigEndianTo24BitInt(byte[] buffer, int offset) {
@@ -88,7 +88,7 @@ public final class MemoryUtil {
 
 	public static short bigEndianToShort(byte[] buffer, int offset) {
 		return (short)((buffer[offset + 1] & 0xFF) | 
-					  ((buffer[offset + 0] & 0xFF) << 8));
+		              ((buffer[offset + 0] & 0xFF) << 8));
 	}
 	
 	public static int bigEndianToShortUnsignedInt(byte[] buffer, int offset) {
