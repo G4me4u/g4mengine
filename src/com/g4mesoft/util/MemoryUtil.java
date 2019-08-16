@@ -32,6 +32,17 @@ public final class MemoryUtil {
 		return Integer.toUnsignedLong(littleEndianToInt(buffer, offset));
 	}
 	
+	public static int littleEndianTo24BitUnsignedInt(byte[] buffer, int offset) {
+		return (buffer[offset + 0] & 0xFF) | 
+              ((buffer[offset + 1] & 0xFF) <<  8) | 
+              ((buffer[offset + 2] & 0xFF) << 16);
+	}
+	
+	public static int littleEndianTo24BitInt(byte[] buffer, int offset) {
+		int val = littleEndianTo24BitUnsignedInt(buffer, offset);
+		return ((val & 0x00800000) != 0) ? (val | 0xFF000000) : val;
+	}
+	
 	public static short littleEndianToShort(byte[] buffer, int offset) {
 		return (short)((buffer[offset + 0] & 0xFF) | 
 					  ((buffer[offset + 1] & 0xFF) << 8));
@@ -62,6 +73,17 @@ public final class MemoryUtil {
 	
 	public static long bigEndianToIntUnsignedLong(byte[] buffer, int offset) {
 		return Integer.toUnsignedLong(bigEndianToInt(buffer, offset));
+	}
+	
+	public static int bigEndianTo24BitUnsignedInt(byte[] buffer, int offset) {
+		return (buffer[offset + 2] & 0xFF) | 
+              ((buffer[offset + 1] & 0xFF) <<  8) | 
+              ((buffer[offset + 0] & 0xFF) << 16);
+	}
+	
+	public static int bigEndianTo24BitInt(byte[] buffer, int offset) {
+		int val = bigEndianTo24BitUnsignedInt(buffer, offset);
+		return ((val & 0x00800000) != 0) ? (val | 0xFF000000) : val;
 	}
 
 	public static short bigEndianToShort(byte[] buffer, int offset) {
@@ -94,6 +116,12 @@ public final class MemoryUtil {
 		buffer[offset + 0] = (byte)((value >>> 24) & 0xFF);
 	}
 	
+	public static void writeBigEndian24Bit(byte[] buffer, int value, int offset) {
+		buffer[offset + 2] = (byte)((value >>>  0) & 0xFF);
+		buffer[offset + 1] = (byte)((value >>>  8) & 0xFF);
+		buffer[offset + 0] = (byte)((value >>> 16) & 0xFF);
+	}
+	
 	public static void writeBigEndianShort(byte[] buffer, short value, int offset) {
 		buffer[offset + 1] = (byte)((value >>> 0) & 0xFF);
 		buffer[offset + 0] = (byte)((value >>> 8) & 0xFF);
@@ -118,6 +146,12 @@ public final class MemoryUtil {
 		buffer[offset + 1] = (byte)((value >>>  8) & 0xFF);
 		buffer[offset + 2] = (byte)((value >>> 16) & 0xFF);
 		buffer[offset + 3] = (byte)((value >>> 24) & 0xFF);
+	}
+
+	public static void writeLittleEndian24Bit(byte[] buffer, int value, int offset) {
+		buffer[offset + 0] = (byte)((value >>>  0) & 0xFF);
+		buffer[offset + 1] = (byte)((value >>>  8) & 0xFF);
+		buffer[offset + 2] = (byte)((value >>> 16) & 0xFF);
 	}
 	
 	public static void writeLittleEndianShort(byte[] buffer, short value, int offset) {
