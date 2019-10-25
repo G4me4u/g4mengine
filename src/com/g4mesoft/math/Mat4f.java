@@ -15,7 +15,7 @@ public class Mat4f implements IMatf<Mat4f> {
 	}
 	
 	public Mat4f(float d) {
-		toIdentity(1.0f);
+		toIdentity(d);
 	}
 	
 	public Mat4f(float m00, float m10, float m20, float m30,
@@ -108,8 +108,16 @@ public class Mat4f implements IMatf<Mat4f> {
 		return this;
 	}
 
+	public Mat4f translate(float t) {
+		return translate(t, t, t);
+	}
+
 	public Mat4f translate(float tx, float ty, float tz) {
 		return mul(new Mat4f().setTranslation(tx, ty, tz));
+	}
+
+	public Mat4f setTranslation(float t) {
+		return setTranslation(t, t, t);
 	}
 
 	public Mat4f setTranslation(float tx, float ty, float tz) {
@@ -120,8 +128,16 @@ public class Mat4f implements IMatf<Mat4f> {
 		return this;
 	}
 
+	public Mat4f scale(float s) {
+		return scale(s, s, s);
+	}
+
 	public Mat4f scale(float sx, float sy, float sz) {
 		return mul(new Mat4f().setScale(sx, sy, sz));
+	}
+
+	public Mat4f setScale(float s) {
+		return setScale(s, s, s);
 	}
 
 	public Mat4f setScale(float sx, float sy, float sz) {

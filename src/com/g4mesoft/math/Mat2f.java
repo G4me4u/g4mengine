@@ -49,8 +49,16 @@ public class Mat2f implements IMatf<Mat2f> {
 		           other.m01, other.m11);
 	}
 
+	public Mat2f scale(float s) {
+		return scale(s, s);
+	}
+
 	public Mat2f scale(float sx, float sy) {
 		return mul(new Mat2f().setScale(sx, sy));
+	}
+
+	public Mat2f setScale(float s) {
+		return setScale(s, s);
 	}
 
 	public Mat2f setScale(float sx, float sy) {

@@ -61,10 +61,18 @@ public class Mat3f implements IMatf<Mat3f> {
 		           other.m02, other.m12, other.m22);
 	}
 
+	public Mat3f scale(float s) {
+		return scale(s, s, s);
+	}
+	
 	public Mat3f scale(float sx, float sy, float sz) {
 		return mul(new Mat3f().setScale(sx, sy, sz));
 	}
 
+	public Mat3f setScale(float s) {
+		return setScale(s, s, s);
+	}
+	
 	public Mat3f setScale(float sx, float sy, float sz) {
 		m00 = sx;
 		m11 = sy;
