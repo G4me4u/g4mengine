@@ -333,55 +333,53 @@ public abstract class AbstractPixelRenderer3D extends PixelRenderer2D {
 			v0 = tmp;
 		}
 
-		int x0 = (int)(v0.pos.x + 0.5f), y0 = (int)(v0.pos.y + 0.5f);
-		int x1 = (int)(v1.pos.x + 0.5f), y1 = (int)(v1.pos.y + 0.5f);
-		int x2 = (int)(v2.pos.x + 0.5f), y2 = (int)(v2.pos.y + 0.5f);
+		int iy0 = (int)(v0.pos.y + 0.5f);
+		int iy1 = (int)(v1.pos.y + 0.5f);
+		int iy2 = (int)(v2.pos.y + 0.5f);
 		
 		Triangle3D triangle = cache.getTriangle();
 		Vertex3D vertY0 = triangle.v0;
 		Vertex3D vertY1 = triangle.v1;
 		Vertex3D vertXY = triangle.v2;
 
-		boolean negateX = (x1 - x0) * (y2 - y0) < (x2 - x0) * (y1 - y0);
-
-		if (y0 != y1) {
-			float dx0 = x2 - x0, dy0 = y2 - y0;
-			float dx1 = x1 - x0, dy1 = y1 - y0;
+		if (iy0 != iy1) {
+			float dy0 = v2.pos.y - v0.pos.y;
+			float dy1 = v1.pos.y - v0.pos.y;
 			
-			for (int y = y0; y != y1; y++) {
-				float dy = y - y0 + 0.5f;
+			float dy = MathUtils.max(iy0 - v0.pos.y + 0.5f, 0.0f);
+			
+			for (int y = iy0; y != iy1; y++) {
+				interpolateVertex(v0, v2, dy, dy0, vertY0);
+				interpolateVertex(v0, v1, dy, dy1, vertY1);
 
-				interpolateVertex(v0, v2, dy / dy0, vertY0);
-				interpolateVertex(v0, v1, dy / dy1, vertY1);
+				if (++dy > dy1)
+					dy = dy1;
 
-				int xs = MathUtils.round((dx0 * dy) / dy0) + x0;
-				int xe = MathUtils.round((dx1 * dy) / dy1) + x0;
-				
-				if (negateX) {
-					drawTriangleRow(xe, xs, y, vertY1, vertY0, vertXY);
+				if (vertY1.pos.x < vertY0.pos.x) {
+					drawTriangleRow(y, vertY1, vertY0, vertXY);
 				} else {
-					drawTriangleRow(xs, xe, y, vertY0, vertY1, vertXY);
+					drawTriangleRow(y, vertY0, vertY1, vertXY);
 				}
 			}
 		}
 		
-		if (y1 != y2) {
-			float dx0 = x0 - x2, dy0 = y0 - y2;
-			float dx1 = x1 - x2, dy1 = y1 - y2;
+		if (iy1 != iy2) {
+			float dy0 = v0.pos.y - v2.pos.y;
+			float dy1 = v1.pos.y - v2.pos.y;
 
-			for (int y = y1; y != y2; y++) {
-				float dy = y - y2 + 0.5f;
+			float dy = MathUtils.max(iy1 - v2.pos.y + 0.5f, dy1);
 
-				interpolateVertex(v2, v0, dy / dy0, vertY0);
-				interpolateVertex(v2, v1, dy / dy1, vertY1);
+			for (int y = iy1; y != iy2; y++) {
+				interpolateVertex(v2, v0, dy, dy0, vertY0);
+				interpolateVertex(v2, v1, dy, dy1, vertY1);
+				
+				if (++dy > 0.0f)
+					dy = 0.0f;
 
-				int xs = MathUtils.round((dx0 * dy) / dy0) + x2;
-				int xe = MathUtils.round((dx1 * dy) / dy1) + x2;
-
-				if (negateX) {
-					drawTriangleRow(xe, xs, y, vertY1, vertY0, vertXY);
+				if (vertY1.pos.x < vertY0.pos.x) {
+					drawTriangleRow(y, vertY1, vertY0, vertXY);
 				} else {
-					drawTriangleRow(xs, xe, y, vertY0, vertY1, vertXY);
+					drawTriangleRow(y, vertY0, vertY1, vertXY);
 				}
 			}
 		}
@@ -389,13 +387,22 @@ public abstract class AbstractPixelRenderer3D extends PixelRenderer2D {
 		cache.storeTriangle(triangle);
 	}
 	
-	private final void drawTriangleRow(int xs, int xe, int y, Vertex3D vertY0, Vertex3D vertY1, Vertex3D vertXY) {
-		int diffX = xe - xs;
-		int index = xs + y * width;
-		for (int x = xs; x < xe; x++) {
-			interpolateVertex(vertY0, vertY1, (float)(x - xs + 0.5f) / diffX, vertXY);
+	private final void drawTriangleRow(int y, Vertex3D vertY0, Vertex3D vertY1, Vertex3D vertXY) {
+		int xs = (int)(vertY0.pos.x + 0.5f);
+		int xe = (int)(vertY1.pos.x + 0.5f);
+		
+		float dx0 = vertY1.pos.x - vertY0.pos.x;
 
-			if (vertXY.pos.z < depthBuffer[index]) {
+		float dx = MathUtils.max(xs - vertY0.pos.x + 0.5f, 0.0f);
+		
+		int index = xs + y * width;
+		for (int x = xs; x != xe; x++) {
+			interpolateVertex(vertY0, vertY1, dx, dx0, vertXY);
+			
+			if (++dx > dx0)
+				dx = dx0;
+
+			if (vertXY.pos.z <= depthBuffer[index]) {
 				depthBuffer[index] = vertXY.pos.z;
 
 				// Perspective correction of vertex data
@@ -408,14 +415,14 @@ public abstract class AbstractPixelRenderer3D extends PixelRenderer2D {
 		}
 	}
 	
-	private final void interpolateVertex(Vertex3D v0, Vertex3D v1, float t, Vertex3D result) {
-		result.pos.x = (v1.pos.x - v0.pos.x) * t + v0.pos.x;
-		result.pos.y = (v1.pos.y - v0.pos.y) * t + v0.pos.y;
-		result.pos.z = (v1.pos.z - v0.pos.z) * t + v0.pos.z;
-		result.pos.w = (v1.pos.w - v0.pos.w) * t + v0.pos.w;
+	private final void interpolateVertex(Vertex3D v0, Vertex3D v1, float x, float dx, Vertex3D result) {
+		result.pos.x = (v1.pos.x - v0.pos.x) * x / dx + v0.pos.x;
+		result.pos.y = (v1.pos.y - v0.pos.y) * x / dx + v0.pos.y;
+		result.pos.z = (v1.pos.z - v0.pos.z) * x / dx + v0.pos.z;
+		result.pos.w = (v1.pos.w - v0.pos.w) * x / dx + v0.pos.w;
 
 		for (int i = 0; i < result.data.length; i++)
-			result.data[i] = (1.0f - t) * v0.data[i] + t * v1.data[i];
+			result.data[i] = (v1.data[i] - v0.data[i]) * x / dx + v0.data[i];
 	}
 	
 	public void setCullEnabled(boolean enabled) {
