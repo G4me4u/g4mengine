@@ -4,65 +4,71 @@ import com.g4mesoft.math.MathUtils;
 
 public class Timer {
 
+	private static final long NS_PER_SEC = 1000000000L;
 	private static final long MS_PER_SEC = 1000L;
-	private static final float MS_TO_SEC = 1.0f / (float)MS_PER_SEC;
-
+	private static final long NS_PER_MS = NS_PER_SEC / MS_PER_SEC;
+	
 	private final Application application;
 	
-	private float tps;
+	private double tps;
+	private double nsPerTick;
 
-	private long last;
-	private long dMs; 
-	private float dt;
+	private long lastNs;
+	private double dt;
 
+	private long lastMs;
 	private int missingTicks;
 	
 	private TickCounter tpsCounter;
 	private TickCounter fpsCounter;
 	
-	public Timer(Application application, float tps) {
+	public Timer(Application application, double tps) {
 		this.application = application;
-		this.tps = tps;
 		
 		tpsCounter = new TickCounter();
 		fpsCounter = new TickCounter();
+
+		setTps(tps);
 	}
 	
 	public void initTimer() {
-		last = System.currentTimeMillis();
-		dMs = 0;
-		dt = 1.0f; // init to 1 tick on startup
+		lastNs = System.nanoTime();
+		lastMs = System.currentTimeMillis();
+		dt = 1.0; // init to 1 tick on startup
 	}
 
 	public void update() {
-		long now = System.currentTimeMillis();
-		long deltaMs = now - last;
-		last = now;
-		dt += (float)deltaMs * MS_TO_SEC * tps;
+		long nowNs = System.nanoTime();
+		long deltaNs = nowNs - lastNs;
+		lastNs = nowNs;
+		
+		dt += deltaNs / nsPerTick;
 		missingTicks = (int)dt;
 		dt -= missingTicks;
+		
+		if (application.isDebug())
+			printDebugInfo();
+	}
+	
+	private void printDebugInfo() {
+		long nowMs = System.currentTimeMillis();
+		if (nowMs - lastMs >= MS_PER_SEC) {
+			lastMs += MS_PER_SEC;
 
-		if (application.isDebug()) {
-			dMs += deltaMs;
-			if (dMs >= MS_PER_SEC) {
-				if (dMs >= MS_PER_SEC * 2) {
-					dMs = 0;
-				} else {
-					dMs -= MS_PER_SEC;
-				}
-				
-				tpsCounter.cycle();
-				fpsCounter.cycle();
-				
-				int ticks = tpsCounter.ticksLastCycle;
-				int frames = fpsCounter.ticksLastCycle;
-				
-				System.out.println(ticks + " tps, " + frames + " fps");
-			}
+			if (nowMs - lastMs >= MS_PER_SEC)
+				lastMs = nowMs;
+			
+			tpsCounter.cycle();
+			fpsCounter.cycle();
+			
+			int ticks = tpsCounter.ticksLastCycle;
+			int frames = fpsCounter.ticksLastCycle;
+			
+			System.out.println(ticks + " tps, " + frames + " fps");
 		}
 	}
 
-	public float getDeltaTick() {
+	public double getDeltaTick() {
 		return dt;
 	}
 
@@ -78,29 +84,31 @@ public class Timer {
 		fpsCounter.tickPassed();
 	}
 
-	public void sleep(float minFps) {
-		long msPassed = System.currentTimeMillis() - last;
-
-		if (tps < minFps) {
-			minFps -= MathUtils.EPSILON;
-			minFps += tps - (minFps % tps);
-		} else minFps = tps;
-
-		long msToSleep = (long)((float)MS_PER_SEC / minFps) - msPassed;
-		if (msToSleep > 0) {
+	public void sleep(double minFps) {
+		long nsToSleep = MathUtils.min((long)((1.0 - dt) * NS_PER_SEC / tps), 
+		                               (long)(NS_PER_SEC / minFps));
+		
+		nsToSleep -= System.nanoTime() - lastNs;
+		
+		if (nsToSleep > 0) {
+			long msToSleep = nsToSleep / NS_PER_MS;
+			nsToSleep %= NS_PER_MS;
+			
 			try {
-				Thread.sleep(msToSleep);
+				Thread.sleep(msToSleep, (int)nsToSleep);
 			} catch(InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
 	}
 
-	public void setTps(float tps) {
+	public void setTps(double tps) {
 		this.tps = tps;
+		
+		nsPerTick = NS_PER_SEC / tps;
 	}
 	
-	public float getTps() {
+	public double getTps() {
 		return tps;
 	}
 	

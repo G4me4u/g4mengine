@@ -19,8 +19,8 @@ import com.g4mesoft.util.FileUtil;
 public abstract class Application implements IExitable {
 
 	private static final boolean DEFAULT_DEBUG = true;
-	private static final float DEFAULT_TPS = 20.0f;
-	private static final float DEFAULT_MIN_FPS = 60.0f;
+	private static final double DEFAULT_TPS = 20.0;
+	private static final double DEFAULT_MIN_FPS = 60.0;
 	
 	private static final float MAX_SECONDS_BEHIND = 5.0f;
 
@@ -32,7 +32,7 @@ public abstract class Application implements IExitable {
 	
 	private boolean running;
 	private Timer timer;
-	private float minimumFps;
+	private double minimumFps;
 	
 	private boolean debug;
 	private long ticksPassed;
@@ -109,10 +109,10 @@ public abstract class Application implements IExitable {
 	 * <br><br>
 	 * <b>NOTE:</b> this function will always be called with approximately the 
 	 * same time-interval (if the system isn't overloaded). If you want to 
-	 * change the interval between each tick, call {@code setTps(float)} with
+	 * change the interval between each tick, call {@code setTps(double)} with
 	 * the desired amount of ticks per second.
 	 * 
-	 * @see #setTps(float)
+	 * @see #setTps(double)
 	 * @see #render(IRenderer2D, float)
 	 */
 	protected abstract void tick();
@@ -137,7 +137,7 @@ public abstract class Application implements IExitable {
 	 * @param dt		-	A constant representing how much time has passed 
 	 *                      since previous tick (0.0 - 1.0).
 	 * 
-	 * @see #setMinimumFps(float)
+	 * @see #setMinimumFps(double)
 	 * @see #tick()
 	 */
 	protected abstract void render(IRenderer2D renderer, float dt);
@@ -259,7 +259,7 @@ public abstract class Application implements IExitable {
 				}
 	
 				if (display.isVisible()) {
-					draw(timer.getDeltaTick());
+					draw((float)timer.getDeltaTick());
 					timer.framePassed();
 				}
 	
@@ -517,10 +517,10 @@ public abstract class Application implements IExitable {
 	
 	/**
 	 * @return The desired ticks per seconds that was set using the setter
-	 *         function {@link #setTps(float)}, or {@link #DEFAULT_TPS} if the
+	 *         function {@link #setTps(double)}, or {@link #DEFAULT_TPS} if the
 	 *         desired ticks per second was not changed by the application.
 	 */
-	public float getTps() {
+	public double getTps() {
 		return timer.getTps();
 	}
 	
@@ -569,9 +569,9 @@ public abstract class Application implements IExitable {
 	 * @param tps	-	The new constant used for timing the ticks per second.
 	 * 
 	 * @see #tick()
-	 * @see #setMinimumFps(float)
+	 * @see #setMinimumFps(double)
 	 */
-	public void setTps(float tps) {
+	public void setTps(double tps) {
 		timer.setTps(tps);
 	}
 	
@@ -583,9 +583,9 @@ public abstract class Application implements IExitable {
 	 * @param minimumFps	-	The minimum frames per second.
 	 * 
 	 * @see #render(IRenderer2D, float)
-	 * @see #setTps(float)
+	 * @see #setTps(double)
 	 */
-	public void setMinimumFps(float minimumFps) {
+	public void setMinimumFps(double minimumFps) {
 		this.minimumFps = minimumFps;
 	}
 	
