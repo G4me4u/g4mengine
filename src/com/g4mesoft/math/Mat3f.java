@@ -13,6 +13,14 @@ public class Mat3f implements IMatf<Mat3f> {
 	public Mat3f(float d) {
 		toIdentity(d);
 	}
+
+	public Mat3f(Vec3f r0, Vec3f r1, Vec3f r2) {
+		this(r0, r1, r2, true);
+	}
+
+	public Mat3f(Vec3f v0, Vec3f v1, Vec3f v2, boolean rowMajor) {
+		set(v0, v1, v2, rowMajor);
+	}
 	
 	public Mat3f(float m00, float m10, float m20,
 	             float m01, float m11, float m21,
@@ -33,6 +41,20 @@ public class Mat3f implements IMatf<Mat3f> {
 		return set( d  , 0.0f, 0.0f,
 		           0.0f,  d  , 0.0f,
 		           0.0f, 0.0f,  d  );
+	}
+	
+	public Mat3f set(Vec3f v0, Vec3f v1, Vec3f v2, boolean rowMajor) {
+		if (rowMajor) {
+			set(v0.x, v0.y, v0.z,
+			    v1.x, v1.y, v1.z,
+			    v2.x, v2.y, v2.z);
+			return this;
+		}
+		
+		set(v0.x, v1.x, v2.x,
+		    v0.y, v1.y, v2.y,
+		    v0.z, v1.z, v2.z);
+		return this;
 	}
 	
 	public Mat3f set(float m00, float m10, float m20,
@@ -64,6 +86,10 @@ public class Mat3f implements IMatf<Mat3f> {
 	public Mat3f scale(float s) {
 		return scale(s, s, s);
 	}
+
+	public Mat3f scale(Vec3f s) {
+		return scale(s.x, s.y, s.z);
+	}
 	
 	public Mat3f scale(float sx, float sy, float sz) {
 		return mul(new Mat3f().setScale(sx, sy, sz));
@@ -71,6 +97,10 @@ public class Mat3f implements IMatf<Mat3f> {
 
 	public Mat3f setScale(float s) {
 		return setScale(s, s, s);
+	}
+
+	public Mat3f setScale(Vec3f s) {
+		return setScale(s.x, s.y, s.z);
 	}
 	
 	public Mat3f setScale(float sx, float sy, float sz) {
@@ -313,9 +343,25 @@ public class Mat3f implements IMatf<Mat3f> {
 
 	@Override
 	public Mat3f transpose(Mat3f dest) {
-		return dest.set(m00, m01, m02,
-		                m10, m11, m12,
-		                m20, m21, m22);
+		float tmp;
+		
+		tmp = m01;
+		dest.m01 = m10;
+		dest.m10 = tmp;
+		
+		tmp = m02;
+		dest.m02 = m20;
+		dest.m20 = tmp;
+		
+		tmp = m12;
+		dest.m12 = m21;
+		dest.m21 = tmp;
+		
+		dest.m00 = m00;
+		dest.m11 = m11;
+		dest.m22 = m22;
+		
+		return dest;
 	}
 	
 	@Override
@@ -330,6 +376,72 @@ public class Mat3f implements IMatf<Mat3f> {
 		                m02, m12, m22);
 	}
 
+	public Vec3f getRow0(Vec3f dest) {
+		return dest.set(m00, m10, m20);
+	}
+
+	public Vec3f getRow1(Vec3f dest) {
+		return dest.set(m01, m11, m21);
+	}
+
+	public Vec3f getRow2(Vec3f dest) {
+		return dest.set(m02, m12, m22);
+	}
+
+	public Vec3f getCol0(Vec3f dest) {
+		return dest.set(m00, m01, m02);
+	}
+	
+	public Vec3f getCol1(Vec3f dest) {
+		return dest.set(m10, m11, m12);
+	}
+	
+	public Vec3f getCol2(Vec3f dest) {
+		return dest.set(m20, m21, m22);
+	}
+	
+	public Mat3f setRow0(Vec3f r0) {
+		m00 = r0.x;
+		m10 = r0.y;
+		m20 = r0.z;
+		return this;
+	}
+	
+	public Mat3f setRow1(Vec3f r1) {
+		m01 = r1.x;
+		m11 = r1.y;
+		m21 = r1.z;
+		return this;
+	}
+
+	public Mat3f setRow2(Vec3f r2) {
+		m02 = r2.x;
+		m12 = r2.y;
+		m22 = r2.z;
+		return this;
+	}
+	
+	public Mat3f setCol0(Vec3f c0) {
+		m00 = c0.x;
+		m01 = c0.y;
+		m02 = c0.z;
+		return this;
+	}
+	
+	public Mat3f setCol1(Vec3f c1) {
+		m10 = c1.x;
+		m11 = c1.y;
+		m12 = c1.z;
+		return this;
+	}
+
+	public Mat3f setCol2(Vec3f c2) {
+		m20 = c2.x;
+		m21 = c2.y;
+		m22 = c2.z;
+		return this;
+	}
+	
 	@Override
 	public String toString() {
 		return String.format(

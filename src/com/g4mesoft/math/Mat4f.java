@@ -18,16 +18,24 @@ public class Mat4f implements IMatf<Mat4f> {
 		toIdentity(d);
 	}
 	
+	public Mat4f(Vec4f r0, Vec4f r1, Vec4f r2, Vec4f r3) {
+		this(r0, r1, r2, r3, true);
+	}
+
+	public Mat4f(Vec4f v0, Vec4f v1, Vec4f v2, Vec4f v3, boolean rowMajor) {
+		set(v0, v1, v2, v3, rowMajor);
+	}
+	
 	public Mat4f(float m00, float m10, float m20, float m30,
 	             float m01, float m11, float m21, float m31,
 	             float m02, float m12, float m22, float m32,
 	             float m03, float m13, float m23, float m33) {
 	
-	set(m00, m10, m20, m30,
-	    m01, m11, m21, m31,
-	    m02, m12, m22, m32,
-	    m03, m13, m23, m33);
-}
+		set(m00, m10, m20, m30,
+		    m01, m11, m21, m31,
+		    m02, m12, m22, m32,
+		    m03, m13, m23, m33);
+	}
 
 	@Override
 	public Mat4f toIdentity() {
@@ -40,6 +48,38 @@ public class Mat4f implements IMatf<Mat4f> {
 		           0.0f,  d  , 0.0f, 0.0f,
 		           0.0f, 0.0f,  d  , 0.0f,
 		           0.0f, 0.0f, 0.0f,  d  );
+	}
+
+	public Mat4f set(Vec4f v0, Vec4f v1, Vec4f v2, Vec4f v3, boolean rowMajor) {
+		if (rowMajor) {
+			set(v0.x, v0.y, v0.z, v0.w,
+			    v1.x, v1.y, v1.z, v1.w,
+			    v2.x, v2.y, v2.z, v2.w,
+			    v3.x, v3.y, v3.z, v3.w);
+			return this;
+		}
+		
+		set(v0.x, v1.x, v2.x, v3.x,
+		    v0.y, v1.y, v2.y, v3.y,
+		    v0.z, v1.z, v2.z, v3.z,
+		    v0.w, v1.w, v2.w, v3.w);
+		return this;
+	}
+	
+	public Mat4f set(Vec3f v0, Vec3f v1, Vec3f v2, boolean rowMajor) {
+		if (rowMajor) {
+			set(v0.x, v0.y, v0.z, 0.0f,
+			    v1.x, v1.y, v1.z, 0.0f,
+			    v2.x, v2.y, v2.z, 0.0f,
+			    0.0f, 0.0f, 0.0f, 1.0f);
+			return this;
+		}
+		
+		set(v0.x, v1.x, v2.x, 0.0f,
+		    v0.y, v1.y, v2.y, 0.0f,
+		    v0.z, v1.z, v2.z, 0.0f,
+		    0.0f, 0.0f, 0.0f, 1.0f);
+		return this;
 	}
 	
 	public Mat4f set(float m00, float m10, float m20, float m30,
@@ -112,12 +152,20 @@ public class Mat4f implements IMatf<Mat4f> {
 		return translate(t, t, t);
 	}
 
+	public Mat4f translate(Vec3f t) {
+		return translate(t.x, t.y, t.z);
+	}
+
 	public Mat4f translate(float tx, float ty, float tz) {
 		return mul(new Mat4f().setTranslation(tx, ty, tz));
 	}
 
 	public Mat4f setTranslation(float t) {
 		return setTranslation(t, t, t);
+	}
+	
+	public Mat4f setTranslation(Vec3f t) {
+		return setTranslation(t.x, t.y, t.z);
 	}
 
 	public Mat4f setTranslation(float tx, float ty, float tz) {
@@ -131,6 +179,10 @@ public class Mat4f implements IMatf<Mat4f> {
 	public Mat4f scale(float s) {
 		return scale(s, s, s);
 	}
+	
+	public Mat4f scale(Vec3f s) {
+		return scale(s.x, s.y, s.z);
+	}
 
 	public Mat4f scale(float sx, float sy, float sz) {
 		return mul(new Mat4f().setScale(sx, sy, sz));
@@ -138,6 +190,10 @@ public class Mat4f implements IMatf<Mat4f> {
 
 	public Mat4f setScale(float s) {
 		return setScale(s, s, s);
+	}
+	
+	public Mat4f setScale(Vec3f s) {
+		return setScale(s.x, s.y, s.z);
 	}
 
 	public Mat4f setScale(float sx, float sy, float sz) {
@@ -357,7 +413,7 @@ public class Mat4f implements IMatf<Mat4f> {
 				al.add(       1.0f, dl.y / dl.x, dl.z / dl.x, dl.w / dl.x);
 				ar.add(dr.x / dl.x, dr.y / dl.x, dr.z / dl.x, dr.w / dl.x);
 			} else {
-				return null; // Non-invertable
+				return null; // Non-invertible
 			}
 		} else if (al.x != 1.0f) {
 			ar.div(al.x);
@@ -386,7 +442,7 @@ public class Mat4f implements IMatf<Mat4f> {
 				bl.add(dl.x / dl.y,        1.0f, dl.z / dl.y, dl.w / dl.y);
 				br.add(dr.x / dl.y, dr.y / dl.y, dr.z / dl.y, dr.w / dl.y);
 			} else {
-				return null; // Non-invertable
+				return null; // Non-invertible
 			}
 		} else if (bl.y != 1.0f) {
 			br.div(bl.y);
@@ -412,7 +468,7 @@ public class Mat4f implements IMatf<Mat4f> {
 				cl.add(dl.x / dl.z, dl.y / dl.z,        1.0f, dl.w / dl.z);
 				cr.add(dr.x / dl.z, dr.y / dl.z, dr.z / dl.z, dr.w / dl.z);
 			} else {
-				return null; // Non-invertable
+				return null; // Non-invertible
 			}
 		} else if (cl.z != 1.0f) {
 			cr.div(cl.z);
@@ -434,7 +490,7 @@ public class Mat4f implements IMatf<Mat4f> {
 		
 		// Fourth row check
 		if (MathUtils.nearZero(dl.w)) {
-			return null; // Non-invertable
+			return null; // Non-invertible
 		} else if (dl.w != 1.0f) {
 			dr.div(dl.w);
 			//dl.div(dl.w);
@@ -472,31 +528,12 @@ public class Mat4f implements IMatf<Mat4f> {
 		Vec3f qb = new Vec3f();
 		Vec3f qm = new Vec3f();
 		
-		qa.set(this.m00, this.m10, this.m20);
-		qb.set(end.m00, end.m10, end.m20);
-		slerp(qa, qb, qm, t);
+		dest.setRow0(slerp(getRow0(qa), end.getRow0(qb), qm, t));
+		dest.setRow1(slerp(getRow1(qa), end.getRow1(qb), qm, t));
+		dest.setRow2(slerp(getRow2(qa), end.getRow2(qb), qm, t));
 
-		dest.m00 = qm.x;
-		dest.m10 = qm.y;
-		dest.m20 = qm.z;
 		dest.m30 = (end.m30 - m30) * t + m30;
-
-		qa.set(this.m01, this.m11, this.m21);
-		qb.set(end.m01, end.m11, end.m21);
-		slerp(qa, qb, qm, t);
-
-		dest.m01 = qm.x;
-		dest.m11 = qm.y;
-		dest.m21 = qm.z;
 		dest.m31 = (end.m31 - m31) * t + m31;
-
-		qa.set(this.m02, this.m12, this.m22);
-		qb.set(end.m02, end.m12, end.m22);
-		slerp(qa, qb, qm, t);
-
-		dest.m02 = qm.x;
-		dest.m12 = qm.y;
-		dest.m22 = qm.z;
 		dest.m32 = (end.m32 - m32) * t + m32;
 
 		dest.m03 = (end.m03 - m03) * t + m03;
@@ -508,37 +545,65 @@ public class Mat4f implements IMatf<Mat4f> {
 	}
 	
 	private Vec3f slerp(Vec3f qa, Vec3f qb, Vec3f qm, float t) {
-		float cosTheta = qa.dot(qb);
-		if (cosTheta >= 1.0f || cosTheta <= -1.0f)
+		double cosTheta = qa.dot(qb);
+		if (cosTheta >= 1.0 || cosTheta <= -1.0)
 			return qm.set(qa);
 
-		float sinTheta = MathUtils.sqrt(1.0f - cosTheta * cosTheta);
+		double sinTheta = MathUtils.sqrt(1.0 - cosTheta * cosTheta);
 		if (MathUtils.nearZero(sinTheta)) {
 			return qm.set(qa.x * 0.5f + qb.x * 0.5f,
 			              qa.y * 0.5f + qb.y * 0.5f,
 			              qa.z * 0.5f + qb.z * 0.5f);
 		}
 
-		float theta = MathUtils.acos(cosTheta);
-		float ra = MathUtils.sin((1.0f - t) * theta) / sinTheta;
-		float rb = MathUtils.sin(t * theta) / sinTheta; 
+		double theta = MathUtils.acos(cosTheta);
+		double ra = MathUtils.sin((1.0 - t) * theta) / sinTheta;
+		double rb = MathUtils.sin(       t  * theta) / sinTheta; 
 		
-		return qm.set(qa.x * ra + qb.x * rb,
-		              qa.y * ra + qb.y * rb,
-		              qa.z * ra + qb.z * rb);
+		return qm.set((float)(qa.x * ra + qb.x * rb),
+		              (float)(qa.y * ra + qb.y * rb),
+		              (float)(qa.z * ra + qb.z * rb));
 	}
 	
 	@Override
 	public Mat4f transpose() {
 		return transpose(this);
 	}
-
+	
 	@Override
 	public Mat4f transpose(Mat4f dest) {
-		return dest.set(m00, m01, m02, m03,
-		                m10, m11, m12, m13,
-		                m20, m21, m22, m23,
-		                m30, m31, m32, m33);
+		float tmp;
+		
+		tmp = m01;
+		dest.m01 = m10;
+		dest.m10 = tmp;
+		
+		tmp = m02;
+		dest.m02 = m20;
+		dest.m20 = tmp;
+		
+		tmp = m03;
+		dest.m03 = m30;
+		dest.m30 = tmp;
+		
+		tmp = m12;
+		dest.m12 = m21;
+		dest.m21 = tmp;
+		
+		tmp = m13;
+		dest.m13 = m31;
+		dest.m31 = tmp;
+		
+		tmp = m23;
+		dest.m23 = m32;
+		dest.m32 = tmp;
+		
+		dest.m00 = m00;
+		dest.m11 = m11;
+		dest.m22 = m22;
+		dest.m33 = m33;
+		
+		return dest;
 	}
 
 	@Override
@@ -553,6 +618,168 @@ public class Mat4f implements IMatf<Mat4f> {
 		                m02, m12, m22, m32,
 		                m03, m13, m23, m33);
 	};
+
+	public Vec4f getRow0(Vec4f dest) {
+		return dest.set(m00, m10, m20, m30);
+	}
+
+	public Vec4f getRow1(Vec4f dest) {
+		return dest.set(m01, m11, m21, m31);
+	}
+
+	public Vec4f getRow2(Vec4f dest) {
+		return dest.set(m02, m12, m22, m32);
+	}
+
+	public Vec4f getRow3(Vec4f dest) {
+		return dest.set(m03, m13, m23, m33);
+	}
+
+	public Vec4f getCol0(Vec4f dest) {
+		return dest.set(m00, m01, m02, m03);
+	}
+	
+	public Vec4f getCol1(Vec4f dest) {
+		return dest.set(m10, m11, m12, m13);
+	}
+
+	public Vec4f getCol2(Vec4f dest) {
+		return dest.set(m20, m21, m22, m23);
+	}
+
+	public Vec4f getCol3(Vec4f dest) {
+		return dest.set(m30, m31, m32, m33);
+	}
+
+	public Vec3f getRow0(Vec3f dest) {
+		return dest.set(m00, m10, m20);
+	}
+
+	public Vec3f getRow1(Vec3f dest) {
+		return dest.set(m01, m11, m21);
+	}
+
+	public Vec3f getRow2(Vec3f dest) {
+		return dest.set(m02, m12, m22);
+	}
+
+	public Vec3f getCol0(Vec3f dest) {
+		return dest.set(m00, m01, m02);
+	}
+	
+	public Vec3f getCol1(Vec3f dest) {
+		return dest.set(m10, m11, m12);
+	}
+	
+	public Vec3f getCol2(Vec3f dest) {
+		return dest.set(m20, m21, m22);
+	}
+	
+	public Mat4f setRow0(Vec4f r0) {
+		m00 = r0.x;
+		m10 = r0.y;
+		m20 = r0.z;
+		m30 = r0.w;
+		return this;
+	}
+	
+	public Mat4f setRow1(Vec4f r1) {
+		m01 = r1.x;
+		m11 = r1.y;
+		m21 = r1.z;
+		m31 = r1.w;
+		return this;
+	}
+
+	public Mat4f setRow2(Vec4f r2) {
+		m02 = r2.x;
+		m12 = r2.y;
+		m22 = r2.z;
+		m32 = r2.w;
+		return this;
+	}
+
+	public Mat4f setRow3(Vec4f r3) {
+		m03 = r3.x;
+		m13 = r3.y;
+		m23 = r3.z;
+		m33 = r3.w;
+		return this;
+	}
+	
+	public Mat4f setCol0(Vec4f c0) {
+		m00 = c0.x;
+		m01 = c0.y;
+		m02 = c0.z;
+		m03 = c0.w;
+		return this;
+	}
+	
+	public Mat4f setCol1(Vec4f c1) {
+		m10 = c1.x;
+		m11 = c1.y;
+		m12 = c1.z;
+		m13 = c1.w;
+		return this;
+	}
+
+	public Mat4f setCol2(Vec4f c2) {
+		m20 = c2.x;
+		m21 = c2.y;
+		m22 = c2.z;
+		m23 = c2.w;
+		return this;
+	}
+
+	public Mat4f setCol3(Vec4f c3) {
+		m30 = c3.x;
+		m31 = c3.y;
+		m32 = c3.z;
+		m33 = c3.w;
+		return this;
+	}
+	
+	public Mat4f setRow0(Vec3f r0) {
+		m00 = r0.x;
+		m10 = r0.y;
+		m20 = r0.z;
+		return this;
+	}
+	
+	public Mat4f setRow1(Vec3f r1) {
+		m01 = r1.x;
+		m11 = r1.y;
+		m21 = r1.z;
+		return this;
+	}
+
+	public Mat4f setRow2(Vec3f r2) {
+		m02 = r2.x;
+		m12 = r2.y;
+		m22 = r2.z;
+		return this;
+	}
+	
+	public Mat4f setCol0(Vec3f c0) {
+		m00 = c0.x;
+		m01 = c0.y;
+		m02 = c0.z;
+		return this;
+	}
+	
+	public Mat4f setCol1(Vec3f c1) {
+		m10 = c1.x;
+		m11 = c1.y;
+		m12 = c1.z;
+		return this;
+	}
+
+	public Mat4f setCol2(Vec3f c2) {
+		m20 = c2.x;
+		m21 = c2.y;
+		m22 = c2.z;
+		return this;
+	}
 	
 	@Override
 	public String toString() {
