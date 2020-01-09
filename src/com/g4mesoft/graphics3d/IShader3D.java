@@ -8,7 +8,7 @@ public interface IShader3D {
 	
 	public void projectVertices(Triangle3D result, Vertex3D v0, Vertex3D v1, Vertex3D v2);
 
-	public int fragment(Vertex3D vert);
+	public boolean fragment(Vertex3D vert, Fragment3D fragment);
 
 	public int getOutputSize();
 	

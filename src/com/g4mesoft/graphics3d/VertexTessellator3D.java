@@ -46,6 +46,10 @@ public class VertexTessellator3D {
 			vertices = Arrays.copyOf(vertices, vertices.length * 2);
 		}
 	}
+
+	public void addVertex(Vec3f pos) {
+		addVertex(pos.x, pos.y, pos.z);
+	}
 	
 	public void addVertex(float x, float y, float z) {
 		ensureCapacity(1);

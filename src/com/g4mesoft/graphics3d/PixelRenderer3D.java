@@ -7,14 +7,18 @@ import com.g4mesoft.graphic.IViewport;
 
 public class PixelRenderer3D extends AbstractPixelRenderer3D {
 
-	private Queue<Triangle3D> trianglesToClip;
-	private Queue<Triangle3D> clippedTriangles;
+	private final Queue<Triangle3D> trianglesToClip;
+	private final Queue<Triangle3D> clippedTriangles;
+	
+	private final Fragment3D fragment;
 	
 	public PixelRenderer3D(IViewport viewport, int width, int height) {
 		super(viewport, width, height);
 		
 		trianglesToClip = new LinkedList<Triangle3D>();
 		clippedTriangles = new LinkedList<Triangle3D>();
+		
+		fragment = new Fragment3D();
 	}
 	
 	@Override
@@ -70,19 +74,11 @@ public class PixelRenderer3D extends AbstractPixelRenderer3D {
 		transformAndCullTriangles(trianglesToDraw, triangleCache);
 
 		if (!trianglesToDraw.isEmpty()) {
-			renderTriangles(trianglesToDraw, triangleCache);
+			renderTriangles(trianglesToDraw, triangleCache, fragment);
 			
 			for (Triangle3D t : trianglesToDraw)
 				triangleCache.storeTriangle(t);
 			trianglesToDraw.clear();
 		}
-	}
-
-	@Override
-	public void dispose() {
-		super.dispose();
-		
-		clippedTriangles = null;
-		trianglesToClip = null;
 	}
 }

@@ -14,8 +14,9 @@ public class BasicShader3D implements IShader3D {
 	}
 
 	@Override
-	public int fragment(Vertex3D vert) {
-		return 0xFF00FF;
+	public boolean fragment(Vertex3D vert, Fragment3D fragment) {
+		fragment.setRGB(0xFF, 0x00, 0xFF);
+		return true;
 	}
 
 	@Override

@@ -6,7 +6,6 @@ import java.util.Queue;
 
 import com.g4mesoft.graphic.IViewport;
 import com.g4mesoft.graphic.PixelRenderer2D;
-import com.g4mesoft.math.MathUtils;
 import com.g4mesoft.math.Vec4f;
 
 public abstract class AbstractPixelRenderer3D extends PixelRenderer2D {
@@ -243,8 +242,8 @@ public abstract class AbstractPixelRenderer3D extends PixelRenderer2D {
 	}
 	
 	protected void transformAndCullTriangles(Queue<Triangle3D> triangles, TriangleCache cache) {
-		float hw = 0.5f * (width + MathUtils.EPSILON);
-		float hh = 0.5f * (height + MathUtils.EPSILON);
+		float hw = 0.5f * width;
+		float hh = 0.5f * height;
 		
 		Iterator<Triangle3D> itr = triangles.iterator();
 		while (itr.hasNext()) {
@@ -259,11 +258,11 @@ public abstract class AbstractPixelRenderer3D extends PixelRenderer2D {
 			t.v2.pos.x /= t.v2.pos.w;
 			t.v2.pos.y /= t.v2.pos.w;
 
+			// Calculate triangle orientation
+			float d = (t.v1.pos.y - t.v0.pos.y) * (t.v2.pos.x - t.v1.pos.x) - 
+			          (t.v1.pos.x - t.v0.pos.x) * (t.v2.pos.y - t.v1.pos.y);
+
 			if (cullEnabled) {
-				// Calculate triangle orientation
-				float d = (t.v1.pos.y - t.v0.pos.y) * (t.v2.pos.x - t.v1.pos.x) - 
-				          (t.v1.pos.x - t.v0.pos.x) * (t.v2.pos.y - t.v1.pos.y);
-			
 				if (d >= 0.0f && cullFace == TriangleFace.BACK_FACE ||
 					d <= 0.0f && cullFace == TriangleFace.FRONT_FACE) {
 					
@@ -272,6 +271,11 @@ public abstract class AbstractPixelRenderer3D extends PixelRenderer2D {
 
 					continue;
 				}
+			} else if (!Float.isFinite(d)) {
+				itr.remove();
+				cache.storeTriangle(t);
+
+				continue;
 			}
 
 			// Transform to viewport space
@@ -309,12 +313,12 @@ public abstract class AbstractPixelRenderer3D extends PixelRenderer2D {
 		}
 	}
 	
-	protected void renderTriangles(Queue<Triangle3D> triangles, TriangleCache cache) {
+	protected void renderTriangles(Queue<Triangle3D> triangles, TriangleCache cache, Fragment3D fragment) {
 		for (Triangle3D t : triangles)
-			fillTriangle(t.v0, t.v1, t.v2, cache);
+			fillTriangle(t.v0, t.v1, t.v2, cache, fragment);
 	}
 	
-	protected void fillTriangle(Vertex3D v0, Vertex3D v1, Vertex3D v2, TriangleCache cache) {
+	protected void fillTriangle(Vertex3D v0, Vertex3D v1, Vertex3D v2, TriangleCache cache, Fragment3D fragment) {
 		if (v0.pos.y > v1.pos.y) {
 			Vertex3D tmp = v1;
 			v1 = v0;
@@ -346,19 +350,17 @@ public abstract class AbstractPixelRenderer3D extends PixelRenderer2D {
 			float dy0 = v2.pos.y - v0.pos.y;
 			float dy1 = v1.pos.y - v0.pos.y;
 			
-			float dy = MathUtils.max(iy0 - v0.pos.y + 0.5f, 0.0f);
+			float dy = iy0 - v0.pos.y + 0.5f;
 			
 			for (int y = iy0; y != iy1; y++) {
-				interpolateVertex(v0, v2, dy, dy0, vertY0);
-				interpolateVertex(v0, v1, dy, dy1, vertY1);
-
-				if (++dy > dy1)
-					dy = dy1;
-
+				interpolateVertex(v0, v2, dy / dy0, vertY0);
+				interpolateVertex(v0, v1, dy / dy1, vertY1);
+				dy++;
+				
 				if (vertY1.pos.x < vertY0.pos.x) {
-					drawTriangleRow(y, vertY1, vertY0, vertXY);
+					drawTriangleRow(y, vertY1, vertY0, vertXY, fragment);
 				} else {
-					drawTriangleRow(y, vertY0, vertY1, vertXY);
+					drawTriangleRow(y, vertY0, vertY1, vertXY, fragment);
 				}
 			}
 		}
@@ -367,19 +369,17 @@ public abstract class AbstractPixelRenderer3D extends PixelRenderer2D {
 			float dy0 = v0.pos.y - v2.pos.y;
 			float dy1 = v1.pos.y - v2.pos.y;
 
-			float dy = MathUtils.max(iy1 - v2.pos.y + 0.5f, dy1);
+			float dy = iy1 - v2.pos.y + 0.5f;
 
 			for (int y = iy1; y != iy2; y++) {
-				interpolateVertex(v2, v0, dy, dy0, vertY0);
-				interpolateVertex(v2, v1, dy, dy1, vertY1);
-				
-				if (++dy > 0.0f)
-					dy = 0.0f;
+				interpolateVertex(v2, v0, dy / dy0, vertY0);
+				interpolateVertex(v2, v1, dy / dy1, vertY1);
+				dy++;
 
 				if (vertY1.pos.x < vertY0.pos.x) {
-					drawTriangleRow(y, vertY1, vertY0, vertXY);
+					drawTriangleRow(y, vertY1, vertY0, vertXY, fragment);
 				} else {
-					drawTriangleRow(y, vertY0, vertY1, vertXY);
+					drawTriangleRow(y, vertY0, vertY1, vertXY, fragment);
 				}
 			}
 		}
@@ -387,42 +387,45 @@ public abstract class AbstractPixelRenderer3D extends PixelRenderer2D {
 		cache.storeTriangle(triangle);
 	}
 	
-	private final void drawTriangleRow(int y, Vertex3D vertY0, Vertex3D vertY1, Vertex3D vertXY) {
+	private final void drawTriangleRow(int y, Vertex3D vertY0, Vertex3D vertY1, Vertex3D vertXY, Fragment3D fragment) {
 		int xs = (int)(vertY0.pos.x + 0.5f);
 		int xe = (int)(vertY1.pos.x + 0.5f);
 		
 		float dx0 = vertY1.pos.x - vertY0.pos.x;
 
-		float dx = MathUtils.max(xs - vertY0.pos.x + 0.5f, 0.0f);
+		float dx = xs - vertY0.pos.x + 0.5f;
 		
 		int index = xs + y * width;
 		for (int x = xs; x != xe; x++) {
-			interpolateVertex(vertY0, vertY1, dx, dx0, vertXY);
-			
-			if (++dx > dx0)
-				dx = dx0;
+			interpolateVertex(vertY0, vertY1, dx / dx0, vertXY);
+			dx++;
 
 			if (vertXY.pos.z <= depthBuffer[index]) {
-				depthBuffer[index] = vertXY.pos.z;
-
 				// Perspective correction of vertex data
 				for (int i = 0; i < vertXY.data.length; i++)
 					vertXY.data[i] /= vertXY.pos.w;
-				pixels[index] = shader.fragment(vertXY);
+				
+				fragment.setRGB(pixels[index]);
+				if (shader.fragment(vertXY, fragment)) {
+					depthBuffer[index] = vertXY.pos.z;
+					pixels[index] = fragment.getRGB();
+				}
 			}
 			
 			index++;
 		}
 	}
 	
-	private final void interpolateVertex(Vertex3D v0, Vertex3D v1, float x, float dx, Vertex3D result) {
-		result.pos.x = (v1.pos.x - v0.pos.x) * x / dx + v0.pos.x;
-		result.pos.y = (v1.pos.y - v0.pos.y) * x / dx + v0.pos.y;
-		result.pos.z = (v1.pos.z - v0.pos.z) * x / dx + v0.pos.z;
-		result.pos.w = (v1.pos.w - v0.pos.w) * x / dx + v0.pos.w;
+	private final void interpolateVertex(Vertex3D v0, Vertex3D v1, float t, Vertex3D result) {
+		float omt = 1.0f - t;
+		
+		result.pos.x = v1.pos.x * t + v0.pos.x * omt;
+		result.pos.y = v1.pos.y * t + v0.pos.y * omt;
+		result.pos.z = v1.pos.z * t + v0.pos.z * omt;
+		result.pos.w = v1.pos.w * t + v0.pos.w * omt;
 
 		for (int i = 0; i < result.data.length; i++)
-			result.data[i] = (v1.data[i] - v0.data[i]) * x / dx + v0.data[i];
+			result.data[i] = v1.data[i] * t + v0.data[i] * omt;
 	}
 	
 	public void setCullEnabled(boolean enabled) {
@@ -439,6 +442,10 @@ public abstract class AbstractPixelRenderer3D extends PixelRenderer2D {
 
 	public IShader3D getShader() {
 		return shader;
+	}
+	
+	public float[] getDepthBuffer() {
+		return depthBuffer;
 	}
 	
 	@Override
