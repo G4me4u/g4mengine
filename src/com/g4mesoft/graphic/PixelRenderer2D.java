@@ -26,9 +26,13 @@ public class PixelRenderer2D implements IRenderer2D {
 
 	protected int color;
 	private GColor backdropColor;
+
+	public PixelRenderer2D(int width, int height) {
+		this(null, width, height);
+	}
 	
 	public PixelRenderer2D(IViewport viewport, int width, int height) {
-		this.viewport = viewport;
+		this.viewport = (viewport == null) ? new BasicViewport(width, height) : viewport;
 		
 		setSize(width, height);
 		
@@ -56,25 +60,27 @@ public class PixelRenderer2D implements IRenderer2D {
 
 	@Override
 	public void stop() {
-		int dw = viewport.getWidth();
-		int dh = viewport.getHeight();
-		
-		int pixelDensity = MathUtils.min(dw / width, dh / height); 
-		if (pixelDensity <= 0)
-			pixelDensity = 1;
-		
-		int w = width * pixelDensity;
-		int h = height * pixelDensity;
-		int x = viewport.getX() + (dw - w) / 2;
-		int y = viewport.getY() + (dh - h) / 2;
-
-		if (dw > w || dh > h) {
-			g.setColor(backdropColor.toAWTColor());
-			g.fillRect(0, 0, dw, dh);
+		if (g != null) {
+			int dw = viewport.getWidth();
+			int dh = viewport.getHeight();
+			
+			int pixelDensity = MathUtils.min(dw / width, dh / height); 
+			if (pixelDensity <= 0)
+				pixelDensity = 1;
+			
+			int w = width * pixelDensity;
+			int h = height * pixelDensity;
+			int x = viewport.getX() + (dw - w) / 2;
+			int y = viewport.getY() + (dh - h) / 2;
+	
+			if (dw > w || dh > h) {
+				g.setColor(backdropColor.toAWTColor());
+				g.fillRect(0, 0, dw, dh);
+			}
+			g.drawImage(screen, x, y, w, h, null);
+			
+			g = null;
 		}
-		g.drawImage(screen, x, y, w, h, null);
-		
-		g = null;
 
 		resetTransformations();
 	}
@@ -337,6 +343,10 @@ public class PixelRenderer2D implements IRenderer2D {
 		filter.filterPixels(pixels, x + y * this.width, width, height, this.width);
 	}
 	
+	public int[] getPixelBuffer() {
+		return pixels;
+	}
+	
 	@Override
 	public void setColor(GColor color) {
 		this.color = color.getRGB();
@@ -401,7 +411,7 @@ public class PixelRenderer2D implements IRenderer2D {
 	public int getHeight() {
 		return height;
 	}
-
+	
 	@Override
 	public void dispose() {
 		screen = null;
