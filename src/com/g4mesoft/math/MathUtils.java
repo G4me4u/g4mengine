@@ -132,13 +132,21 @@ public final class MathUtils {
 	}
 
 	public static boolean nearZero(float v) {
-		return v < EPSILON && v > -EPSILON;
+		return nearZero(v, EPSILON);
 	}
 
 	public static boolean nearZero(double v) {
-		return v < EPSILON_D && v > -EPSILON_D;
+		return nearZero(v, EPSILON_D);
 	}
 
+	public static boolean nearZero(float v, float epsilon) {
+		return v < epsilon && v > -epsilon;
+	}
+
+	public static boolean nearZero(double v, double epsilon) {
+		return v < epsilon && v > -epsilon;
+	}
+	
 	public static float abs(float v) {
 		return v < 0.0f ? -v : v;
 	}
