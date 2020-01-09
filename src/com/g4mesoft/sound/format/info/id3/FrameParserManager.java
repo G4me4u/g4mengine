@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import com.g4mesoft.sound.format.TagParsingException;
 import com.g4mesoft.sound.format.info.AudioInfo;
@@ -19,7 +19,7 @@ public final class FrameParserManager {
 	
 	private static final Map<String, FrameParser> PARSERS = new HashMap<String, FrameParser>();
 	
-	public static int readFrame(InputStream is, byte[] buffer, Vector<AudioInfo> information, boolean allowPadding) throws IOException, TagParsingException {
+	public static int readFrame(InputStream is, byte[] buffer, List<AudioInfo> information, boolean allowPadding) throws IOException, TagParsingException {
 		if (allowPadding) {
 			ID3Helper.readByteSafe(is, buffer, 0);
 			if (buffer[0] == ID3v2Tag.PADDING_BYTE) // Padding
@@ -40,7 +40,7 @@ public final class FrameParserManager {
 			if (is.skip(frameSize) != frameSize)
 				ID3Helper.corrupted();
 		} else {
-			information.addElement(parser.loadFrame(is, frameSize, status, format));
+			information.add(parser.loadFrame(is, frameSize, status, format));
 		}
 		
 		return frameSize + 10;

@@ -1,8 +1,9 @@
 package com.g4mesoft.sound.format.info.id3;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Vector;
+import java.util.List;
 
 import com.g4mesoft.sound.format.AudioBitInputStream;
 import com.g4mesoft.sound.format.TagParsingException;
@@ -100,7 +101,7 @@ public class ID3v2Tag extends AudioTag {
 		// sure that the tag is valid.
 		abis.invalidateReadLimit();
 		
-		Vector<AudioInfo> information = new Vector<AudioInfo>();
+		List<AudioInfo> information = new ArrayList<AudioInfo>();
 		while (br < size) {
 			try {
 				br += FrameParserManager.readFrame(abis, buffer, information, true);
@@ -128,7 +129,7 @@ public class ID3v2Tag extends AudioTag {
 		return new ID3v2Tag(information.toArray(new AudioInfo[information.size()]));
 	}
 
-	private static boolean isValidInformation(Vector<AudioInfo> information) {
+	private static boolean isValidInformation(List<AudioInfo> information) {
 		HashSet<AudioInfoType> types = new HashSet<AudioInfoType>(information.size());
 		for (AudioInfo info : information) {
 			AudioInfoType type = info.getType();

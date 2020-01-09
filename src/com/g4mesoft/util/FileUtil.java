@@ -19,11 +19,12 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Vector;
 
 import com.g4mesoft.Application;
 
@@ -180,7 +181,7 @@ public final class FileUtil {
 		if (stream == null)
 			throw new IllegalArgumentException("stream is null!");
 
-		Vector<byte[]> buffer = new Vector<byte[]>();
+		List<byte[]> buffer = new ArrayList<byte[]>();
 		
 		int p = 0;
 		int br = 0;

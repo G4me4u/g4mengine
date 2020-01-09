@@ -3,7 +3,8 @@ package com.g4mesoft.sound.format.info.id3;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.g4mesoft.sound.format.TagParsingException;
 import com.g4mesoft.sound.format.info.TextAudioInfo;
@@ -23,7 +24,7 @@ class TextFrameParser extends FrameParser {
 		Charset charset = getCharset(charsetIndex);
 		int numOfTerm = getNumOfTermination(charsetIndex);
 
-		Vector<String> text = new Vector<String>();
+		List<String> text = new ArrayList<String>();
 		
 		byte[] buffer = new byte[--size];
 		ID3Helper.readBytesSafe(is, buffer, size, 0);
