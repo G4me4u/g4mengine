@@ -182,7 +182,7 @@ public class SoundThread extends Thread {
 				node.next.prev = node.prev;
 			
 			if (node == rootNode)
-				rootNode = null;
+				rootNode = node.next;
 		}
 	}
 	
