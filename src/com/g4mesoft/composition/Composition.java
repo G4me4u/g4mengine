@@ -1,5 +1,9 @@
 package com.g4mesoft.composition;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import com.g4mesoft.composition.ui.CompositionUI;
 import com.g4mesoft.graphic.GColor;
 import com.g4mesoft.graphic.IRenderer2D;
@@ -57,6 +61,9 @@ public abstract class Composition implements IViewport {
 
 	private boolean borderInsetsInvalid;
 	private BorderInsets borderInsets;
+	
+	private boolean focused;
+	private List<ICompositionFocusListener> focusListeners;
 
 	public Composition() {
 		pos = new Vec2i();
@@ -81,6 +88,9 @@ public abstract class Composition implements IViewport {
 
 		borderInsetsInvalid = true;
 		borderInsets = new BorderInsets();
+	
+		focused = false;
+		focusListeners = new ArrayList<ICompositionFocusListener>();
 	}
 
 	protected void setUI(CompositionUI ui) {
@@ -215,7 +225,7 @@ public abstract class Composition implements IViewport {
 	}
 
 	public void setParent(Composition composition) {
-		if (parent == this)
+		if (composition == this)
 			throw new IllegalArgumentException("Can not set parent to self!");
 
 		parent = composition;
@@ -411,5 +421,41 @@ public abstract class Composition implements IViewport {
 
 	public Composition getCompositionAt(int x, int y) {
 		return isInBounds(x, y) ? this : null;
+	}
+	
+	public boolean isFocused() {
+		return focused;
+	}
+
+	protected void setFocused(boolean focused) {
+		if (focused != this.focused) {
+			this.focused = focused;
+			
+			dispatchFocusEvent(focused);
+		}
+	}
+	
+	public void requestFocus(Composition composition) {
+		setFocused(true);
+
+		if (parent != null)
+			parent.requestFocus(this);
+	}
+	
+	private void dispatchFocusEvent(boolean focused) {
+		for (ICompositionFocusListener listener : focusListeners)
+			listener.focusChanged(focused);
+	}
+	
+	public void addFocusListener(ICompositionFocusListener focusListener) {
+		focusListeners.add(focusListener);
+	}
+
+	public void removeFocusListener(ICompositionFocusListener focusListener) {
+		focusListeners.remove(focusListener);
+	}
+	
+	public List<ICompositionFocusListener> getFocusListeners() {
+		return Collections.unmodifiableList(focusListeners);
 	}
 }

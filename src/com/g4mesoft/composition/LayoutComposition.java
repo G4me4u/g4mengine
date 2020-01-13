@@ -113,4 +113,29 @@ public abstract class LayoutComposition extends Composition {
 	 */
 	public abstract Vec2i calculateLayoutPreferredSize(IRenderingContext2D context);
 	
+	@Override
+	public void setFocused(boolean focused) {
+		boolean wasFocused = isFocused();
+		super.setFocused(focused);
+	
+		if (!focused && wasFocused) {
+			// Ensure that our children are following the flow
+			// of focus. They should not be focused if we are
+			// focused.
+			for (Composition child : children) {
+				if (child.isFocused())
+					child.setFocused(false);
+			}
+		}
+	}
+	
+	@Override
+	public void requestFocus(Composition composition) {
+		for (Composition child : children) {
+			if (child.isFocused() && child != composition)
+				child.setFocused(false);
+		}
+
+		super.requestFocus(this);
+	}
 }

@@ -5,6 +5,7 @@ import java.awt.geom.Rectangle2D;
 
 import com.g4mesoft.Application;
 import com.g4mesoft.composition.Composition;
+import com.g4mesoft.composition.ICompositionFocusListener;
 import com.g4mesoft.composition.text.TextComposition;
 import com.g4mesoft.composition.text.editable.BasicTextCaret;
 import com.g4mesoft.composition.text.editable.ITextCaret;
@@ -17,7 +18,7 @@ import com.g4mesoft.input.key.KeyTypedInput;
 import com.g4mesoft.math.MathUtils;
 import com.g4mesoft.math.Vec2i;
 
-public class TextFieldCompositionUI extends EditableTextCompositionUI {
+public class TextFieldCompositionUI extends EditableTextCompositionUI implements ICompositionFocusListener {
 
 	private static final int CARET_BLINK_RATE = 500;
 	private static final int CARET_WIDTH = 2;
@@ -178,8 +179,15 @@ public class TextFieldCompositionUI extends EditableTextCompositionUI {
 	}
 	
 	@Override
+	public void focusChanged(boolean focused) {
+		// Ensure that we do not have leftover
+		// characters in the char buffer.
+		typedInput.flushBuffer();
+	}
+	
+	@Override
 	public void update() {
-		if (textField.isEditable()) {
+		if (textField.isEditable() && textField.isFocused()) {
 			if (typedInput.hasTypedCharacters())
 				handleTypedCharacters(typedInput.flushBuffer());
 			typedInput.recordNextUpdate();
@@ -327,7 +335,7 @@ public class TextFieldCompositionUI extends EditableTextCompositionUI {
 		
 		drawBorder(renderer, textField);
 
-		if (textField.isEditable() && caret != null)
+		if (textField.isEditable() && textField.isFocused() && caret != null)
 			caret.render(renderer, dt);
 	}
 	

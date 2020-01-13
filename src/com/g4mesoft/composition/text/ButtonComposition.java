@@ -1,8 +1,8 @@
 package com.g4mesoft.composition.text;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import com.g4mesoft.composition.ui.ButtonCompositionUI;
 import com.g4mesoft.graphic.GColor;
@@ -20,7 +20,7 @@ public class ButtonComposition extends TextComposition {
 	private GColor pressedBackground;
 	
 	private MouseButtonInput mouseButton;
-	private Set<IButtonCompositionListener> buttonListeners;
+	private List<IButtonCompositionListener> buttonListeners;
 	
 	public ButtonComposition() {
 		this(null);
@@ -30,7 +30,7 @@ public class ButtonComposition extends TextComposition {
 		this.text = text == null ? "" : text;
 		
 		mouseButton = MouseInputListener.MOUSE_LEFT;
-		buttonListeners = new HashSet<IButtonCompositionListener>();
+		buttonListeners = new ArrayList<IButtonCompositionListener>();
 
 		// Set UI
 		setUI(new ButtonCompositionUI());
@@ -114,9 +114,13 @@ public class ButtonComposition extends TextComposition {
 	public void addButtonListener(IButtonCompositionListener listener) {
 		buttonListeners.add(listener);
 	}
+
+	public void removeButtonListener(IButtonCompositionListener listener) {
+		buttonListeners.remove(listener);
+	}
 	
-	public Set<IButtonCompositionListener> getButtonListeners() {
-		return Collections.unmodifiableSet(buttonListeners);
+	public List<IButtonCompositionListener> getButtonListeners() {
+		return Collections.unmodifiableList(buttonListeners);
 	}
 
 	public void invokeButtonClickedEvent() {

@@ -277,8 +277,18 @@ public abstract class Application implements IExitable {
 	 * @see #render(IRenderer2D, float)
 	 */
 	private void update() {
-		if (composition != null && composition.isValid())
+		if (composition != null && composition.isValid()) {
+			if (mouseListener != null && MouseInputListener.MOUSE_LEFT.isClicked()) {
+				int mx = mouseListener.getX();
+				int my = mouseListener.getY();
+				
+				Composition comp = composition.getCompositionAt(mx, my);
+				if (comp != null && !comp.isFocused())
+					comp.requestFocus(null);
+			}
+			
 			composition.update();
+		}
 		
 		tick();
 		
