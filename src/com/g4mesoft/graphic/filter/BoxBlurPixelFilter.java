@@ -301,4 +301,20 @@ public class BoxBlurPixelFilter implements IPixelFilter {
 			}
 		}
 	}
+
+	public static void filterPixels(int radius, int[] pixels, int width, int height) {
+		filterPixels(radius, FULL_BLUR, pixels, width, height);
+	}
+
+	public static void filterPixels(int radius, int flags, int[] pixels, int width, int height) {
+		filterPixels(radius, flags, pixels, 0, width, height, width);
+	}
+
+	public static void filterPixels(int radius, int[] pixels, int offset, int width, int height, int stride) {
+		filterPixels(radius, FULL_BLUR, pixels, offset, width, height, stride);
+	}
+	
+	public static void filterPixels(int radius, int flags, int[] pixels, int offset, int width, int height, int stride) {
+		new BoxBlurPixelFilter(radius, flags).filterPixels(pixels, offset, width, height, stride);
+	}
 }

@@ -94,7 +94,7 @@ public class ContrastPixelFilter implements IPixelFilter {
 	 * Sets the contrast for this filter. The contrast is used to calculate the
 	 * new pixel color during filtering. 
 	 * 
-	 * @param contrast - the new contrast of this filter.
+	 * @param contrast - The new contrast of this filter.
 	 * 
 	 * @see #getContrast()
 	 */
@@ -111,4 +111,48 @@ public class ContrastPixelFilter implements IPixelFilter {
 		return contrast;
 	}
 
+	/**
+	 * Filters the pixels according to {@link ContrastPixelFilter}. Note that
+	 * this is simply a replacement for the code-snippet:
+	 * <pre>
+	 *   new ContrastPixelFilter(contrast).filterPixels(pixels, width, height);
+	 * </pre>
+	 * 
+	 * For more information about how the pixels are stored in the pixel array,
+	 * see {@link #filterPixels(int[], int, int)}.
+	 * 
+	 * @param contrast - The contrast to be used in the filtering process.
+	 * @param pixels - The pixels to be filtered
+	 * @param width - The width of the image that the pixels represent.
+	 * @param height - The height of the image that the pixels represent.
+	 * 
+	 * @see #filterPixels(int[], int, int)
+	 */
+	public static void filterPixels(float contrast, int[] pixels, int width, int height) {
+		filterPixels(contrast, pixels, 0, width, height, width);
+	}
+
+
+	/**
+	 * Filters the pixels according to {@link ContrastPixelFilter}. Note that
+	 * this is simply a replacement for the code-snippet:
+	 * <pre>
+	 *   new ContrastPixelFilter(contrast).filterPixels(pixels, offset, width, height, stride);
+	 * </pre>
+	 * 
+	 * For more information about how the pixels are stored in the pixel array,
+	 * see {@link #filterPixels(int[], int, int, int, int)}.
+	 * 
+	 * @param contrast - The contrast to be used in the filtering process.
+	 * @param pixels - The pixels to be filtered
+	 * @param offset - The offset of the first pixel to be filtered.
+	 * @param width - The width of the image that the pixels represent.
+	 * @param height - The height of the image that the pixels represent.
+	 * @param stride - The stride of the pixel array.
+	 * 
+	 * @see #filterPixels(int[], int, int, int, int)
+	 */
+	public static void filterPixels(float contrast, int[] pixels, int offset, int width, int height, int stride) {
+		new ContrastPixelFilter(contrast).filterPixels(pixels, offset, width, height, stride);
+	}
 }

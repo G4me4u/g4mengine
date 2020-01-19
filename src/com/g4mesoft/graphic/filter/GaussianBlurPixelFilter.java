@@ -226,4 +226,12 @@ public class GaussianBlurPixelFilter implements IPixelFilter {
 			}
 		}
 	}
+	
+	public static void filterPixels(int kernelSize, int[] pixels, int width, int height) {
+		filterPixels(kernelSize, pixels, 0, width, height, width);
+	}
+
+	public static void filterPixels(int kernelSize, int[] pixels, int offset, int width, int height, int stride) {
+		new GaussianBlurPixelFilter(kernelSize).filterPixels(pixels, offset, width, height, stride);
+	}
 }

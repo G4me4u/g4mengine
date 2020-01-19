@@ -47,4 +47,20 @@ public class FastGaussianBlurPixelFilter implements IPixelFilter {
 		for (int i = 0; i < DEFAULT_NUM_BOXES; i++)
 			boxBlurs[i].filterPixels(pixels, offset, width, height, stride);
 	}
+	
+	public static void filterPixels(float radius, int[] pixels, int width, int height) {
+		filterPixels(radius, FULL_BLUR, pixels, width, height);
+	}
+
+	public static void filterPixels(float radius, int flags, int[] pixels, int width, int height) {
+		filterPixels(radius, flags, pixels, 0, width, height, width);
+	}
+
+	public static void filterPixels(float radius, int[] pixels, int offset, int width, int height, int stride) {
+		filterPixels(radius, FULL_BLUR, pixels, offset, width, height, stride);
+	}
+	
+	public static void filterPixels(float radius, int flags, int[] pixels, int offset, int width, int height, int stride) {
+		new FastGaussianBlurPixelFilter(radius, flags).filterPixels(pixels, offset, width, height, stride);
+	}
 }
