@@ -211,10 +211,10 @@ public final class SoundManager {
 	}
 	
 	public AudioSource playSound(int id) throws LineUnavailableException {
-		return playSound(id, true);
+		return playSound(id, false);
 	}
 
-	public AudioSource playSound(int id, boolean daemon) throws LineUnavailableException {
+	public AudioSource playSound(int id, boolean runPermanantly) throws LineUnavailableException {
 		AudioFile audioFile = getAudioFile(id);
 		if (audioFile == null)
 			return null;
@@ -223,18 +223,34 @@ public final class SoundManager {
 
 		while (true) {
 			SoundThread soundThread = getAppropriateSoundThread(audioSource.getFormat());
-			if (soundThread.addAudioSource(audioSource))
-				break;
-			
-			try {
-				soundThread.join();
-			} catch (InterruptedException e) {
+			if (!runPermanantly || (runPermanantly && soundThread.setRunPermanantly(true))) {
+				if (soundThread.addAudioSource(audioSource))
+					break;
 			}
-
-			soundThreads.remove(soundThread);
-		};
+			
+			removeSoundThread(soundThread);
+		}
 
 		return audioSource;
+	}
+
+	public void preparePermanantSoundThread(int id) throws LineUnavailableException {
+		AudioFile audioFile = getAudioFile(id);
+		if (audioFile != null)
+			preparePermanantSoundThread(audioFile.getFormat());
+	}
+	
+	public void preparePermanantSoundThread(SoundFormat format) throws LineUnavailableException {
+		while (true) {
+			SoundThread soundThread = getAppropriateSoundThread(format);
+			if (soundThread.setRunPermanantly(true)) {
+				if (!soundThread.hasStarted())
+					soundThread.start();
+				break;
+			}
+			
+			removeSoundThread(soundThread);
+		}
 	}
 	
 	private SoundThread getAppropriateSoundThread(SoundFormat format) throws LineUnavailableException {
@@ -249,6 +265,16 @@ public final class SoundManager {
 		soundThreads.add(thread);
 		
 		return thread;
+	}
+	
+	private void removeSoundThread(SoundThread soundThread) {
+		try {
+			soundThread.interrupt();
+			soundThread.join();
+		} catch (InterruptedException e) {
+		}
+
+		soundThreads.remove(soundThread);
 	}
 
 	private SourceDataLine getSourceDataLine() throws LineUnavailableException {

@@ -40,6 +40,9 @@ public class SoundThread extends Thread {
 	private volatile boolean running;
 	private volatile boolean starting;
 	
+	private volatile boolean runPermanantly;
+	
+	private boolean hasStarted;
 	private final Object bootLock;
 	
 	SoundThread(SourceDataLine sdl, float sampleRate) throws LineUnavailableException {
@@ -61,8 +64,17 @@ public class SoundThread extends Thread {
 		rootNode = null;
 		nodeLock = new Object();
 
-		running = false;
+		running = starting = runPermanantly = false;
+		
+		hasStarted = false;
 		bootLock = new Object();
+	}
+	
+	@Override
+	public void start() {
+		hasStarted = true;
+		
+		super.start();
 	}
 	
 	@Override
@@ -113,13 +125,26 @@ public class SoundThread extends Thread {
 			sdl.drain();
 			
 			synchronized (bootLock) {
+				boolean hasAwaitingNode = false;
 				synchronized (nodeLock) {
-					if (rootNode == null)
-						stopping = true;
+					if (rootNode != null)
+						hasAwaitingNode = true;
 				}
-			
-				if (stopping)
-					running = false;
+				
+				if (runPermanantly) {
+					if (!hasAwaitingNode) {
+						try {
+							bootLock.wait();
+						} catch (InterruptedException e) {
+							stopping = true;
+						}
+					}
+				} else {
+					if (hasAwaitingNode) {
+						stopping = true;
+						running = false;
+					}
+				}
 			}
 		} while (!stopping);
 
@@ -162,16 +187,41 @@ public class SoundThread extends Thread {
 		synchronized (bootLock) {
 			addNode(new AudioNode(audioSource, framesPerPlayback));
 		
-			if (!running && !starting && getState() != State.NEW)
+			if (!running && !starting && hasStarted)
 				return false;
 		}
 		
-		if (getState() == State.NEW) {
+		if (!hasStarted) {
 			starting = true;
 			start();
+		} else {
+			synchronized (bootLock) {
+				bootLock.notify();
+			}
 		}
 		
 		return true;
+	}
+	
+	public boolean setRunPermanantly(boolean runPermantantly) {
+		synchronized (bootLock) {
+			if (!running && !starting && hasStarted)
+				return false;
+		
+			this.runPermanantly = runPermantantly;
+		}
+		
+		return true;
+	}
+	
+	public boolean isRunPermantantly() {
+		synchronized (bootLock) {
+			return runPermanantly;
+		}
+	}
+	
+	public boolean hasStarted() {
+		return hasStarted;
 	}
 	
 	private void removeNode(AudioNode node) {
