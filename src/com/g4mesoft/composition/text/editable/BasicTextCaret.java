@@ -4,6 +4,7 @@ import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 
 import com.g4mesoft.Application;
+import com.g4mesoft.composition.Composition;
 import com.g4mesoft.composition.CompositionUtils;
 import com.g4mesoft.composition.ui.EditableTextCompositionUI;
 import com.g4mesoft.graphic.GColor;
@@ -62,7 +63,7 @@ import com.g4mesoft.math.MathUtils;
  * @see #setEndKey(KeyInput)
  * @see #setNavigateMouseButton(MouseButtonInput)
  */
-public class BasicTextCaret implements ITextCaret, ITextModelListener {
+public class BasicTextCaret implements ITextCaret, ITextModelListener, ICompositionModelListener {
 
 	private static final int DEFAULT_BLINK_RATE = 500;
 	private static final int DEFAULT_CARET_WIDTH = 2;
@@ -78,6 +79,7 @@ public class BasicTextCaret implements ITextCaret, ITextModelListener {
 	private static KeyInput sharedEndKey = null;
 
 	private EditableTextComposition textComposition;
+	private ITextModel textModel;
 	
 	private int dot;
 	private int mark;
@@ -172,9 +174,16 @@ public class BasicTextCaret implements ITextCaret, ITextModelListener {
 	
 		this.textComposition = textComposition;
 		
-		ITextModel textModel = textComposition.getTextModel();
-		textModel.addTextModelListener(this);
+		installTextModel(textComposition.getTextModel());
+
+		this.textComposition.addModelListener(this);
+	}
 	
+	private void installTextModel(ITextModel textModel) {
+		this.textModel = textModel;
+		
+		textModel.addTextModelListener(this);
+		
 		dot = textModel.getLength();
 		mark = dot;
 	}
@@ -184,9 +193,26 @@ public class BasicTextCaret implements ITextCaret, ITextModelListener {
 		if (this.textComposition == null)
 			throw new IllegalStateException("Caret not bound!");
 	
+		this.textComposition.removeModelListener(this);
+		
 		this.textComposition = null;
 		
-		textComposition.getTextModel().removeTextModelListener(this);
+		uninstallTextModel(textComposition.getTextModel());
+	}
+	
+	private void uninstallTextModel(ITextModel textModel) {
+		if (this.textModel != null) {
+			this.textModel.removeTextModelListener(this);
+			this.textModel = null;
+		}
+	}
+	
+	@Override
+	public void modelChanged(Composition owner) {
+		if (textComposition == owner) {
+			uninstallTextModel(textModel);
+			installTextModel(textComposition.getTextModel());
+		}
 	}
 
 	@Override

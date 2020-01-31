@@ -1,12 +1,16 @@
 package com.g4mesoft.composition.text.editable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.g4mesoft.composition.text.TextComposition;
 import com.g4mesoft.composition.ui.EditableTextCompositionUI;
 import com.g4mesoft.graphic.GColor;
 
 public abstract class EditableTextComposition extends TextComposition implements ITextModelListener {
 
-	private final ITextModel textModel;
+	private ITextModel textModel;
+	private final List<ICompositionModelListener> modelListeners;
 
 	private boolean editable;
 	private GColor caretColor;
@@ -20,6 +24,8 @@ public abstract class EditableTextComposition extends TextComposition implements
 		if (textModel == null)
 			throw new NullPointerException("Default text model is null");
 
+		modelListeners = new ArrayList<ICompositionModelListener>();
+		
 		editable = true;
 		caret = null;
 
@@ -31,7 +37,32 @@ public abstract class EditableTextComposition extends TextComposition implements
 		return (EditableTextCompositionUI)super.getUI();
 	}
 	
+	public void addModelListener(ICompositionModelListener listener) {
+		modelListeners.add(listener);
+	}
+
+	public void removeModelListener(ICompositionModelListener listener) {
+		modelListeners.remove(listener);
+	}
+	
 	protected abstract ITextModel createDefaultModel();
+	
+	public void setTextModel(ITextModel textModel) {
+		if (textModel == null)
+			throw new IllegalArgumentException("Text model can not be null!");
+		
+		this.textModel.removeTextModelListener(this);
+		this.textModel = textModel;
+		textModel.addTextModelListener(this);
+		invokeModelChangeEvent();
+		
+		requestRelayout(true);
+	}
+	
+	private void invokeModelChangeEvent() {
+		for (ICompositionModelListener listener : modelListeners)
+			listener.modelChanged(this);
+	}
 	
 	public ITextModel getTextModel() {
 		return textModel;
