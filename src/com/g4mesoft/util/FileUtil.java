@@ -119,6 +119,7 @@ public final class FileUtil {
 			bw.write(key);
 			bw.write(splitter);
 			bw.write(entry.getValue());
+			bw.newLine();
 		}
 		
 		bw.close();
