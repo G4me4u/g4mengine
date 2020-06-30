@@ -1,22 +1,13 @@
 package com.g4mesoft.graphics3d;
 
-import java.util.LinkedList;
-import java.util.Queue;
-
 import com.g4mesoft.graphic.IViewport;
 
 public class PixelRenderer3D extends AbstractPixelRenderer3D {
 
-	private final Queue<Triangle3D> trianglesToClip;
-	private final Queue<Triangle3D> clippedTriangles;
-	
 	private final Fragment3D fragment;
 	
 	public PixelRenderer3D(IViewport viewport, int width, int height) {
 		super(viewport, width, height);
-		
-		trianglesToClip = new LinkedList<Triangle3D>();
-		clippedTriangles = new LinkedList<Triangle3D>();
 		
 		fragment = new Fragment3D();
 	}
@@ -67,18 +58,13 @@ public class PixelRenderer3D extends AbstractPixelRenderer3D {
 			return;
 		}
 		
-		trianglesToClip.add(triangle);
-		triangle = null;
+		clipAndRenderTriangle(triangle, triangleCache, 0);
+		
+		triangleCache.storeTriangle(triangle);
+	}
 
-		Queue<Triangle3D> trianglesToDraw = clipTriangle(triangleCache, trianglesToClip, clippedTriangles);
-		transformAndCullTriangles(trianglesToDraw, triangleCache);
-
-		if (!trianglesToDraw.isEmpty()) {
-			renderTriangles(trianglesToDraw, triangleCache, fragment);
-			
-			for (Triangle3D t : trianglesToDraw)
-				triangleCache.storeTriangle(t);
-			trianglesToDraw.clear();
-		}
+	@Override
+	protected void renderTriangle(Triangle3D triangle, TriangleCache cache) {
+		fillTriangle(triangle.v0, triangle.v1, triangle.v2, cache, fragment);
 	}
 }

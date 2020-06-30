@@ -1,6 +1,5 @@
 package com.g4mesoft.graphics3d;
 
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -131,88 +130,77 @@ public abstract class AbstractPixelRenderer3D extends PixelRenderer2D {
 		return false;
 	}
 	
-	protected Queue<Triangle3D> clipTriangle(TriangleCache cache, Queue<Triangle3D> trianglesToClip, Queue<Triangle3D> clippedTriangles) {
-		for (int i = 0; i < clippingNormals.length; i++) {
-			if (i != 0) {
-				Queue<Triangle3D> tmp = trianglesToClip;
-				trianglesToClip = clippedTriangles;
-				clippedTriangles = tmp;
-			}
-
-			Vec4f clipNormal = clippingNormals[i];
-			for (Triangle3D t : trianglesToClip)
-				clipTriangle(t, clipNormal, cache, clippedTriangles);
-			
-			// Triangles would already be added to
-			// the cache. Simply clear the queue.
-			trianglesToClip.clear();
-		}
-		
-		return clippedTriangles;
-	}
-
-	private void clipTriangle(Triangle3D t, Vec4f normal, TriangleCache cache, Queue<Triangle3D> clippedTriangles) {
-		if (normal.dot(t.v0.pos) >= -t.v0.pos.w) {
-			if (normal.dot(t.v1.pos) >= -t.v1.pos.w) {
-				if (normal.dot(t.v2.pos) >= -t.v2.pos.w) {
-					clippedTriangles.add(t);
-				} else {
-					clip2Inside(normal, t.v0, t.v1, t.v2, cache, clippedTriangles);
-					cache.storeTriangle(t);
-				}
-			} else {
-				if (normal.dot(t.v2.pos) >= -t.v2.pos.w) {
-					clip2Inside(normal, t.v2, t.v0, t.v1, cache, clippedTriangles);
-					cache.storeTriangle(t);
-				} else {
-					clip2Outside(normal, t.v0, t.v1, t.v2, cache, clippedTriangles);
-					cache.storeTriangle(t);
-				}
-			}
+	protected void clipAndRenderTriangle(Triangle3D t, TriangleCache cache, int normalIndex) {
+		if (normalIndex >= clippingNormals.length) {
+			transformAndRenderTriangle(t, cache);
 		} else {
-			if (normal.dot(t.v1.pos) >= -t.v1.pos.w) {
-				if (normal.dot(t.v2.pos) >= -t.v2.pos.w) {
-					clip2Inside(normal, t.v1, t.v2, t.v0, cache, clippedTriangles);
-					cache.storeTriangle(t);
+			Vec4f normal = clippingNormals[normalIndex];
+			
+			if (normal.dot(t.v0.pos) >= -t.v0.pos.w) {
+				if (normal.dot(t.v1.pos) >= -t.v1.pos.w) {
+					if (normal.dot(t.v2.pos) >= -t.v2.pos.w) {
+						clipAndRenderTriangle(t, cache, normalIndex + 1);
+					} else {
+						clip2Inside(t.v0, t.v1, t.v2, cache, normalIndex);
+					}
 				} else {
-					clip2Outside(normal, t.v1, t.v2, t.v0, cache, clippedTriangles);
-					cache.storeTriangle(t);
+					if (normal.dot(t.v2.pos) >= -t.v2.pos.w) {
+						clip2Inside(t.v2, t.v0, t.v1, cache, normalIndex);
+					} else {
+						clip2Outside(t.v0, t.v1, t.v2, cache, normalIndex);
+					}
 				}
 			} else {
-				if (normal.dot(t.v2.pos) >= -t.v2.pos.w) {
-					clip2Outside(normal, t.v2, t.v0, t.v1, cache, clippedTriangles);
-					cache.storeTriangle(t);
+				if (normal.dot(t.v1.pos) >= -t.v1.pos.w) {
+					if (normal.dot(t.v2.pos) >= -t.v2.pos.w) {
+						clip2Inside(t.v1, t.v2, t.v0, cache, normalIndex);
+					} else {
+						clip2Outside(t.v1, t.v2, t.v0, cache, normalIndex);
+					}
 				} else {
-					cache.storeTriangle(t);
+					if (normal.dot(t.v2.pos) >= -t.v2.pos.w) {
+						clip2Outside(t.v2, t.v0, t.v1, cache, normalIndex);
+					} else {
+						// All vertices are outside of view.
+					}
 				}
 			}
 		}
 	}
 	
-	private void clip2Inside(Vec4f n, Vertex3D in0, Vertex3D in1, Vertex3D out, TriangleCache cache, Queue<Triangle3D> clippedTriangles) {
+	private void clip2Inside(Vertex3D in0, Vertex3D in1, Vertex3D out, TriangleCache cache, int normalIndex) {
+		Vec4f n = clippingNormals[normalIndex];
+		
 		Triangle3D t0 = cache.getTriangle();
 		Triangle3D t1 = cache.getTriangle();
 		
 		t0.v0.setVertex(in0);
 		interpolateClippedVertex(n, out, in1, t0.v1);
 		interpolateClippedVertex(n, out, in0, t0.v2);
+
+		t1.v0.setVertex(in1);
+		t1.v1.setVertex(t0.v1);
+		t1.v2.setVertex(in0);
+
+		clipAndRenderTriangle(t0, cache, normalIndex + 1);
+		clipAndRenderTriangle(t1, cache, normalIndex + 1);
 		
-		t1.v0.setVertex(in0);
-		t1.v1.setVertex(in1);
-		t1.v2.setVertex(t0.v1);
-		
-		clippedTriangles.add(t0);
-		clippedTriangles.add(t1);
+		cache.storeTriangle(t0);
+		cache.storeTriangle(t1);
 	}
 	
-	private void clip2Outside(Vec4f n, Vertex3D in, Vertex3D out0, Vertex3D out1, TriangleCache cache, Queue<Triangle3D> clippedTriangles) {
+	private void clip2Outside(Vertex3D in, Vertex3D out0, Vertex3D out1, TriangleCache cache, int normalIndex) {
+		Vec4f n = clippingNormals[normalIndex];
+		
 		Triangle3D t = cache.getTriangle();
 		
 		t.v0.setVertex(in);
 		interpolateClippedVertex(n, out0, in, t.v1);
 		interpolateClippedVertex(n, out1, in, t.v2);
 		
-		clippedTriangles.add(t);
+		clipAndRenderTriangle(t, cache, normalIndex + 1);
+
+		cache.storeTriangle(t);
 	}
 	
 	protected void interpolateClippedVertex(Vec4f n, Vertex3D outVertex, Vertex3D inVertex, Vertex3D result) {
@@ -240,83 +228,76 @@ public abstract class AbstractPixelRenderer3D extends PixelRenderer2D {
 		for (int i = 0; i < result.data.length; i++)
 			result.data[i] = (1.0f - t) * outVertex.data[i] + t * inVertex.data[i];
 	}
+
+	private void transformAndRenderTriangle(Triangle3D triangle, TriangleCache cache) {
+		if (transformAndCullTriangle(triangle, cache))
+			renderTriangle(triangle, cache);
+	}
 	
-	protected void transformAndCullTriangles(Queue<Triangle3D> triangles, TriangleCache cache) {
+	private boolean transformAndCullTriangle(Triangle3D t, TriangleCache cache) {
 		float hw = 0.5f * width;
 		float hh = 0.5f * height;
-		
-		Iterator<Triangle3D> itr = triangles.iterator();
-		while (itr.hasNext()) {
-			Triangle3D t = itr.next();
 			
-			t.v0.pos.x /= t.v0.pos.w;
-			t.v0.pos.y /= t.v0.pos.w;
+		t.v0.pos.x /= t.v0.pos.w;
+		t.v0.pos.y /= t.v0.pos.w;
 
-			t.v1.pos.x /= t.v1.pos.w;
-			t.v1.pos.y /= t.v1.pos.w;
+		t.v1.pos.x /= t.v1.pos.w;
+		t.v1.pos.y /= t.v1.pos.w;
 
-			t.v2.pos.x /= t.v2.pos.w;
-			t.v2.pos.y /= t.v2.pos.w;
+		t.v2.pos.x /= t.v2.pos.w;
+		t.v2.pos.y /= t.v2.pos.w;
 
-			// Calculate triangle orientation
-			float d = (t.v1.pos.y - t.v0.pos.y) * (t.v2.pos.x - t.v1.pos.x) - 
-			          (t.v1.pos.x - t.v0.pos.x) * (t.v2.pos.y - t.v1.pos.y);
+		// Calculate triangle orientation
+		float d = (t.v1.pos.y - t.v0.pos.y) * (t.v2.pos.x - t.v1.pos.x) - 
+		          (t.v1.pos.x - t.v0.pos.x) * (t.v2.pos.y - t.v1.pos.y);
 
-			if (cullEnabled) {
-				if (d >= 0.0f && cullFace == TriangleFace.BACK_FACE ||
-					d <= 0.0f && cullFace == TriangleFace.FRONT_FACE) {
-					
-					itr.remove();
-					cache.storeTriangle(t);
-
-					continue;
-				}
-			} else if (!Float.isFinite(d)) {
-				itr.remove();
-				cache.storeTriangle(t);
-
-				continue;
+		if (cullEnabled) {
+			if (d >= 0.0f && cullFace == TriangleFace.BACK_FACE ||
+				d <= 0.0f && cullFace == TriangleFace.FRONT_FACE) {
+				
+				return false;
 			}
-
-			// Transform to viewport space
-			t.v0.pos.x = (t.v0.pos.x + 1.0f) * hw;
-			t.v1.pos.x = (t.v1.pos.x + 1.0f) * hw;
-			t.v2.pos.x = (t.v2.pos.x + 1.0f) * hw;
-
-			t.v0.pos.y = (1.0f - t.v0.pos.y) * hh;
-			t.v1.pos.y = (1.0f - t.v1.pos.y) * hh;
-			t.v2.pos.y = (1.0f - t.v2.pos.y) * hh;
-
-			// Normalize depth
-			t.v0.pos.z /= t.v0.pos.w;
-			t.v1.pos.z /= t.v1.pos.w;
-			t.v2.pos.z /= t.v2.pos.w;
-			
-			// Transform to fit inside depth buffer
-			// where near is 0.0 and far is 1.0.
-			t.v0.pos.z = (t.v0.pos.z + 1.0f) * 0.5f;
-			t.v1.pos.z = (t.v1.pos.z + 1.0f) * 0.5f;
-			t.v2.pos.z = (t.v2.pos.z + 1.0f) * 0.5f;
-			
-			// Perspective correction of vertex data
-			for (int i = 0; i < cache.vertexNumData; i++) {
-				t.v0.data[i] /= t.v0.pos.w;
-				t.v1.data[i] /= t.v1.pos.w;
-				t.v2.data[i] /= t.v2.pos.w;
-			}
-			
-			// Used for perspective correction 
-			// during rendering of triangles.
-			t.v0.pos.w = 1.0f / t.v0.pos.w;
-			t.v1.pos.w = 1.0f / t.v1.pos.w;
-			t.v2.pos.w = 1.0f / t.v2.pos.w;
+		} else if (!Float.isFinite(d)) {
+			return false;
 		}
+
+		// Transform to viewport space
+		t.v0.pos.x = (t.v0.pos.x + 1.0f) * hw;
+		t.v1.pos.x = (t.v1.pos.x + 1.0f) * hw;
+		t.v2.pos.x = (t.v2.pos.x + 1.0f) * hw;
+
+		t.v0.pos.y = (1.0f - t.v0.pos.y) * hh;
+		t.v1.pos.y = (1.0f - t.v1.pos.y) * hh;
+		t.v2.pos.y = (1.0f - t.v2.pos.y) * hh;
+
+		// Normalize depth
+		t.v0.pos.z /= t.v0.pos.w;
+		t.v1.pos.z /= t.v1.pos.w;
+		t.v2.pos.z /= t.v2.pos.w;
+		
+		// Transform to fit inside depth buffer
+		// where near is 0.0 and far is 1.0.
+		t.v0.pos.z = (t.v0.pos.z + 1.0f) * 0.5f;
+		t.v1.pos.z = (t.v1.pos.z + 1.0f) * 0.5f;
+		t.v2.pos.z = (t.v2.pos.z + 1.0f) * 0.5f;
+		
+		// Perspective correction of vertex data
+		for (int i = 0; i < cache.vertexNumData; i++) {
+			t.v0.data[i] /= t.v0.pos.w;
+			t.v1.data[i] /= t.v1.pos.w;
+			t.v2.data[i] /= t.v2.pos.w;
+		}
+		
+		// Used for perspective correction 
+		// during rendering of triangles.
+		t.v0.pos.w = 1.0f / t.v0.pos.w;
+		t.v1.pos.w = 1.0f / t.v1.pos.w;
+		t.v2.pos.w = 1.0f / t.v2.pos.w;
+		
+		return true;
 	}
 	
-	protected void renderTriangles(Queue<Triangle3D> triangles, TriangleCache cache, Fragment3D fragment) {
-		for (Triangle3D t : triangles)
-			fillTriangle(t.v0, t.v1, t.v2, cache, fragment);
-	}
+	protected abstract void renderTriangle(Triangle3D triangle, TriangleCache cache);
 	
 	protected void fillTriangle(Vertex3D v0, Vertex3D v1, Vertex3D v2, TriangleCache cache, Fragment3D fragment) {
 		if (v0.pos.y > v1.pos.y) {
